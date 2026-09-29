@@ -352,8 +352,8 @@ def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> Non
     assert captured["query"] == "hero entry"
     assert captured["limit"] == 5
     assert capsys.readouterr().out == (
-        "1. hero-a\\t1.000000\\tHero Entry — Composer A — Album A"
-        "\\tmatched=title\\n"
+        "1. hero-a\t1.000000\tHero Entry — Composer A — Album A"
+        "\tmatched=title\n"
     )
 
 
