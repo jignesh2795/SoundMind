@@ -3,7 +3,10 @@ from pathlib import Path
 from urllib.parse import quote
 from sqlalchemy import select
 from soundmind.ingestion.fingerprint import sha256_file, stable_track_id
+from soundmind.analysis.dsp import analyze_audio
 from soundmind.ingestion.metadata import extract_metadata
+from soundmind.config import AnalysisConfig
+import json
 from soundmind.storage.models import ScanStateRow, TrackRow
 
 SUPPORTED_EXTENSIONS = frozenset({".mp3", ".flac", ".wav", ".m4a", ".ogg", ".opus", ".aac"})
@@ -11,8 +14,9 @@ SUPPORTED_EXTENSIONS = frozenset({".mp3", ".flac", ".wav", ".m4a", ".ogg", ".opu
 def file_uri(path: Path) -> str:
     return path.resolve().as_uri()
 
-def scan_directory(session, root: Path, *, compute_content_hash: bool = True) -> int:
+def scan_directory(session, root: Path, *, compute_content_hash: bool = True, analysis_config: AnalysisConfig | None = None, analyze: bool = True) -> int:
     root = root.expanduser().resolve()
+    analysis_config = analysis_config or AnalysisConfig()
     if not root.is_dir():
         raise NotADirectoryError(root)
     now = datetime.now(timezone.utc)
@@ -56,6 +60,30 @@ def scan_directory(session, root: Path, *, compute_content_hash: bool = True) ->
             existing.updated_at = now
         for key, value in metadata.__dict__.items():
             setattr(existing, key, value)
+        if analyze:
+            try:
+                analysis = analyze_audio(
+                    path,
+                    max_analysis_seconds=analysis_config.max_analysis_seconds,
+                    analysis_offset_seconds=analysis_config.analysis_offset_seconds,
+                )
+                existing.sample_rate = analysis.sample_rate
+                existing.channels = analysis.channels
+                existing.tempo_bpm = analysis.tempo_bpm
+                existing.rms_energy = analysis.rms_energy
+                existing.spectral_centroid = analysis.spectral_centroid
+                existing.spectral_bandwidth = analysis.spectral_bandwidth
+                existing.spectral_rolloff = analysis.spectral_rolloff
+                existing.zero_crossing_rate = analysis.zero_crossing_rate
+                existing.mfcc_json = json.dumps(analysis.mfcc)
+                existing.chroma_json = json.dumps(analysis.chroma)
+                existing.analysis_mode = analysis.analysis_mode
+                existing.analysis_seconds = analysis.analyzed_seconds
+                existing.analysis_version = "m0.5"
+            except Exception:
+                existing.analysis_mode = "failed"
+                existing.analysis_seconds = None
+                existing.analysis_version = "m0.5"
         if state is None:
             state = ScanStateRow(source_uri=uri, last_seen_at=now, file_size=stat.st_size, modified_at_ns=stat.st_mtime_ns, content_hash=content_hash)
             session.add(state)
