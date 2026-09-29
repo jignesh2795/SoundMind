@@ -6,8 +6,8 @@ from dataclasses import replace
 from typing import Protocol
 
 from soundmind.recommendation.fusion import CandidateSignals
-from soundmind.vector.index import SimilarityResult
 from soundmind.recommendation.intent_retrieval import IntentCandidate
+from soundmind.vector.index import SimilarityResult
 
 
 class LearnedSimilarityProvider(Protocol):
