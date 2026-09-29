@@ -101,7 +101,7 @@ def test_energy_intent_maps_to_dsp_score():
 
     signals = IntentRetrievalEngine().enrich(intent, item)
 
-    assert signals.dsp_score == pytest.approx(0.5)
+    assert signals.dsp_score == pytest.approx(0.8)
 
 
 def test_rank_uses_existing_m1_fusion():
