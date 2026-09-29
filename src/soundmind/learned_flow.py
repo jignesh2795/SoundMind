@@ -2,7 +2,11 @@
 
 from dataclasses import replace
 
-from soundmind.flow import EndToEndCandidate, EndToEndMusicFlow, EndToEndRequest, EndToEndResult
+from soundmind.flow import (
+    EndToEndMusicFlow,
+    EndToEndRequest,
+    EndToEndResult,
+)
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 
 
