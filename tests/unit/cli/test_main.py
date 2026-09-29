@@ -444,5 +444,5 @@ def test_search_semantic_dispatches_to_catalog_service(monkeypatch, capsys) -> N
     assert captured["limit"] == 3
     assert isinstance(captured["provider"], FakeProvider)
     assert capsys.readouterr().out == (
-        "1. ambient-a\\t0.912345\\tCalm Hero — Composer A — Night BGM\\tsemantic\\n"
+        "1. ambient-a\t0.912345\tCalm Hero — Composer A — Night BGM\tsemantic\\n"
     )
