@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M1 — Retrieval Fusion.
+M1.2 — Preference-aware recommendation and explanations.
 
 The architecture separates:
 
@@ -14,7 +14,8 @@ The architecture separates:
 - learned representation: optional Discogs-EffNet embeddings
 - retrieval: similarity and metadata channels
 - ranking: fusion, novelty, and diversity
-- future preference: TasteProfile and listening history
+- preference: TasteProfile, decayed listening history, and preference-aware ranking
+- explanations: per-signal ranking contributions
 
 ## Development
 
@@ -29,6 +30,7 @@ Optional learned embeddings use ONNX Runtime and a separately cached Discogs-Eff
 - M0.7–M0.9: learned audio retrieval
 - M1: retrieval fusion
 - M1.1: TasteProfile and listening history
+- M1.2: preference-aware ranking and recommendation explanations
 - M2: playlist sequencing
 - M3: natural-language music intent
 - M4: AI DJ and context
