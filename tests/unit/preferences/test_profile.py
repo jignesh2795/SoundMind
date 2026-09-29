@@ -18,4 +18,4 @@ def test_old_event_decays():
 def test_profile_context():
     now=datetime.now(timezone.utc)
     p=TasteProfileBuilder().build([ListeningEvent("a",ListeningEventType.LIKE,now,context="night"),ListeningEvent("b",ListeningEventType.SKIP,now,context="coding")],now=now)
-    assert p.positive_track_ids==("a",); assert p.negative_track_ids==("b",); assert p.contexts==("coding","night")
+    assert p.positive_track_ids==("a",); assert p.negative_track_ids==(); assert p.skipped_track_ids==("b",); assert p.contexts==("coding","night")
