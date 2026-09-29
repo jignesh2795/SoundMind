@@ -59,8 +59,7 @@ def main():
             )
         print(f"Scanned changed tracks: {count}")
         return 0
-    if a.command == "model":
-        if a.model_command == "fetch-effnet":
+    if a.command == "model" and a.model_command == "fetch-effnet":
             print(fetch_effnet_model(a.path))
             return 0
     if a.command == "learned-index":
