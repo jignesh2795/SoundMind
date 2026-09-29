@@ -35,10 +35,11 @@ def test_sqlite_catalog_search_reads_active_rows_and_returns_matches(tmp_path) -
 
         results = CatalogTextSearchService(session).search("hero entry", limit=10)
 
-    assert [result.track_id for result in results] == ["hero-a"]
+    assert [result.track_id for result in results] == ["hero-a", "hero-b"]
     assert results[0].title == "Mass Hero Entry"
     assert results[0].artist == "Composer A"
     assert results[0].matched_fields == ("title",)
+    assert results[1].score == 0.5
 
 
 def test_sqlite_catalog_search_does_not_mutate_catalog(tmp_path) -> None:
