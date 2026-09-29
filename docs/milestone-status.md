@@ -23,6 +23,7 @@ This document is the project-level implementation ledger. It records completed m
 | M9.2 | Contextual preference integrated at the existing M1 ranking boundary | Complete |
 | M10.1 | Contextual novelty/familiarity evidence from recency-weighted exposure | Complete |
 | M10.2 | Contextual novelty connected to the existing M1 ranking boundary | Complete |
+| M10.3 | Context-aware end-to-end recommendation composition | Complete |
 
 ## Current milestone
 
