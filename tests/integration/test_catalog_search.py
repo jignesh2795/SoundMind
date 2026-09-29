@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 
 from soundmind.catalog_search import CatalogTextSearchService
@@ -6,6 +8,7 @@ from soundmind.storage.models import TrackRow
 
 
 def row(track_id: str, *, title: str, artist: str, status: str = "active") -> TrackRow:
+    now = datetime.now(UTC)
     return TrackRow(
         track_id=track_id,
         content_hash=track_id * 64,
@@ -14,6 +17,8 @@ def row(track_id: str, *, title: str, artist: str, status: str = "active") -> Tr
         file_name=f"{track_id}.mp3",
         file_size=1,
         modified_at_ns=1,
+        created_at=now,
+        updated_at=now,
         status=status,
         title=title,
         artist=artist,
