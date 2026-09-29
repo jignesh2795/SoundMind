@@ -312,3 +312,54 @@ def test_recommend_explain_prints_signal_contributions(monkeypatch, capsys) -> N
     assert "strongest: preference" in output
     assert "metadata: raw=0.200000 weight=0.180000 contribution=0.036000" in output
     assert "preference: raw=0.800000 weight=0.180000 contribution=0.144000" in output
+
+
+def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            captured["session"] = session
+
+        def search(self, query, *, limit):
+            captured["query"] = query
+            captured["limit"] = limit
+            return (
+                SimpleNamespace(
+                    track_id="hero-a",
+                    score=1.0,
+                    title="Hero Entry",
+                    artist="Composer A",
+                    album="Album A",
+                    matched_fields=("title",),
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["search", "hero entry", "--db", "library.db", "--limit", "5"]) == 0
+    assert captured["query"] == "hero entry"
+    assert captured["limit"] == 5
+    assert capsys.readouterr().out == (
+        "1. hero-a\\t1.000000\\tHero Entry — Composer A — Album A"
+        "\\tmatched=title\\n"
+    )
+
+
+def test_search_parser_defaults() -> None:
+    args = build_parser().parse_args(["search", "hero"])
+
+    assert args.command == "search"
+    assert args.query == "hero"
+    assert args.limit == 10
