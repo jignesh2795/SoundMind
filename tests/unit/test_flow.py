@@ -66,7 +66,7 @@ def test_end_to_end_flow_preserves_existing_m1_signals() -> None:
 def test_end_to_end_flow_supports_journey_sequence() -> None:
     result = EndToEndMusicFlow().run(
         EndToEndRequest(
-            text="high energy BGM",
+            text="BGM journey",
             candidates=[
                 candidate("a", music_types=("bgm",), energy=0.3),
                 candidate("b", music_types=("bgm",), energy=0.6),
