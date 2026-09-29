@@ -33,6 +33,8 @@ def scan_directory(session, root: Path, *, compute_content_hash: bool = True, an
             and state.file_size == stat.st_size
             and state.modified_at_ns == stat.st_mtime_ns
             and existing is not None
+            and (not analyze or existing.analysis_version == "m0.5")
+            and (not analyze or existing.analysis_seconds is not None)
         )
         if unchanged:
             state.last_seen_at = now
