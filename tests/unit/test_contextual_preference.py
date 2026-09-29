@@ -4,6 +4,7 @@ import pytest
 
 from soundmind.preferences.contextual import ContextualPreferenceScorer
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
+
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
 
 
