@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M9 — Contextual Taste and Personalization.
+M10.1 — Contextual Novelty and Familiarity Evidence.
 
 The current pipeline now supports:
 
@@ -16,10 +16,11 @@ The current pipeline now supports:
 - retrieval: intent matching and learned audio similarity
 - ranking: fusion, novelty, diversity, and global/contextual preference
 - preference: decayed listening history with context isolation
+- contextual novelty: recency-weighted exposure evidence per listening context
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - explanations: per-signal ranking contributions
 
-The M9 contextual ranking slice keeps the existing M1 fusion weights and event decay model unchanged. A supplied context selects matching contextual listening evidence; omitting context preserves global preference behavior.
+M9 contextual ranking keeps the existing M1 fusion weights and event decay model unchanged. M10.1 adds a separate exposure-based novelty signal; it does not yet inject that signal into ranking.
 
 ## Architecture
 
@@ -34,9 +35,12 @@ Retrieval
   ├─ metadata + intent
   └─ learned audio similarity
     ↓
-Personal ranking
+Personalization
   ├─ global preference
-  └─ contextual preference
+  ├─ contextual preference
+  └─ contextual novelty/familiarity
+    ↓
+Personal ranking
     ↓
 Playlist sequencing
     ↓
@@ -69,7 +73,8 @@ Validation uses Ruff and pytest.
 - M7: Music DNA enrichment
 - M8: learned audio retrieval integration
 - M9: contextual taste and contextual ranking
-- later: richer contextual personalization, semantic text retrieval, source adapters, editing, stems and advanced creation
+- M10.1: contextual novelty/familiarity evidence
+- later: contextual novelty ranking, richer personalization, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
