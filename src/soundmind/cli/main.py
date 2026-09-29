@@ -4,12 +4,12 @@ from pathlib import Path
 
 from soundmind.catalog_recommendation import CatalogContextRecommendationService
 from soundmind.config import AnalysisConfig
+from soundmind.context_aware_flow import ContextAwareMusicFlow
 from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
-from soundmind.context_aware_flow import ContextAwareMusicFlow
 from soundmind.sequence import SequenceMode
 from soundmind.storage.database import create_session_factory
 
