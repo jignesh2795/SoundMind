@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from soundmind.dna import MusicDNA, normalized_brightness
 from soundmind.flow import EndToEndCandidate
 from soundmind.recommendation.fusion import CandidateSignals
 from soundmind.recommendation.intent_retrieval import IntentCandidate
@@ -17,6 +18,7 @@ class CatalogCandidate:
     """A catalog row converted into evidence consumed by M5."""
 
     candidate: EndToEndCandidate
+    music_dna: MusicDNA
     title: str | None = None
     artist: str | None = None
     album: str | None = None
@@ -36,19 +38,36 @@ def _genre_values(row: TrackRow) -> tuple[str, ...]:
     )
 
 
+def music_dna_from_row(row: TrackRow) -> MusicDNA:
+    """Build measured Music DNA without inferring unavailable semantics."""
+    return MusicDNA(
+        tempo_bpm=row.tempo_bpm,
+        energy=_energy(row),
+        brightness=normalized_brightness(row.spectral_centroid, row.sample_rate),
+        spectral_bandwidth=row.spectral_bandwidth,
+        spectral_rolloff=row.spectral_rolloff,
+        zero_crossing_rate=row.zero_crossing_rate,
+        mfcc=tuple(),
+        chroma=tuple(),
+    )
+
+
 def candidate_from_row(row: TrackRow) -> CatalogCandidate:
     """Map stored catalog evidence without inferring unavailable semantics."""
+    dna = music_dna_from_row(row)
     intent_candidate = IntentCandidate(
         track_id=row.track_id,
         genres=_genre_values(row),
-        energy=_energy(row),
+        energy=dna.energy,
         base_signals=CandidateSignals(row.track_id),
     )
     return CatalogCandidate(
         candidate=EndToEndCandidate(
             intent_candidate=intent_candidate,
-            tempo_bpm=row.tempo_bpm,
+            tempo_bpm=dna.tempo_bpm,
+            brightness=dna.brightness,
         ),
+        music_dna=dna,
         title=row.title,
         artist=row.artist,
         album=row.album,
@@ -62,7 +81,11 @@ class CatalogCandidateRepository:
         self._session = session
 
     def candidates(self, *, limit: int | None = None) -> list[CatalogCandidate]:
-        statement = select(TrackRow).where(TrackRow.status == "active").order_by(TrackRow.track_id)
+        statement = (
+            select(TrackRow)
+            .where(TrackRow.status == "active")
+            .order_by(TrackRow.track_id)
+        )
         if limit is not None:
             if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
                 raise ValueError("limit must be a positive integer")
