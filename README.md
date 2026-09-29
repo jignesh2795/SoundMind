@@ -31,7 +31,7 @@ Example:
     soundmind search "hero entry" --limit 10
     soundmind search "calm cinematic background music" --semantic --limit 10
 
-Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Results are deterministic and stable for the same catalog state and query.
+Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Lexical results are deterministic and stable for the same catalog state and query. Semantic results are stable for the same model, catalog state, and query.
 
 ## Architecture
 
