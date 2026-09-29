@@ -54,9 +54,9 @@ Create a broad energy arc rather than maximizing local similarity.
 
 The default target curve is:
 
-- start moderate
-- build toward higher energy
-- finish moderate
+- start at moderate energy (`0.3`)
+- progressively build toward higher energy
+- finish at high energy (`0.9`)
 
 The implementation must make the target curve explicit and testable rather than hiding it in heuristic state.
 
