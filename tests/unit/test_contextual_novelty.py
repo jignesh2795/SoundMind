@@ -5,7 +5,6 @@ import pytest
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.preferences.novelty import ContextualNoveltyScorer
 
-
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
 
 
