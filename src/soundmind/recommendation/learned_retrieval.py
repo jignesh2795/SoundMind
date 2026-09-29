@@ -46,6 +46,8 @@ class LearnedRetrievalEngine:
                 raise ValueError(f"duplicate track_id: {candidate.track_id!r}")
             seen.add(candidate.track_id)
 
+        if not materialized:
+            return ()
         effective_limit = limit if limit is not None else len(materialized)
         if effective_limit <= 0:
             raise ValueError("limit must be positive")
