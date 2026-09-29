@@ -27,37 +27,47 @@ This document is the project-level implementation ledger. It records completed m
 | M11.1 | Catalog-backed contextual recommendation from persisted SQLite state | Complete |
 | M11.2 | CLI recommendation surface over M11.1 | Complete |
 | M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
+| M11.4 | CLI recommendation explanations | In progress |
 
 ## Current milestone
 
-### M11.3 — Seeded Learned Recommendation
+### M11.4 — CLI Recommendation Explanations
 
-Branch: `feat/m11-seeded-learned-recommendation` (merged)
+Branch: `feat/m11-cli-explanations`
 
-Base: M11.2 merge `2c56ffc`
+Base: M11.3 docs-close merge `6e2a817`
 
-Merge: `ddff494`
-
-M11.3 exposes the existing M8 learned audio similarity path through the CLI recommendation command when a seed track is explicitly supplied.
+M11.4 exposes the existing `RecommendationExplanation` and `SignalContribution` data through the recommendation CLI.
 
 Command:
 
-    soundmind recommend "<request>" --context <context> --seed-track-id <track-id> [options]
-
-Additional learned-retrieval options:
-
-- `--model`: existing Discogs-EffNet ONNX model path;
-- `--index`: existing learned vector index path.
+    soundmind recommend "<request>" --context <context> --explain [options]
 
 Behavior:
 
-- without a seed, the existing model-free M11.2 path remains unchanged;
-- with a seed, the CLI constructs the existing `LearnedEmbeddingService` and `LearnedRetrievalEngine`;
-- learned similarity enriches the existing M1 learned signal;
-- M10.3 continues to remove the seed itself from recommendation candidates;
-- model acquisition is never implicit.
+- without `--explain`, the M11.3 output remains unchanged;
+- with `--explain`, each ranked candidate prints its strongest signal;
+- each existing contribution is printed with raw score, normalized weight, and weighted contribution;
+- the CLI only formats fields already produced by the recommendation stack;
+- no ranking, fusion, persistence, or model behavior changes.
 
 ## M11 layering
+
+```
+CLI
+ ↓
+existing EndToEndResult
+ ↓
+RecommendationExplanation
+ ├─ strongest signal
+ └─ per-signal contributions
+ ↓
+human-readable CLI output
+```
+
+M11.4 is intentionally a presentation-only boundary.
+
+## M11.3 seeded learned boundary
 
 ```
 CLI
@@ -71,19 +81,15 @@ M8 LearnedRetrievalEngine
 M11.1 catalog + listening history
  ↓
 M10.3 context-aware flow
- ├─ M3/M4 intent
- ├─ M8 learned similarity
- ├─ M9 contextual preference
- └─ M10 contextual novelty
  ↓
 M1 fusion ranking
  ↓
 M2 sequence engine
  ↓
-CLI output
+CLI output + optional explanation
 ```
 
-M11.3 remains a dependency-assembly/application boundary. Existing learned retrieval, recommendation, and persistence contracts remain authoritative.
+M11.3 activates learned retrieval only for an explicitly supplied seed and never downloads the model implicitly.
 
 ## M11.1 persistence boundary
 
@@ -124,6 +130,8 @@ M10.3 Context-Aware Flow
  ↓
 M3 → M4 → M8 → M9 → M10 → M1 → M2
  ↓
+optional explanation formatting
+ ↓
 Ordered playlist
 ```
 
@@ -136,7 +144,7 @@ M11.3: ruff: All checks passed!
 M11.3: pytest: 135 passed
 ```
 
-M11.3 validation is complete: the user-reported local gate on `feat/m11-seeded-learned-recommendation` passed with Ruff clean and 135 tests.
+M11.4 validation is pending the local Ruff and pytest gate on `feat/m11-cli-explanations`.
 
 ## Documentation rule
 
