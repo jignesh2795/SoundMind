@@ -21,44 +21,48 @@ This document is the project-level implementation ledger. It records completed m
 | M8 | Learned audio similarity integrated with M1 ranking and M5 flow | Complete |
 | M9.1 | Contextual preference scorer using existing listening events | Complete |
 | M9.2 | Contextual preference integrated at the existing M1 ranking boundary | Complete |
+| M10.1 | Contextual novelty/familiarity evidence from recency-weighted exposure | Complete |
 
 ## Current milestone
 
-### M10.1 — Contextual Novelty and Familiarity Evidence
+### M10.2 — Contextual Novelty at the M1 Ranking Boundary
 
-Branch: `feat/m10-contextual-novelty`
+Branch: `feat/m10-contextual-novelty-ranking`
 
-Base: M9 merge `b8354b2`
+Base: M10.1 merge `934afde`
 
-M10.1 adds a deterministic, context-specific novelty score derived from existing listening exposure.
+M10.2 connects the M10.1 contextual novelty model to the existing M1 ranking boundary.
 
-Exposure model:
+Ranking behavior:
 
-- every existing listening event counts as exposure;
-- exposure is filtered by normalized context;
-- exposure uses the same 30-day recency half-life concept;
-- exposure evidence is separate from the existing preference event weights;
-- novelty is `1 / (1 + exposure)`;
-- familiarity is the complement, `1 - novelty`.
+- a requested context is normalized and matched against event contexts;
+- matching contextual exposure is converted to contextual novelty by the M10.1 scorer;
+- candidates without matching contextual exposure are treated as unexposed and receive novelty 1.0;
+- the resulting value populates the existing `CandidateSignals.novelty_score`;
+- existing metadata, DSP, learned, preference, and diversity signals are preserved;
+- ranking continues through the existing `rank_candidates()` implementation;
+- existing M1 fusion weights remain unchanged;
+- input candidates are not mutated.
 
-This makes repeated or recent exposure reduce novelty while older exposure contributes less familiarity.
+M9 contextual preference remains a separate signal. The new adapter does not replace or reinterpret preference evidence.
 
-M10.1 deliberately does not change:
+## M10 layering
 
-- the listening-event schema;
-- event types;
-- preference weights;
-- preference scoring;
-- M1 fusion weights;
-- `CandidateSignals`;
-- ranking behavior;
-- audio analysis;
-- learned embedding models;
-- database schema.
+```text
+M10.1
+Contextual exposure
+      ↓
+Contextual novelty/familiarity
+      ↓
+M10.2
+CandidateSignals.novelty_score
+      ↓
+M1 fusion
+      ↓
+M2 sequence engine
+```
 
-### M10 next slice
-
-The next M10 slice will connect contextual novelty/familiarity to the existing ranking boundary using the current M1 novelty signal, while preserving the existing global path when no context is requested.
+This keeps novelty evidence independent from preference semantics while allowing the established M1 ranker to use it.
 
 ## Architecture progression
 
@@ -83,18 +87,18 @@ M2 Sequence Engine
 Ordered playlist
 ```
 
-M6 provides the catalog adapter that supplies stored SQLite evidence to the pipeline. M8 adds learned track-to-track audio similarity without changing the M1 fusion contract. M9 adds context-specific listening preference at the same ranking boundary. M10.1 now adds context-specific exposure/novelty evidence without changing that boundary.
+M6 provides the catalog adapter that supplies stored SQLite evidence to the pipeline. M8 adds learned track-to-track audio similarity without changing the M1 fusion contract. M9 adds context-specific listening preference. M10.1 adds context-specific exposure/novelty evidence, and M10.2 connects that evidence to the existing M1 novelty signal.
 
 ## Validation baseline
 
 Latest completed-milestone gate:
 
 ```text
-M10.1: ruff: All checks passed!
-M10.1: pytest: 110 passed
+M10.2: ruff: All checks passed!
+M10.2: pytest: 119 passed
 ```
 
-M10.1 has been locally validated on branch `feat/m10-contextual-novelty` at `3b1404a`.
+M10.2 has been locally validated on branch `feat/m10-contextual-novelty-ranking` at `f283fbf`.
 
 ## Documentation rule
 

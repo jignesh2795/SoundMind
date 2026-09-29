@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M10.1 — Contextual Novelty and Familiarity Evidence.
+M10.2 — Contextual Novelty at the Ranking Boundary.
 
 The current pipeline now supports:
 
@@ -14,13 +14,13 @@ The current pipeline now supports:
 - Music DNA: structured acoustic evidence derived from stored analysis
 - learned representation: optional Discogs-EffNet embeddings
 - retrieval: intent matching and learned audio similarity
-- ranking: fusion, novelty, diversity, and global/contextual preference
-- preference: decayed listening history with context isolation
-- contextual novelty: recency-weighted exposure evidence per listening context
+- preference: decayed global and contextual listening history
+- personalization: contextual novelty/familiarity evidence from listening exposure
+- ranking: existing M1 fusion with preference and contextual novelty signals
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - explanations: per-signal ranking contributions
 
-M9 contextual ranking keeps the existing M1 fusion weights and event decay model unchanged. M10.1 adds a separate exposure-based novelty signal; it does not yet inject that signal into ranking.
+M10.2 connects contextual novelty to the existing M1 `novelty_score`. It does not modify M1 fusion weights or the `CandidateSignals` schema.
 
 ## Architecture
 
@@ -40,7 +40,7 @@ Personalization
   ├─ contextual preference
   └─ contextual novelty/familiarity
     ↓
-Personal ranking
+Personal ranking / M1 fusion
     ↓
 Playlist sequencing
     ↓
@@ -74,7 +74,8 @@ Validation uses Ruff and pytest.
 - M8: learned audio retrieval integration
 - M9: contextual taste and contextual ranking
 - M10.1: contextual novelty/familiarity evidence
-- later: contextual novelty ranking, richer personalization, semantic text retrieval, source adapters, editing, stems and advanced creation
+- M10.2: contextual novelty at the M1 ranking boundary
+- later: richer contextual personalization, contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
