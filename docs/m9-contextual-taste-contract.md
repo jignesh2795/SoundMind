@@ -50,18 +50,20 @@ When no context is requested, the existing global preference behavior remains un
 
 ## Ranking
 
-M9 produces a bounded contextual preference signal for the existing M1 ranking boundary.
+M9 exposes contextual preference through the existing M1 ranking boundary.
+
+PreferenceAwareRecommender.rank() keeps its current global behavior when context is omitted. When a context is supplied, the recommender uses only contextual preference evidence for the preference_score signal; it does not merge uncontexted global events into that contextual score.
 
 M9 must preserve:
 
 - learned similarity;
 - metadata;
 - DSP;
-- global preference;
+- global preference behavior when no context is supplied;
 - novelty;
 - diversity.
 
-M9 does not change M1 fusion weights in the first slice.
+M9 does not change M1 fusion weights.
 
 ## Determinism
 
@@ -85,10 +87,12 @@ M9 does not add:
 
 ## Acceptance
 
-The first M9 slice is complete when:
+The M9 contextual ranking slice is complete when:
 
 1. Contextual evidence can be derived from existing listening events.
 2. Context-specific events remain isolated.
-3. Existing global preference behavior remains intact.
-4. The result is deterministic and bounded.
-5. Unit tests cover positive, negative, decay, isolation, and empty-context cases.
+3. Existing global preference behavior remains intact when no context is supplied.
+4. A supplied context reaches the existing M1 preference signal without changing fusion weights.
+5. Other candidate signals are preserved.
+6. The result is deterministic and bounded.
+7. Unit tests cover positive, negative, decay, isolation, empty-context, global-ranking, contextual-ranking, and non-mutation behavior.
