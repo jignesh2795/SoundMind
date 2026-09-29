@@ -3,7 +3,8 @@
 from collections.abc import Iterable, Protocol
 from dataclasses import replace
 
-from soundmind.embeddings.vector import SimilarityResult
+from soundmind.recommendation.fusion import CandidateSignals
+from soundmind.vector.index import SimilarityResult
 from soundmind.recommendation.intent_retrieval import IntentCandidate
 
 
@@ -63,8 +64,6 @@ class LearnedRetrievalEngine:
         for candidate in materialized:
             base = candidate.base_signals
             if base is None:
-                from soundmind.recommendation.fusion import CandidateSignals
-
                 base = CandidateSignals(candidate.track_id)
             learned_score = scores.get(candidate.track_id, base.learned_score)
             enriched.append(
