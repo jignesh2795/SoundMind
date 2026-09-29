@@ -27,84 +27,90 @@ This document is the project-level implementation ledger. It records completed m
 
 ## Current milestone
 
-### M10.3 — Context-Aware End-to-End Recommendation
+### M11.1 — Catalog-Backed Contextual Recommendation
 
-Branch: `feat/m10-context-aware-flow`
+Branch: `feat/m11-catalog-context-recommendation`
 
-Base: M10.2 merge `02e699b`
+Base: M10.3 merge `19cd350`
 
-M10.3 composes the existing M3, M4, M8, M9, M10, M1, and M2 layers through a single context-aware flow.
+M11.1 adds an application-facing SQLite boundary around the established M10.3 context-aware recommendation flow.
 
-Composition:
-
-- M3 parses natural-language music intent;
-- M4 maps intent into M1 signals;
-- M8 optionally adds learned audio similarity from a seed track;
-- M9 contributes contextual preference;
-- M10 contributes contextual novelty;
-- M1 performs the existing fusion ranking;
-- M2 produces the ordered playlist.
-
-Signal ownership remains unchanged. The new flow does not change fusion weights or the CandidateSignals schema.
-
-Context-specific preference and novelty use only events carrying the requested normalized context.
-
-When a seed is supplied, the existing learned retrieval dependency is required and the seed is excluded from recommendation candidates.
-
-## M10 layering
+Persistence path:
 
 ```text
-M10.1 contextual exposure
+SQLite TrackRow records
         ↓
-M10 contextual novelty
+CatalogCandidateRepository
         ↓
-M10.3 context-aware flow
-        ├─ M3/M4 intent retrieval
-        ├─ M8 learned similarity
-        └─ M9 contextual preference
+EndToEndCandidate
+
+SQLite ListeningEventRow records
         ↓
-M1 fusion ranking
+ListeningEventRepository
         ↓
-M2 sequencing
+ListeningEvent
+
+        └──────────────┐
+                       ↓
+          M10.3 ContextAwareMusicFlow
+                       ↓
+               EndToEndResult
 ```
 
-This composition keeps preference and novelty as separate signals while allowing the established ranking and sequencing contracts to operate on the combined result.
+Behavior:
+
+- active catalog tracks are loaded through the existing catalog repository;
+- recent listening events are loaded through the existing event repository;
+- event retrieval is bounded by the existing repository limit;
+- the caller supplies natural-language text, context, reference time, and recommendation limits through the existing request plus M11 options;
+- an optional seed delegates to the existing learned retrieval boundary;
+- no new persistence model or schema is introduced;
+- recommendation logic remains owned by M10.3 and its existing layers.
+
+## M11 layering
+
+```text
+M11.1 persistence boundary
+       ↓
+M10.3 context-aware flow
+       ├─ M3/M4 intent
+       ├─ M8 learned similarity
+       ├─ M9 contextual preference
+       └─ M10 contextual novelty
+       ↓
+M1 fusion ranking
+       ↓
+M2 sequence engine
+```
+
+M11.1 is intentionally an application boundary, not a new recommendation algorithm.
 
 ## Architecture progression
 
 ```text
-M3 MusicIntent
-      ↓
-M4 Intent Retrieval
-      ↓
-M7 Music DNA ───────────────┐
-      ↓                     │
-M8 Learned Audio Retrieval  │
-      ↓                     │
-Context-Aware Personalization
-  ├─ global preference      │
-  ├─ contextual preference  │
-  └─ contextual novelty     │
-      ↓                     │
-M1 Personal Ranking ←───────┘
-      ↓
-M2 Sequence Engine
-      ↓
-Ordered playlist
+SQLite catalog + listening history
+              ↓
+M11 catalog-backed boundary
+              ↓
+M10.3 Context-Aware Flow
+              ↓
+M3 → M4 → M8(optional) → M9 → M10 → M1 → M2
+              ↓
+        Ordered playlist
 ```
 
-M6 provides the catalog adapter that supplies stored SQLite evidence to the pipeline. M8 adds learned track-to-track audio similarity. M9 adds context-specific listening preference. M10.1 adds context-specific exposure/novelty evidence, M10.2 connects novelty to the M1 signal, and M10.3 composes the full context-aware recommendation path.
+M6 supplies the catalog adapter. M8 supplies learned track-to-track similarity. M9 supplies contextual preference. M10.1/M10.2 supply and rank contextual novelty. M10.3 composes the signals. M11.1 makes that composition consume persisted SQLite state.
 
 ## Validation baseline
 
 Latest completed-milestone gate:
 
 ```text
-M10.2: ruff: All checks passed!
-M10.2: pytest: 119 passed
+M10.3: ruff: All checks passed!
+M10.3: pytest: 127 passed
 ```
 
-M10.3 has not yet been locally validated in this ledger; its Ruff/pytest result should be recorded after the user runs the gate on the new branch.
+M11.1 has not yet been locally validated in this ledger; its Ruff/pytest result should be recorded after the user runs the gate on the new branch.
 
 ## Documentation rule
 
