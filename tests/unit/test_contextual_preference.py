@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-
 import pytest
 
 from soundmind.preferences.contextual import ContextualPreferenceScorer
