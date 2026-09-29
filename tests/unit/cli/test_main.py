@@ -446,3 +446,33 @@ def test_search_semantic_dispatches_to_catalog_service(monkeypatch, capsys) -> N
     assert capsys.readouterr().out == (
         "1. ambient-a\t0.912345\tCalm Hero — Composer A — Night BGM\tsemantic\n"
     )
+
+
+def test_search_parser_supports_persisted_semantic_mode() -> None:
+    args = build_parser().parse_args(
+        [
+            "search",
+            "cinematic hero",
+            "--semantic-indexed",
+            "--semantic-model",
+            "model-v1",
+            "--semantic-index",
+            "text-index",
+        ]
+    )
+
+    assert args.semantic is False
+    assert args.semantic_indexed is True
+    assert args.semantic_model == "model-v1"
+    assert args.semantic_index == Path("text-index")
+
+
+def test_search_semantic_modes_are_mutually_exclusive() -> None:
+    parser = build_parser()
+
+    try:
+        parser.parse_args(["search", "hero", "--semantic", "--semantic-indexed"])
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("expected argparse failure")
