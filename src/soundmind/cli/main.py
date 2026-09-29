@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from soundmind.catalog_recommendation import CatalogContextRecommendationService
+from soundmind.catalog_search import CatalogTextSearchService
 from soundmind.config import AnalysisConfig
 from soundmind.context_aware_flow import ContextAwareMusicFlow
 from soundmind.embeddings.effnet import fetch_effnet_model
@@ -71,6 +72,11 @@ def build_parser():
     q.add_argument("--index", type=Path, default=Path("data/index/effnet_vectors"))
     q.add_argument("--limit", type=int, default=10)
 
+    search = s.add_parser("search")
+    search.add_argument("query")
+    search.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+    search.add_argument("--limit", type=int, default=10)
+
     rec = s.add_parser("recommend")
     rec.add_argument("text")
     rec.add_argument("--context", required=True)
@@ -102,6 +108,17 @@ def build_parser():
     )
 
     return p
+
+
+def _print_search(results) -> None:
+    for index, result in enumerate(results, start=1):
+        details = " — ".join(
+            value for value in (result.title, result.artist, result.album) if value
+        )
+        matched = ", ".join(result.matched_fields)
+        suffix = f"\t{details}" if details else ""
+        field_suffix = f"\tmatched={matched}" if matched else ""
+        print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}{field_suffix}")
 
 
 def _print_recommendation(result, *, explain=False) -> None:
@@ -176,6 +193,16 @@ def main(argv=None):
             for x in svc.similar(a.track_id, limit=a.limit):
                 print(f"{x.track_id}\t{x.score:.6f}")
             return 0
+
+    if a.command == "search":
+        sf = create_session_factory(a.db)
+        with sf() as session:
+            results = CatalogTextSearchService(session).search(
+                a.query,
+                limit=a.limit,
+            )
+        _print_search(results)
+        return 0
 
     if a.command == "recommend":
         sf = create_session_factory(a.db)
