@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M10.2 — Contextual Novelty at the Ranking Boundary.
+M10.3 — Context-Aware End-to-End Recommendation.
 
 The current pipeline now supports:
 
@@ -15,12 +15,13 @@ The current pipeline now supports:
 - learned representation: optional Discogs-EffNet embeddings
 - retrieval: intent matching and learned audio similarity
 - preference: decayed global and contextual listening history
-- personalization: contextual novelty/familiarity evidence from listening exposure
-- ranking: existing M1 fusion with preference and contextual novelty signals
+- personalization: contextual novelty/familiarity from listening exposure
+- ranking: existing M1 fusion with contextual preference and novelty signals
+- end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - explanations: per-signal ranking contributions
 
-M10.2 connects contextual novelty to the existing M1 `novelty_score`. It does not modify M1 fusion weights or the `CandidateSignals` schema.
+M10.3 composes the existing contracts without changing M1 fusion weights or the CandidateSignals schema. Learned retrieval remains optional and seed-based.
 
 ## Architecture
 
@@ -42,7 +43,7 @@ Personalization
     ↓
 Personal ranking / M1 fusion
     ↓
-Playlist sequencing
+Playlist sequencing / M2
     ↓
 Music experience
 ```
@@ -75,6 +76,7 @@ Validation uses Ruff and pytest.
 - M9: contextual taste and contextual ranking
 - M10.1: contextual novelty/familiarity evidence
 - M10.2: contextual novelty at the M1 ranking boundary
+- M10.3: context-aware end-to-end recommendation
 - later: richer contextual personalization, contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
