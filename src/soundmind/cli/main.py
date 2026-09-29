@@ -8,6 +8,8 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
+from soundmind.context_aware_flow import ContextAwareMusicFlow
 from soundmind.sequence import SequenceMode
 from soundmind.storage.database import create_session_factory
 
@@ -82,6 +84,17 @@ def build_parser():
         default=SequenceMode.SMOOTH.value,
     )
     rec.add_argument("--now", type=_parse_now)
+    rec.add_argument("--seed-track-id")
+    rec.add_argument(
+        "--model",
+        type=Path,
+        default=Path("data/models/discogs-effnet-bsdynamic-1.onnx"),
+    )
+    rec.add_argument(
+        "--index",
+        type=Path,
+        default=Path("data/index/effnet_vectors"),
+    )
 
     return p
 
@@ -94,6 +107,21 @@ def _print_recommendation(result) -> None:
     print("Playlist:")
     for index, item in enumerate(result.playlist, start=1):
         print(f"{index}. {item.track_id}")
+
+
+def _recommend_service(a, session):
+    if a.seed_track_id is None:
+        return CatalogContextRecommendationService(session)
+
+    learned_service = LearnedEmbeddingService(
+        session,
+        model_path=a.model,
+        index_path=a.index,
+    )
+    flow = ContextAwareMusicFlow(
+        learned=LearnedRetrievalEngine(learned_service),
+    )
+    return CatalogContextRecommendationService(session, flow=flow)
 
 
 def main(argv=None):
@@ -144,13 +172,13 @@ def main(argv=None):
             limit=a.limit,
         )
         with sf() as session:
-            result = CatalogContextRecommendationService(session).recommend(
+            result = _recommend_service(a, session).recommend(
                 request,
                 context=a.context,
                 now=now,
                 event_limit=a.event_limit,
                 catalog_limit=a.catalog_limit,
-                seed_track_id=None,
+                seed_track_id=a.seed_track_id,
             )
         _print_recommendation(result)
         return 0
