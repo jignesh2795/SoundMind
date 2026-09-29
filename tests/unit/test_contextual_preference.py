@@ -81,7 +81,7 @@ def test_context_decay_matches_existing_half_life() -> None:
         now=NOW,
     )
 
-    assert result["a"] == pytest.approx(0.244919)
+    assert result["a"] == pytest.approx(0.2449186624)
 
 
 def test_empty_or_unknown_context_has_no_evidence() -> None:
@@ -112,5 +112,5 @@ def test_context_requires_timezone_aware_reference_time() -> None:
         scorer.score_events(
             [event("a", ListeningEventType.LIKE, context="coding")],
             context="coding",
-            now=datetime(2026, 9, 29, 12, 0),
+            now=datetime(2026, 9, 29, 12, 0),  # noqa: DTZ001
         )
