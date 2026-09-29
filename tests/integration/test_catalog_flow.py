@@ -7,7 +7,7 @@ from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
 
 
-def track(track_id: str, *, genre: str, energy: float, tempo: float) -> TrackRow:
+def track(\n    track_id: str,\n    *,\n    genre: str,\n    energy: float,\n    tempo: float,\n    sample_rate: int | None = None,\n    spectral_centroid: float | None = None,\n    mfcc_json: str | None = None,\n    chroma_json: str | None = None,\n) -> TrackRow:
     now = datetime.now(UTC)
     return TrackRow(
         track_id=track_id,
@@ -77,3 +77,30 @@ def test_catalog_adapter_preserves_missing_intent_evidence_as_unknown(tmp_path) 
     assert candidate.vocal_preference == "any"
     assert candidate.novelty_score == 0.0
     assert candidate.energy == 0.5
+
+
+def test_catalog_maps_stored_audio_evidence_to_music_dna(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+    with session_factory() as session:
+        session.add(
+            track(
+                "a",
+                genre="cinematic",
+                energy=0.5,
+                tempo=100.0,
+                sample_rate=16000,
+                spectral_centroid=4000.0,
+                mfcc_json="[1.0, 2.0]",
+                chroma_json="[0.1, 0.2]",
+            )
+        )
+        session.commit()
+
+        item = CatalogCandidateRepository(session).candidates()[0]
+
+    assert item.music_dna.tempo_bpm == 100.0
+    assert item.music_dna.energy == 0.5
+    assert item.music_dna.brightness == 0.5
+    assert item.music_dna.mfcc == (1.0, 2.0)
+    assert item.music_dna.chroma == (0.1, 0.2)
+    assert item.candidate.brightness == 0.5
