@@ -112,9 +112,7 @@ class ContextAwareMusicFlow:
                 energy=by_track_id[ranked_candidate.track_id].intent_candidate.energy,
                 tempo_bpm=by_track_id[ranked_candidate.track_id].tempo_bpm,
                 brightness=by_track_id[ranked_candidate.track_id].brightness,
-                novelty_score=by_track_id[
-                    ranked_candidate.track_id
-                ].intent_candidate.novelty_score,
+                novelty_score=ranked_candidate.signals.novelty_score,
             )
             for ranked_candidate in ranked
         )
