@@ -6,7 +6,7 @@ from soundmind.catalog_recommendation import CatalogContextRecommendationService
 from soundmind.flow import EndToEndRequest
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.preferences.repository import ListeningEventRepository
-from soundmind.recommendation.fusion import CandidateSignals, FusionWeights
+from soundmind.recommendation.fusion import FusionWeights
 from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
 from soundmind.sequence import SequenceMode
