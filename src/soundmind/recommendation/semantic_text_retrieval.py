@@ -92,6 +92,9 @@ class SemanticTextRetrievalEngine:
             raise ValueError("limit must be a positive integer")
 
         active_rows = [row for row in rows if row.status == "active"]
+        if not active_rows:
+            return []
+
         seen: set[str] = set()
         for row in active_rows:
             if row.track_id in seen:
