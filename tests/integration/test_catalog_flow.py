@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from soundmind.catalog import CatalogCandidateRepository
 from soundmind.flow import EndToEndMusicFlow, EndToEndRequest
@@ -8,7 +8,7 @@ from soundmind.storage.models import TrackRow
 
 
 def track(track_id: str, *, genre: str, energy: float, tempo: float) -> TrackRow:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return TrackRow(
         track_id=track_id,
         content_hash=track_id * 64,
