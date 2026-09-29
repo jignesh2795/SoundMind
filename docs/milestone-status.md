@@ -22,42 +22,43 @@ This document is the project-level implementation ledger. It records completed m
 | M9.1 | Contextual preference scorer using existing listening events | Complete |
 | M9.2 | Contextual preference integrated at the existing M1 ranking boundary | Complete |
 
-## Current M9 state
+## Current milestone
 
-Branch: `feat/m9-contextual-taste`
+### M10.1 — Contextual Novelty and Familiarity Evidence
 
-Current branch HEAD: `f666767` plus subsequent M9 ranking/test commits.
+Branch: `feat/m10-contextual-novelty`
 
-M9 preserves the existing preference evidence model:
+Base: M9 merge `b8354b2`
 
-- event types: PLAY, COMPLETE, SKIP, LIKE, DISLIKE, REPLAY
-- existing event weights
-- 30-day half-life decay
-- bounded preference scoring
-- caller-supplied timezone-aware reference time
+M10.1 adds a deterministic, context-specific novelty score derived from existing listening exposure.
 
-Contextual behavior:
+Exposure model:
 
-- contexts are normalized strings;
-- the initial vocabulary includes coding, work, relax, night, travel, gym, cinematic, and discovery;
-- unknown context labels remain supported;
-- only events carrying the requested context contribute to contextual preference;
-- uncontexted events remain part of global preference;
-- omitting context from ranking preserves the existing global preference path;
-- supplying context replaces the global preference evidence used for that ranking call with the matching contextual evidence.
+- every existing listening event counts as exposure;
+- exposure is filtered by normalized context;
+- exposure uses the same 30-day recency half-life concept;
+- exposure evidence is separate from the existing preference event weights;
+- novelty is `1 / (1 + exposure)`;
+- familiarity is the complement, `1 - novelty`.
 
-M9 does not change the M1 fusion weights, the event model, the decay model, audio analysis, learned embedding model, or database schema.
+This makes repeated or recent exposure reduce novelty while older exposure contributes less familiarity.
 
-## Validation baseline
+M10.1 deliberately does not change:
 
-Latest user-reported local gate on the M9 branch:
+- the listening-event schema;
+- event types;
+- preference weights;
+- preference scoring;
+- M1 fusion weights;
+- `CandidateSignals`;
+- ranking behavior;
+- audio analysis;
+- learned embedding models;
+- database schema.
 
-```text
-ruff: All checks passed!
-pytest: 101 passed
-```
+### M10 next slice
 
-The baseline includes the original 99 M9-first-slice tests plus 2 contextual-ranking tests.
+The next M10 slice will connect contextual novelty/familiarity to the existing ranking boundary using the current M1 novelty signal, while preserving the existing global path when no context is requested.
 
 ## Architecture progression
 
@@ -70,17 +71,38 @@ M7 Music DNA ───────────────┐
       ↓                     │
 M8 Learned Audio Retrieval  │
       ↓                     │
-M1 Personal Ranking ← M9 Contextual Preference
+Personalization             │
+  ├─ global preference      │
+  ├─ contextual preference  │
+  └─ contextual novelty    │
+      ↓                     │
+M1 Personal Ranking ←───────┘
       ↓
 M2 Sequence Engine
       ↓
 Ordered playlist
 ```
 
-M6 provides the catalog adapter that supplies stored SQLite evidence to the pipeline. M8 adds learned track-to-track audio similarity without changing the M1 fusion contract. M9 adds context-specific listening preference at the same ranking boundary.
+M6 provides the catalog adapter that supplies stored SQLite evidence to the pipeline. M8 adds learned track-to-track audio similarity without changing the M1 fusion contract. M9 adds context-specific listening preference at the same ranking boundary. M10.1 now adds context-specific exposure/novelty evidence without changing that boundary.
 
-## Next boundary
+## Validation baseline
 
-The next M9 work should focus on richer contextual personalization without bypassing the established contracts. Potential later layers include contextual novelty/familiarity, context-aware explanations, and stronger integration of context with learned retrieval.
+Latest completed-milestone gate:
 
-Out of scope for the current M9 slices: LLM inference, automatic context detection, cloud services, CLAP, web/streaming search, schema migration, and generative music.
+```text
+M9: ruff: All checks passed!
+M9: pytest: 101 passed
+```
+
+M10.1 has not yet been locally validated in this ledger; its Ruff/pytest result should be recorded after the user runs the gate on the new branch.
+
+## Documentation rule
+
+Every milestone slice should update:
+
+1. its contract document;
+2. the project-level milestone ledger;
+3. the README current milestone/roadmap when the project boundary changes;
+4. validation status only after the local gate is actually run.
+
+This keeps GitHub documentation aligned with the implementation state rather than relying on conversation history.
