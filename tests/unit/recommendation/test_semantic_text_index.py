@@ -124,4 +124,4 @@ def test_rebuild_is_deterministic_for_same_catalog(tmp_path: Path) -> None:
     second = index.manifest_path.read_text(encoding="utf-8")
 
     assert first == second
-    assert catalog_text(rows[1]) in catalog_text(rows[1])
+    assert "catalog_fingerprint" in first
