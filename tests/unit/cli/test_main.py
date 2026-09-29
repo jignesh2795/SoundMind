@@ -151,6 +151,7 @@ def test_recommend_seed_builds_learned_flow(monkeypatch, capsys) -> None:
 
     class FakeFlow:
         def __init__(self, *, learned) -> None:
+            self.learned = learned
             captured["flow_learned"] = learned
 
     class FakeRecommendationService:
