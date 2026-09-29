@@ -130,8 +130,8 @@ def test_recommend_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
 
     output = capsys.readouterr().out
     assert "Intent: cinematic BGM" in output
-    assert "1. track-a\\t0.750000" in output
-    assert "2. track-b\\t0.500000" in output
+    assert "1. track-a\t0.750000" in output
+    assert "2. track-b\t0.500000" in output
     assert "Playlist:" in output
     assert "1. track-a" in output
     assert "2. track-b" in output
