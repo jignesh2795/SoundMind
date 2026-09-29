@@ -53,6 +53,13 @@ class EndToEndMusicFlow:
         self._retrieval = retrieval or IntentRetrievalEngine()
 
     def run(self, request: EndToEndRequest) -> EndToEndResult:
+        seen: set[str] = set()
+        for candidate in request.candidates:
+            track_id = candidate.intent_candidate.track_id
+            if track_id in seen:
+                raise ValueError(f"duplicate track_id: {track_id!r}")
+            seen.add(track_id)
+
         intent = parse_intent(request.text)
         ranked = tuple(
             self._retrieval.rank(
