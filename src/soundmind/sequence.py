@@ -54,7 +54,7 @@ def journey_target_energy(position: int, total: int) -> float:
     if total <= 1:
         return 0.5
     fraction = position / (total - 1)
-    return 0.3 + 0.6 * fraction
+    return round(0.3 + 0.6 * fraction, 10)
 
 
 def transition_distance(a: SequenceCandidate, b: SequenceCandidate) -> float:
