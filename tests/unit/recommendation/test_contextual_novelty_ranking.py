@@ -6,7 +6,6 @@ from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.recommendation.contextual_novelty import ContextualNoveltyRecommender
 from soundmind.recommendation.fusion import CandidateSignals, FusionWeights
 
-
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
 
 
