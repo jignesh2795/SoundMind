@@ -41,38 +41,37 @@ def _field_score(query_tokens: set[str], row: TrackRow) -> tuple[float, tuple[st
         return 0.0, ()
 
     matched_by_field: list[tuple[str, set[str]]] = []
+    field_tokens = {
+        field_name: _tokens(getattr(row, field_name))
+        for field_name, _weight in _FIELD_WEIGHTS
+    }
     for field_name, _weight in _FIELD_WEIGHTS:
-        values = _tokens(getattr(row, field_name))
-        matched = query_tokens & values
+        matched = query_tokens & field_tokens[field_name]
         if matched:
             matched_by_field.append((field_name, matched))
 
     covered: set[str] = set()
-    strongest_fields: list[str] = []
+    matched_fields: list[str] = []
     for field_name, matched in matched_by_field:
         new_tokens = matched - covered
         if new_tokens:
-            strongest_fields.append(field_name)
+            matched_fields.append(field_name)
             covered.update(new_tokens)
 
     if not covered:
         return 0.0, ()
 
-    token_weight = 0.0
     matched_weight = 0.0
     for token in query_tokens:
         weights = [
             weight
             for field_name, weight in _FIELD_WEIGHTS
-            if token in _tokens(getattr(row, field_name))
+            if token in field_tokens[field_name]
         ]
-        best_weight = max(weights, default=0.0)
-        token_weight += best_weight
-        if token in covered:
-            matched_weight += best_weight
+        matched_weight += max(weights, default=0.0)
 
-    score = matched_weight / token_weight if token_weight else 0.0
-    return score, tuple(strongest_fields)
+    score = matched_weight / len(query_tokens)
+    return score, tuple(matched_fields)
 
 
 class CatalogTextRetrievalEngine:
