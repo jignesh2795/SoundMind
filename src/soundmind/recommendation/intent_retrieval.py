@@ -9,7 +9,6 @@ from soundmind.recommendation.fusion import (
     rank_candidates,
 )
 
-
 _MATCH_FIELDS = (
     "genres",
     "moods",
