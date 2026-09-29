@@ -1,5 +1,6 @@
 from pathlib import Path
 import argparse
+from soundmind.config import AnalysisConfig
 
 from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
@@ -15,6 +16,9 @@ def build_parser():
     scan.add_argument("music_folder", type=Path)
     scan.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
     scan.add_argument("--no-content-hash", action="store_true")
+    scan.add_argument("--no-analysis", action="store_true")
+    scan.add_argument("--analysis-seconds", type=float, default=180.0)
+    scan.add_argument("--analysis-offset", type=float, default=0.0)
 
     m = s.add_parser("model")
     ms = m.add_subparsers(dest="model_command", required=True)
@@ -47,6 +51,11 @@ def main():
                 session,
                 a.music_folder,
                 compute_content_hash=not a.no_content_hash,
+                analyze=not a.no_analysis,
+                analysis_config=AnalysisConfig(
+                    max_analysis_seconds=a.analysis_seconds,
+                    analysis_offset_seconds=a.analysis_offset,
+                ),
             )
         print(f"Scanned changed tracks: {count}")
         return 0
