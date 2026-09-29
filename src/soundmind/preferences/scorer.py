@@ -19,7 +19,7 @@ class PreferenceEvidence:
 
 class PreferenceScorer:
     """Convert listening events into a bounded track-level preference signal."""
-    WEIGHTS = {
+    WEIGHTS: ClassVar[dict[ListeningEventType, tuple[float, float, float, float]]] = {
         ListeningEventType.PLAY: (0.15, 0.0, 0.0, 0.0),
         ListeningEventType.COMPLETE: (0.35, 0.0, 0.0, 0.0),
         ListeningEventType.LIKE: (1.0, 0.0, 0.0, 0.0),
