@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
+
 from soundmind.intent import MusicIntent
 from soundmind.recommendation.fusion import (
     CandidateSignals,
