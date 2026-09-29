@@ -90,11 +90,11 @@ M6 provides the catalog adapter that supplies stored SQLite evidence to the pipe
 Latest completed-milestone gate:
 
 ```text
-M9: ruff: All checks passed!
-M9: pytest: 101 passed
+M10.1: ruff: All checks passed!
+M10.1: pytest: 110 passed
 ```
 
-M10.1 has not yet been locally validated in this ledger; its Ruff/pytest result should be recorded after the user runs the gate on the new branch.
+M10.1 has been locally validated on branch `feat/m10-contextual-novelty` at `3b1404a`.
 
 ## Documentation rule
 
