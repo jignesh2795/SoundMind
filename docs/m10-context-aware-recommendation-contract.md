@@ -100,4 +100,4 @@ M10.3 is complete when:
 4. context-specific evidence remains isolated;
 5. existing signal ownership and fusion weights remain unchanged;
 6. seed exclusion and request immutability match M8/M5 behavior;
-7. unit tests cover combined ranking, context isolation, seed handling, deterministic output, and validation.
+7. unit tests cover combined ranking, context isolation, seed handling, deterministic output, discovery sequencing, and validation.
