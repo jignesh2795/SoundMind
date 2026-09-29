@@ -1,5 +1,6 @@
 """Read-only catalog adapter for the M5 end-to-end music flow."""
 
+import json
 from collections.abc import Iterable
 from dataclasses import dataclass
 
@@ -38,6 +39,21 @@ def _genre_values(row: TrackRow) -> tuple[str, ...]:
     )
 
 
+def _vector(value: str | None) -> tuple[float, ...]:
+    if not value:
+        return ()
+    try:
+        parsed = json.loads(value)
+    except (TypeError, ValueError):
+        return ()
+    if not isinstance(parsed, list):
+        return ()
+    try:
+        return tuple(float(item) for item in parsed)
+    except (TypeError, ValueError):
+        return ()
+
+
 def music_dna_from_row(row: TrackRow) -> MusicDNA:
     """Build measured Music DNA without inferring unavailable semantics."""
     return MusicDNA(
@@ -47,8 +63,8 @@ def music_dna_from_row(row: TrackRow) -> MusicDNA:
         spectral_bandwidth=row.spectral_bandwidth,
         spectral_rolloff=row.spectral_rolloff,
         zero_crossing_rate=row.zero_crossing_rate,
-        mfcc=tuple(),
-        chroma=tuple(),
+        mfcc=_vector(row.mfcc_json),
+        chroma=_vector(row.chroma_json),
     )
 
 
