@@ -1,8 +1,8 @@
 """Semantic text retrieval over catalog metadata using local embeddings."""
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
-import math
 from typing import Protocol
 
 from soundmind.storage.models import TrackRow
