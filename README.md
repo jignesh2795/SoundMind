@@ -6,35 +6,41 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M11.2 — CLI Recommendation Surface.
+M11.3 — Seeded Learned Recommendation.
 
 The current pipeline now supports:
 
 - evidence: metadata and measured audio features
 - Music DNA: structured acoustic evidence derived from stored analysis
 - learned representation: optional Discogs-EffNet embeddings
-- retrieval: intent matching and learned audio similarity
+- retrieval: intent matching and optional learned audio similarity from a supplied seed
 - preference: decayed global and contextual listening history
 - personalization: contextual novelty/familiarity from listening exposure
-- ranking: existing M1 fusion with contextual preference and novelty signals
+- ranking: existing M1 fusion with contextual preference, novelty, and learned signals
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
 - CLI recommendations through the existing soundmind command
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - explanations: per-signal ranking contributions
 
-M11.1 established the SQLite application boundary. M11.2 exposes that boundary through a thin deterministic CLI surface without changing recommendation logic or persistence ownership.
+M11.1 established the SQLite application boundary. M11.2 exposed it through the CLI. M11.3 adds an explicit seed path for the existing M8 learned retrieval without changing ranking ownership or downloading models implicitly.
 
-Example:
+Examples:
 
     soundmind recommend "cinematic BGM for coding" --context coding --limit 10
 
-Use --now with a timezone-aware ISO-8601 timestamp when a reproducible reference time is required.
+    soundmind recommend "similar to this" --context coding --seed-track-id track-123 \
+      --model data/models/discogs-effnet-bsdynamic-1.onnx \
+      --index data/index/effnet_vectors
+
+Use --now with a timezone-aware ISO-8601 timestamp when a reproducible reference time is required. The learned model must already exist; use soundmind model fetch-effnet explicitly when acquisition is desired.
 
 ## Architecture
 
 ```
 CLI
+ ↓
+optional seed → M8 learned retrieval
  ↓
 M11.1 catalog-backed application boundary
  ↓
@@ -76,6 +82,7 @@ Validation uses Ruff and pytest.
 - M10.3: context-aware end-to-end recommendation
 - M11.1: catalog-backed contextual recommendation
 - M11.2: CLI recommendation surface
+- M11.3: seeded learned recommendation
 - later: richer contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
