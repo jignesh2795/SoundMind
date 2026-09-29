@@ -7,7 +7,17 @@ from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
 
 
-def track(\n    track_id: str,\n    *,\n    genre: str,\n    energy: float,\n    tempo: float,\n    sample_rate: int | None = None,\n    spectral_centroid: float | None = None,\n    mfcc_json: str | None = None,\n    chroma_json: str | None = None,\n) -> TrackRow:
+def track(
+    track_id: str,
+    *,
+    genre: str,
+    energy: float,
+    tempo: float,
+    sample_rate: int | None = None,
+    spectral_centroid: float | None = None,
+    mfcc_json: str | None = None,
+    chroma_json: str | None = None,
+) -> TrackRow:
     now = datetime.now(UTC)
     return TrackRow(
         track_id=track_id,
@@ -24,6 +34,10 @@ def track(\n    track_id: str,\n    *,\n    genre: str,\n    energy: float,\n   
         genre=genre,
         rms_energy=energy,
         tempo_bpm=tempo,
+        sample_rate=sample_rate,
+        spectral_centroid=spectral_centroid,
+        mfcc_json=mfcc_json,
+        chroma_json=chroma_json,
     )
 
 
