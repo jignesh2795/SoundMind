@@ -1,5 +1,6 @@
 from soundmind.recommendation.fusion import CandidateSignals, FusionWeights, explain_candidate
 
+
 def test_explanation_matches_fused_score():
     candidate = CandidateSignals("a", metadata_score=.2, learned_score=.8, preference_score=.5)
     explanation = explain_candidate(candidate, FusionWeights())

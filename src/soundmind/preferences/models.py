@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+
 class ListeningEventType(str, Enum):
     PLAY="play"; COMPLETE="complete"; SKIP="skip"; LIKE="like"; DISLIKE="dislike"; REPLAY="replay"
 

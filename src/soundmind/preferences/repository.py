@@ -1,7 +1,10 @@
-from datetime import datetime,timezone
+from datetime import UTC, datetime
+
 from sqlalchemy import select
-from soundmind.preferences.models import ListeningEvent,ListeningEventType
+
+from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.storage.preference_models import ListeningEventRow
+
 
 class ListeningEventRepository:
     def __init__(self,session): self.session=session
@@ -13,4 +16,4 @@ class ListeningEventRepository:
         rows=self.session.scalars(select(ListeningEventRow).order_by(ListeningEventRow.occurred_at.desc()).limit(limit)).all()
         return [ListeningEvent(r.track_id,ListeningEventType(r.event_type),r.occurred_at,r.context,r.seconds_played) for r in rows]
     def add_now(self,track_id,event_type,*,context=None,seconds_played=None):
-        return self.add(ListeningEvent(track_id,event_type,datetime.now(timezone.utc),context,seconds_played))
+        return self.add(ListeningEvent(track_id,event_type,datetime.now(UTC),context,seconds_played))

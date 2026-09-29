@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from soundmind.recommendation.fusion import FusionWeights, rank_candidates
+
 
 @dataclass(frozen=True)
 class RetrievalQuery:

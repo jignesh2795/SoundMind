@@ -1,7 +1,9 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
-import os
+
 import numpy as np
+
 
 @dataclass(frozen=True)
 class SimilarityResult:

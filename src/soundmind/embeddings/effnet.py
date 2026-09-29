@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.request import urlretrieve
+
 import numpy as np
 
 DEFAULT_MODEL_URL = "https://essentia.upf.edu/models/feature-extractors/discogs-effnet/discogs-effnet-bsdynamic-1.onnx"

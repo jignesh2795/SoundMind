@@ -1,8 +1,11 @@
+import math
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
-import math
+from typing import ClassVar
+
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
+
 
 @dataclass(frozen=True)
 class PreferenceEvidence:
@@ -18,7 +21,7 @@ class PreferenceEvidence:
 
 class PreferenceScorer:
     """Convert listening events into a bounded track-level preference signal."""
-    WEIGHTS = {
+    WEIGHTS: ClassVar[dict[ListeningEventType, tuple[float, float, float, float]]] = {
         ListeningEventType.PLAY: (0.15, 0.0, 0.0, 0.0),
         ListeningEventType.COMPLETE: (0.35, 0.0, 0.0, 0.0),
         ListeningEventType.LIKE: (1.0, 0.0, 0.0, 0.0),
