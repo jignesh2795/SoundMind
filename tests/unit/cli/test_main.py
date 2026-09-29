@@ -363,3 +363,86 @@ def test_search_parser_defaults() -> None:
     assert args.command == "search"
     assert args.query == "hero"
     assert args.limit == 10
+
+
+
+def test_search_parser_captures_semantic_options() -> None:
+    args = build_parser().parse_args(
+        [
+            "search",
+            "calm cinematic background music",
+            "--semantic",
+            "--semantic-model",
+            "custom-model",
+            "--limit",
+            "6",
+        ]
+    )
+
+    assert args.command == "search"
+    assert args.query == "calm cinematic background music"
+    assert args.semantic is True
+    assert args.semantic_model == "custom-model"
+    assert args.limit == 6
+
+
+def test_search_semantic_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(self, model_name) -> None:
+            captured["model_name"] = model_name
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            captured["session"] = session
+
+        def semantic_search(self, query, *, provider, limit):
+            captured["query"] = query
+            captured["provider"] = provider
+            captured["limit"] = limit
+            return (
+                SimpleNamespace(
+                    track_id="ambient-a",
+                    score=0.912345,
+                    title="Calm Hero",
+                    artist="Composer A",
+                    album="Night BGM",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "search",
+                "calm cinematic background music",
+                "--semantic",
+                "--semantic-model",
+                "custom-model",
+                "--limit",
+                "3",
+            ]
+        )
+        == 0
+    )
+    assert captured["query"] == "calm cinematic background music"
+    assert captured["model_name"] == "custom-model"
+    assert captured["limit"] == 3
+    assert isinstance(captured["provider"], FakeProvider)
+    assert capsys.readouterr().out == (
+        "1. ambient-a\t0.912345\tCalm Hero — Composer A — Night BGM\tsemantic\n"
+    )

@@ -6,14 +6,14 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M12.1 — Deterministic Text Retrieval Foundation.
+M12.2 — Semantic Text Retrieval.
 
 The current pipeline now supports:
 
 - evidence: metadata and measured audio features
 - Music DNA: structured acoustic evidence derived from stored analysis
 - learned representation: optional Discogs-EffNet embeddings
-- retrieval: intent matching, deterministic catalog text search, and optional learned audio similarity from a supplied seed
+- retrieval: intent matching, deterministic catalog text search, optional semantic text retrieval, and optional learned audio similarity from a supplied seed
 - preference: decayed global and contextual listening history
 - personalization: contextual novelty/familiarity from listening exposure
 - ranking: existing M1 fusion with contextual preference, novelty, and learned signals
@@ -24,13 +24,14 @@ The current pipeline now supports:
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 
-M11 established the application-facing recommendation and CLI boundaries. M12.1 adds a separate model-free lexical retrieval layer over existing catalog metadata. It is a foundation for later semantic retrieval, not a replacement for the current recommendation ranking.
+M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval through an optional text-embedding provider. Neither path replaces the current recommendation ranking.
 
 Example:
 
     soundmind search "hero entry" --limit 10
+    soundmind search "calm cinematic background music" --semantic --limit 10
 
-Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Results are deterministic and stable for the same catalog state and query.
+Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Lexical results are deterministic and stable for the same catalog state and query. Semantic results are stable for the same model, catalog state, and query.
 
 ## Architecture
 

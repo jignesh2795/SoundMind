@@ -15,6 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 ml = ["onnxruntime>=1.18,<2"]
+text-ml = ["fastembed>=0.8,<0.9"]
 dev = ["pytest>=8,<9", "ruff>=0.13,<1"]
 
 [project.scripts]

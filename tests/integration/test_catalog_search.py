@@ -62,3 +62,37 @@ def test_sqlite_catalog_search_does_not_mutate_catalog(tmp_path) -> None:
     assert [(item.track_id, item.title) for item in stored] == [
         ("hero", "Hero Entry")
     ]
+
+
+class FakeProvider:
+    def embed_query(self, text):
+        return (1.0, 0.0)
+
+    def embed_documents(self, texts):
+        assert texts[0].startswith("title: Hero")
+        return ((1.0, 0.0), (0.0, 1.0))
+
+
+def test_sqlite_catalog_semantic_search_uses_active_rows(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add_all(
+            [
+                row("hero", title="Hero Entry", artist="Composer A"),
+                row("other", title="Other Theme", artist="Composer B"),
+                row("hidden", title="Hero", artist="Composer C", status="missing"),
+            ]
+        )
+        session.commit()
+
+        results = CatalogTextSearchService(session).semantic_search(
+            "cinematic hero",
+            provider=FakeProvider(),
+            limit=10,
+        )
+
+    assert [result.track_id for result in results] == ["hero", "other"]
+    assert results[0].score == 1.0
+    assert results[0].title == "Hero Entry"
+    assert results[1].score == 0.0

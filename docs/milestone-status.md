@@ -28,17 +28,17 @@ This document is the project-level implementation ledger. It records completed m
 | M11.2 | CLI recommendation surface over M11.1 | Complete |
 | M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
 | M11.4 | CLI recommendation explanations | Complete |
-| M12.1 | Deterministic text retrieval foundation over catalog metadata | In progress |
+| M12.1 | Deterministic text retrieval foundation over catalog metadata | Complete |
 
 ## Current milestone
 
-### M12.1 — Deterministic Text Retrieval Foundation
+### M12.2 — Semantic Text Retrieval
 
-Branch: `feat/m12-deterministic-text-retrieval`
+Branch: `feat/m12-semantic-text-retrieval`
 
-Base: M11.4 docs-close merge `9607845`
+Base: M12.1 merge `aa417c7`
 
-M12.1 adds a separate model-free catalog text-search layer that can later serve as the lexical half of a hybrid semantic retrieval system.
+M12.2 adds an explicit local semantic-text retrieval path behind a provider boundary. The default lexical search remains unchanged and model-free.
 
 Command:
 
@@ -57,6 +57,8 @@ Behavior:
 
 ## M12 layering
 
+Lexical path:
+
 ```
 CLI search
     ↓
@@ -69,7 +71,23 @@ CatalogTextRetrievalEngine
 TextSearchResult
 ```
 
-This is deliberately separate from:
+Semantic path:
+
+```
+CLI search --semantic
+    ↓
+CatalogTextSearchService
+    ↓
+active TrackRow metadata
+    ↓
+SemanticTextRetrievalEngine
+    ↓
+TextEmbeddingProvider
+    ↓
+SemanticTextSearchResult
+```
+
+Both are deliberately separate from:
 
 ```
 CLI recommend
@@ -81,9 +99,11 @@ M10.3 context-aware flow
 M1 ranking
 ```
 
-M12.1 is a retrieval foundation, not a new recommendation algorithm.
+M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides optional local semantic retrieval.
 
-## Scoring boundary
+## Scoring boundaries
+
+Lexical:
 
 ```
 query tokens
@@ -97,11 +117,21 @@ coverage-normalized score
 (-score, track_id)
 ```
 
-No persistence schema, model download, LLM, cloud service, or recommendation-weight change is introduced.
+Semantic:
+
+```
+query vector + catalog vectors
+    ↓
+cosine similarity
+    ↓
+(-score, track_id)
+```
+
+M12.2 does not persist semantic vectors, change recommendation weights, invoke an LLM, or require a cloud inference service.
 
 ## Future M12 slices
 
-The deterministic lexical layer is the baseline. Later slices may add semantic embeddings, phrase/synonym understanding, or hybrid lexical-plus-semantic retrieval behind this boundary while retaining a model-free fallback.
+M12.1 lexical retrieval and M12.2 semantic retrieval now share the catalog-search boundary. Later slices can add persisted semantic indexes, hybrid lexical-plus-semantic fusion, phrase/synonym expansion, or recommendation integration while retaining a model-free fallback.
 
 ## Architecture progression
 
@@ -137,7 +167,9 @@ M11.4: ruff: All checks passed!
 M11.4: pytest: 136 passed
 ```
 
-M12.1 validation is pending the local Ruff and pytest gate on `feat/m12-deterministic-text-retrieval`.
+M12.1 gate: Ruff clean, 147 tests passed.
+
+M12.2 validation is pending the local Ruff and pytest gate on `feat/m12-semantic-text-retrieval`.
 
 ## Documentation rule
 

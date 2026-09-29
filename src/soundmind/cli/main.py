@@ -11,6 +11,10 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
+from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_MODEL,
+    FastEmbedTextProvider,
+)
 from soundmind.sequence import SequenceMode
 from soundmind.storage.database import create_session_factory
 
@@ -76,6 +80,12 @@ def build_parser():
     search.add_argument("query")
     search.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
     search.add_argument("--limit", type=int, default=10)
+    search.add_argument(
+        "--semantic",
+        action="store_true",
+        help="use optional local text embeddings instead of lexical matching",
+    )
+    search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
 
     rec = s.add_parser("recommend")
     rec.add_argument("text")
@@ -119,6 +129,15 @@ def _print_search(results) -> None:
         suffix = f"\t{details}" if details else ""
         field_suffix = f"\tmatched={matched}" if matched else ""
         print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}{field_suffix}")
+
+
+def _print_semantic_search(results) -> None:
+    for index, result in enumerate(results, start=1):
+        details = " — ".join(
+            value for value in (result.title, result.artist, result.album) if value
+        )
+        suffix = f"\t{details}" if details else ""
+        print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}\tsemantic")
 
 
 def _print_recommendation(result, *, explain=False) -> None:
@@ -197,11 +216,21 @@ def main(argv=None):
     if a.command == "search":
         sf = create_session_factory(a.db)
         with sf() as session:
-            results = CatalogTextSearchService(session).search(
-                a.query,
-                limit=a.limit,
-            )
-        _print_search(results)
+            service = CatalogTextSearchService(session)
+            if a.semantic:
+                provider = FastEmbedTextProvider(a.semantic_model)
+                results = service.semantic_search(
+                    a.query,
+                    provider=provider,
+                    limit=a.limit,
+                )
+                _print_semantic_search(results)
+            else:
+                results = service.search(
+                    a.query,
+                    limit=a.limit,
+                )
+                _print_search(results)
         return 0
 
     if a.command == "recommend":
