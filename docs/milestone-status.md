@@ -26,15 +26,17 @@ This document is the project-level implementation ledger. It records completed m
 | M10.3 | Context-aware end-to-end recommendation composition | Complete |
 | M11.1 | Catalog-backed contextual recommendation from persisted SQLite state | Complete |
 | M11.2 | CLI recommendation surface over M11.1 | Complete |
-| M11.3 | Seeded learned recommendation through the existing M8 path | In progress |
+| M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
 
 ## Current milestone
 
 ### M11.3 — Seeded Learned Recommendation
 
-Branch: `feat/m11-seeded-learned-recommendation`
+Branch: `feat/m11-seeded-learned-recommendation` (merged)
 
 Base: M11.2 merge `2c56ffc`
+
+Merge: `ddff494`
 
 M11.3 exposes the existing M8 learned audio similarity path through the CLI recommendation command when a seed track is explicitly supplied.
 
@@ -130,11 +132,11 @@ Ordered playlist
 Latest completed-milestone gate:
 
 ```
-M11.2: ruff: All checks passed!
-M11.2: pytest: 133 passed
+M11.3: ruff: All checks passed!
+M11.3: pytest: 135 passed
 ```
 
-M11.3 validation is pending the local Ruff and pytest gate on `feat/m11-seeded-learned-recommendation`.
+M11.3 validation is complete: the user-reported local gate on `feat/m11-seeded-learned-recommendation` passed with Ruff clean and 135 tests.
 
 ## Documentation rule
 
