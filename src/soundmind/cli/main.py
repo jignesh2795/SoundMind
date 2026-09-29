@@ -95,15 +95,30 @@ def build_parser():
         type=Path,
         default=Path("data/index/effnet_vectors"),
     )
+    rec.add_argument(
+        "--explain",
+        action="store_true",
+        help="print per-signal ranking contributions",
+    )
 
     return p
 
 
-def _print_recommendation(result) -> None:
+def _print_recommendation(result, *, explain=False) -> None:
     print(f"Intent: {result.intent.raw_text}")
     print("Ranked:")
     for index, candidate in enumerate(result.ranked, start=1):
         print(f"{index}. {candidate.track_id}\t{candidate.score:.6f}")
+        if explain:
+            strongest = candidate.explanation.strongest_signal
+            print(f"   strongest: {strongest or 'none'}")
+            for contribution in candidate.explanation.contributions:
+                print(
+                    f"   {contribution.name}: "
+                    f"raw={contribution.raw_score:.6f} "
+                    f"weight={contribution.weight:.6f} "
+                    f"contribution={contribution.contribution:.6f}"
+                )
     print("Playlist:")
     for index, item in enumerate(result.playlist, start=1):
         print(f"{index}. {item.track_id}")
@@ -180,7 +195,7 @@ def main(argv=None):
                 catalog_limit=a.catalog_limit,
                 seed_track_id=a.seed_track_id,
             )
-        _print_recommendation(result)
+        _print_recommendation(result, explain=a.explain)
         return 0
 
     return 1

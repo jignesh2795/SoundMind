@@ -245,3 +245,70 @@ def test_recommend_without_seed_does_not_construct_learned_service(monkeypatch) 
     )
 
     assert main(["recommend", "cinematic BGM", "--context", "coding"]) == 0
+
+
+def test_recommend_explain_prints_signal_contributions(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(
+                    SimpleNamespace(
+                        track_id="track-a",
+                        score=0.75,
+                        explanation=SimpleNamespace(
+                            strongest_signal="preference",
+                            contributions=(
+                                SimpleNamespace(
+                                    name="metadata",
+                                    raw_score=0.2,
+                                    weight=0.18,
+                                    contribution=0.036,
+                                ),
+                                SimpleNamespace(
+                                    name="preference",
+                                    raw_score=0.8,
+                                    weight=0.18,
+                                    contribution=0.144,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                playlist=(SimpleNamespace(track_id="track-a"),),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "recommend",
+                "cinematic BGM",
+                "--context",
+                "coding",
+                "--explain",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr().out
+    assert "1. track-a\t0.750000" in output
+    assert "strongest: preference" in output
+    assert "metadata: raw=0.200000 weight=0.180000 contribution=0.036000" in output
+    assert "preference: raw=0.800000 weight=0.180000 contribution=0.144000" in output

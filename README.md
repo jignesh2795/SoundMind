@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M11.3 — Seeded Learned Recommendation.
+M11.4 — CLI Recommendation Explanations.
 
 The current pipeline now supports:
 
@@ -20,35 +20,27 @@ The current pipeline now supports:
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
 - CLI recommendations through the existing soundmind command
+- optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
-- explanations: per-signal ranking contributions
 
-M11.1 established the SQLite application boundary. M11.2 exposed it through the CLI. M11.3 adds an explicit seed path for the existing M8 learned retrieval without changing ranking ownership or downloading models implicitly.
+M11.1 established the SQLite application boundary. M11.2 exposed it through the CLI. M11.3 added explicit seeded learned retrieval. M11.4 exposes the existing recommendation explanations without changing ranking behavior.
 
-Examples:
+Example:
 
-    soundmind recommend "cinematic BGM for coding" --context coding --limit 10
+    soundmind recommend "cinematic BGM for coding" --context coding --explain
 
-    soundmind recommend "similar to this" --context coding --seed-track-id track-123 \
-      --model data/models/discogs-effnet-bsdynamic-1.onnx \
-      --index data/index/effnet_vectors
-
-Use --now with a timezone-aware ISO-8601 timestamp when a reproducible reference time is required. The learned model must already exist; use soundmind model fetch-effnet explicitly when acquisition is desired.
+With --explain, each ranked candidate shows its strongest signal plus the existing raw score, normalized weight, and weighted contribution for each signal.
 
 ## Architecture
 
 ```
 CLI
  ↓
-optional seed → M8 learned retrieval
+existing recommendation result
  ↓
-M11.1 catalog-backed application boundary
+optional explanation formatting
  ↓
-M10.3 context-aware flow
- ↓
-M3 → M4 → M8(optional) → M9 → M10 → M1 → M2
- ↓
-Ordered playlist
+M2 ordered playlist
 ```
 
 AI/ML remains an optional enhancement layer around deterministic contracts. The project does not require an LLM or cloud service for the current pipeline.
@@ -83,6 +75,7 @@ Validation uses Ruff and pytest.
 - M11.1: catalog-backed contextual recommendation
 - M11.2: CLI recommendation surface
 - M11.3: seeded learned recommendation
+- M11.4: CLI recommendation explanations
 - later: richer contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
