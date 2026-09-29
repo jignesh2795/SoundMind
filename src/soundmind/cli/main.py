@@ -80,12 +80,34 @@ def build_parser():
     search.add_argument("query")
     search.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
     search.add_argument("--limit", type=int, default=10)
-    search.add_argument(
+    search_mode = search.add_mutually_exclusive_group()
+    search_mode.add_argument(
         "--semantic",
         action="store_true",
         help="use optional local text embeddings instead of lexical matching",
     )
+    search_mode.add_argument(
+        "--semantic-indexed",
+        action="store_true",
+        help="use a persisted local semantic index",
+    )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
+    search.add_argument(
+        "--semantic-index",
+        type=Path,
+        default=Path("data/index/text_vectors"),
+    )
+
+    si = s.add_parser("semantic-index")
+    sis = si.add_subparsers(dest="semantic_index_command", required=True)
+    sir = sis.add_parser("rebuild")
+    sir.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+    sir.add_argument("--model", default=DEFAULT_TEXT_MODEL)
+    sir.add_argument(
+        "--index",
+        type=Path,
+        default=Path("data/index/text_vectors"),
+    )
 
     rec = s.add_parser("recommend")
     rec.add_argument("text")
@@ -225,12 +247,39 @@ def main(argv=None):
                     limit=a.limit,
                 )
                 _print_semantic_search(results)
+            elif a.semantic_indexed:
+                provider = FastEmbedTextProvider(a.semantic_model)
+                results = service.semantic_search_indexed(
+                    a.query,
+                    provider=provider,
+                    model_name=a.semantic_model,
+                    index_path=a.semantic_index,
+                    limit=a.limit,
+                )
+                for index, result in enumerate(results, start=1):
+                    details = " — ".join(
+                        value for value in (result.title, result.artist, result.album) if value
+                    )
+                    suffix = f"\\t{details}" if details else ""
+                    print(f"{index}. {result.track_id}\\t{result.score:.6f}{suffix}\\tsemantic-indexed")
             else:
                 results = service.search(
                     a.query,
                     limit=a.limit,
                 )
                 _print_search(results)
+        return 0
+
+    if a.command == "semantic-index":
+        sf = create_session_factory(a.db)
+        with sf() as session:
+            provider = FastEmbedTextProvider(a.model)
+            count = CatalogTextSearchService(session).rebuild_semantic_index(
+                provider=provider,
+                model_name=a.model,
+                index_path=a.index,
+            )
+        print(f"Indexed semantic text vectors: {count}")
         return 0
 
     if a.command == "recommend":
