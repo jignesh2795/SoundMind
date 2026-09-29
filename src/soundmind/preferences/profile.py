@@ -1,7 +1,9 @@
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
-from soundmind.preferences.models import ListeningEvent,ListeningEventType,TasteProfile
+
+from soundmind.preferences.models import ListeningEvent, ListeningEventType, TasteProfile
+
 
 @dataclass(frozen=True)
 class PreferenceSignal:

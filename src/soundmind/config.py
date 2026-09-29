@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class AnalysisConfig:
     max_analysis_seconds: float = 180.0

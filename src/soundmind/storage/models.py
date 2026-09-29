@@ -1,7 +1,10 @@
 from datetime import datetime
+
 from sqlalchemy import BigInteger, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
+
 from soundmind.storage.database import Base
+
 
 class TrackRow(Base):
     __tablename__ = "tracks"

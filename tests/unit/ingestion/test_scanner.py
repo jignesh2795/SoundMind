@@ -1,7 +1,9 @@
 from pathlib import Path
+
 from soundmind.ingestion.scanner import SUPPORTED_EXTENSIONS, file_uri, scan_directory
 from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
+
 
 def test_file_uri_and_extensions(tmp_path: Path):
     assert file_uri(tmp_path / "a.mp3").startswith("file://")

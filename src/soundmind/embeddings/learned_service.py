@@ -1,8 +1,8 @@
 from pathlib import Path
-import numpy as np
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 
+import numpy as np
 from sqlalchemy import select
 
 from soundmind.diagnostics import ProcessingIssue

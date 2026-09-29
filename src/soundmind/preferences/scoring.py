@@ -1,5 +1,6 @@
 from soundmind.preferences.profile import PreferenceSignal
 
+
 def preference_score(signal:PreferenceSignal)->float:
     return signal.net_preference
 

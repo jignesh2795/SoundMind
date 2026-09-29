@@ -1,8 +1,15 @@
 from dataclasses import replace
 from datetime import datetime
+
 from soundmind.preferences.models import ListeningEvent
 from soundmind.preferences.scorer import PreferenceScorer
-from soundmind.recommendation.fusion import CandidateSignals, FusionWeights, RankedCandidate, rank_candidates
+from soundmind.recommendation.fusion import (
+    CandidateSignals,
+    FusionWeights,
+    RankedCandidate,
+    rank_candidates,
+)
+
 
 class PreferenceAwareRecommender:
     """Apply listening-history preference evidence before fusion ranking."""

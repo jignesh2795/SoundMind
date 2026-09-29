@@ -1,5 +1,13 @@
 import pytest
-from soundmind.recommendation.fusion import CandidateSignals,FusionWeights,fuse_score,rank_candidates
+
+from soundmind.recommendation.fusion import (
+    CandidateSignals,
+    FusionWeights,
+    fuse_score,
+    rank_candidates,
+)
+
+
 def test_weights_are_normalized():
     w=FusionWeights(2,2,4,1,1,0).normalized()
     assert w.learned==pytest.approx(.4); assert sum(vars(w).values())==pytest.approx(1)

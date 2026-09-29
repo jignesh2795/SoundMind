@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import select
@@ -31,7 +31,7 @@ def scan_directory(
     analysis_config = analysis_config or AnalysisConfig()
     if not root.is_dir():
         raise NotADirectoryError(root)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     seen: set[str] = set()
     count = 0
     for path in sorted(

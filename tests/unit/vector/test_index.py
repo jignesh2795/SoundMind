@@ -1,5 +1,7 @@
 import numpy as np
+
 from soundmind.vector.index import NumpyVectorIndex
+
 
 def test_search(tmp_path):
     i=NumpyVectorIndex(tmp_path/"v",2)

@@ -1,5 +1,7 @@
 import json
+
 import numpy as np
+
 
 class DSPEmbedder:
     name = "dsp-v1"

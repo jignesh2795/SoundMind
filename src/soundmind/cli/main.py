@@ -1,7 +1,7 @@
-from pathlib import Path
 import argparse
-from soundmind.config import AnalysisConfig
+from pathlib import Path
 
+from soundmind.config import AnalysisConfig
 from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.ingestion.scanner import scan_directory

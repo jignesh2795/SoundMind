@@ -1,6 +1,7 @@
 from hashlib import sha256
 from pathlib import Path
 
+
 def stable_track_id(source_uri: str) -> str:
     return sha256(source_uri.encode("utf-8")).hexdigest()
 

@@ -1,9 +1,11 @@
+import math
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
-import math
 from typing import ClassVar
+
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
+
 
 @dataclass(frozen=True)
 class PreferenceEvidence:
