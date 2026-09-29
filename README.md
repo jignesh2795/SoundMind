@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M11.1 — Catalog-Backed Contextual Recommendation.
+M11.2 — CLI Recommendation Surface.
 
 The current pipeline now supports:
 
@@ -19,23 +19,30 @@ The current pipeline now supports:
 - ranking: existing M1 fusion with contextual preference and novelty signals
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
+- CLI recommendations through the existing soundmind command
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - explanations: per-signal ranking contributions
 
-M11.1 adds an application boundary around the existing context-aware flow. It reads active catalog tracks and recent listening events from SQLite, then delegates recommendation logic to the established M10.3 composition.
+M11.1 established the SQLite application boundary. M11.2 exposes that boundary through a thin deterministic CLI surface without changing recommendation logic or persistence ownership.
+
+Example:
+
+    soundmind recommend "cinematic BGM for coding" --context coding --limit 10
+
+Use --now with a timezone-aware ISO-8601 timestamp when a reproducible reference time is required.
 
 ## Architecture
 
-```text
-SQLite catalog + listening history
-            ↓
-M11 catalog-backed application boundary
-            ↓
+```
+CLI
+ ↓
+M11.1 catalog-backed application boundary
+ ↓
 M10.3 context-aware flow
-            ↓
+ ↓
 M3 → M4 → M8(optional) → M9 → M10 → M1 → M2
-            ↓
-     Ordered playlist
+ ↓
+Ordered playlist
 ```
 
 AI/ML remains an optional enhancement layer around deterministic contracts. The project does not require an LLM or cloud service for the current pipeline.
@@ -68,7 +75,8 @@ Validation uses Ruff and pytest.
 - M10.2: contextual novelty at the M1 ranking boundary
 - M10.3: context-aware end-to-end recommendation
 - M11.1: catalog-backed contextual recommendation
-- later: CLI/UI recommendation surface, contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
+- M11.2: CLI recommendation surface
+- later: richer contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
