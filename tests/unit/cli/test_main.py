@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 from soundmind.cli.main import build_parser, main
@@ -135,3 +136,112 @@ def test_recommend_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
     assert "Playlist:" in output
     assert "1. track-a" in output
     assert "2. track-b" in output
+
+
+def test_recommend_seed_builds_learned_flow(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeLearnedService:
+        def __init__(self, session, *, model_path, index_path) -> None:
+            captured["learned_args"] = (session, model_path, index_path)
+
+    class FakeLearnedEngine:
+        def __init__(self, provider) -> None:
+            captured["provider"] = provider
+
+    class FakeFlow:
+        def __init__(self, *, learned) -> None:
+            self.learned = learned
+            captured["flow_learned"] = learned
+
+    class FakeRecommendationService:
+        def __init__(self, session, *, flow=None) -> None:
+            captured["service_flow"] = flow
+
+        def recommend(self, request, **kwargs):
+            captured["request"] = request
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.LearnedEmbeddingService", FakeLearnedService)
+    monkeypatch.setattr("soundmind.cli.main.LearnedRetrievalEngine", FakeLearnedEngine)
+    monkeypatch.setattr("soundmind.cli.main.ContextAwareMusicFlow", FakeFlow)
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeRecommendationService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    rc = main(
+        [
+            "recommend",
+            "similar to this",
+            "--context",
+            "coding",
+            "--seed-track-id",
+            "seed-track",
+            "--model",
+            "custom.onnx",
+            "--index",
+            "custom-index",
+            "--now",
+            "2026-09-29T12:00:00Z",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["request"].limit == 10
+    assert captured["kwargs"]["seed_track_id"] == "seed-track"
+    assert captured["learned_args"][1] == Path("custom.onnx")
+    assert captured["learned_args"][2] == Path("custom-index")
+    assert captured["service_flow"].learned is captured["flow_learned"]
+    assert isinstance(captured["provider"], FakeLearnedService)
+    assert capsys.readouterr().out.startswith("Intent: similar to this")
+
+
+def test_recommend_without_seed_does_not_construct_learned_service(monkeypatch) -> None:
+    class ExplodingLearnedService:
+        def __init__(self, *args, **kwargs) -> None:
+            raise AssertionError("learned service should not be constructed without a seed")
+
+    class FakeService:
+        def __init__(self, session, *, flow=None) -> None:
+            assert flow is None
+
+        def recommend(self, request, **kwargs):
+            assert kwargs["seed_track_id"] is None
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.LearnedEmbeddingService", ExplodingLearnedService)
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["recommend", "cinematic BGM", "--context", "coding"]) == 0

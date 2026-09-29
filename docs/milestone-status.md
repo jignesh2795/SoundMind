@@ -15,7 +15,7 @@ This document is the project-level implementation ledger. It records completed m
 | M2 | Deterministic playlist sequencing: Smooth, Contrast, Journey, Discovery | Complete |
 | M3 | Deterministic natural-language MusicIntent parser | Complete |
 | M4 | Intent-aware retrieval bridge into M1 CandidateSignals | Complete |
-| M5 | End-to-end intent → retrieval → ranking → sequencing orchestration | Complete |
+| M5 | End-to-end intent → retrieval → sequencing orchestration | Complete |
 | M6 | SQLite catalog → M5 candidate adapter and integration tests | Complete |
 | M7 | Deterministic MusicDNA view over stored audio evidence | Complete |
 | M8 | Learned audio similarity integrated with M1 ranking and M5 flow | Complete |
@@ -25,41 +25,48 @@ This document is the project-level implementation ledger. It records completed m
 | M10.2 | Contextual novelty connected to the existing M1 ranking boundary | Complete |
 | M10.3 | Context-aware end-to-end recommendation composition | Complete |
 | M11.1 | Catalog-backed contextual recommendation from persisted SQLite state | Complete |
-| M11.2 | CLI recommendation surface over M11.1 | In progress |
+| M11.2 | CLI recommendation surface over M11.1 | Complete |
+| M11.3 | Seeded learned recommendation through the existing M8 path | In progress |
 
 ## Current milestone
 
-### M11.2 — CLI Recommendation Surface
+### M11.3 — Seeded Learned Recommendation
 
-Branch: `feat/m11-cli-recommendation`
+Branch: `feat/m11-seeded-learned-recommendation`
 
-Base: M11.1 merge `66376f7`
+Base: M11.2 merge `2c56ffc`
 
-M11.2 exposes the existing M11.1 service through the `soundmind recommend` command.
+M11.3 exposes the existing M8 learned audio similarity path through the CLI recommendation command when a seed track is explicitly supplied.
 
 Command:
 
-    soundmind recommend "<natural-language request>" --context <context> [options]
+    soundmind recommend "<request>" --context <context> --seed-track-id <track-id> [options]
 
-The CLI accepts:
+Additional learned-retrieval options:
 
-- natural-language request text;
-- required context;
-- SQLite database path;
-- recommendation limit;
-- optional catalog limit;
-- bounded listening-event limit;
-- Smooth, Contrast, Journey, or Discovery sequence mode;
-- optional timezone-aware ISO-8601 reference time.
+- `--model`: existing Discogs-EffNet ONNX model path;
+- `--index`: existing learned vector index path.
 
-When `--now` is omitted, the CLI supplies the current UTC time. When supplied, `--now` must contain a timezone.
+Behavior:
+
+- without a seed, the existing model-free M11.2 path remains unchanged;
+- with a seed, the CLI constructs the existing `LearnedEmbeddingService` and `LearnedRetrievalEngine`;
+- learned similarity enriches the existing M1 learned signal;
+- M10.3 continues to remove the seed itself from recommendation candidates;
+- model acquisition is never implicit.
 
 ## M11 layering
 
 ```
 CLI
  ↓
-M11.1 catalog-backed application boundary
+optional seed
+ ↓
+M8 LearnedEmbeddingService
+ ↓
+M8 LearnedRetrievalEngine
+ ↓
+M11.1 catalog + listening history
  ↓
 M10.3 context-aware flow
  ├─ M3/M4 intent
@@ -74,7 +81,7 @@ M2 sequence engine
 CLI output
 ```
 
-M11.2 remains a presentation/application boundary. Existing recommendation and persistence contracts remain authoritative.
+M11.3 remains a dependency-assembly/application boundary. Existing learned retrieval, recommendation, and persistence contracts remain authoritative.
 
 ## M11.1 persistence boundary
 
@@ -105,29 +112,29 @@ M11.1 uses only active catalog tracks and bounded recent listening history. SQLi
 ```
 CLI
  ↓
+optional seeded M8 learned retrieval
+ ↓
 SQLite catalog + listening history
  ↓
 M11 application boundary
  ↓
 M10.3 Context-Aware Flow
  ↓
-M3 → M4 → M8(optional) → M9 → M10 → M1 → M2
+M3 → M4 → M8 → M9 → M10 → M1 → M2
  ↓
 Ordered playlist
 ```
 
 ## Validation baseline
 
-Latest user-reported M11.1 run:
+Latest completed-milestone gate:
 
 ```
-pytest: 130 passed
-Ruff: one I001 import-order finding
+M11.2: ruff: All checks passed!
+M11.2: pytest: 133 passed
 ```
 
-The I001 finding was corrected mechanically in commit `98478bd` before PR #13 was merged. A post-fix local Ruff run has not yet been reported, so M11.1 is not recorded here as fully gate-validated.
-
-M11.2 validation is pending the local Ruff and pytest gate on `feat/m11-cli-recommendation`.
+M11.3 validation is pending the local Ruff and pytest gate on `feat/m11-seeded-learned-recommendation`.
 
 ## Documentation rule
 
