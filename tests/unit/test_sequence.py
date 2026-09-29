@@ -2,7 +2,13 @@ import math
 
 import pytest
 
-from soundmind.sequence import SequenceCandidate, SequenceMode, SequenceRequest, sequence_playlist
+from soundmind.sequence import (
+    SequenceCandidate,
+    SequenceMode,
+    SequenceRequest,
+    journey_target_energy,
+    sequence_playlist,
+)
 
 
 def candidate(
@@ -52,6 +58,12 @@ def test_contrast_prefers_larger_transition_distance():
     )
     result = sequence_playlist(request)
     assert [item.track_id for item in result] == ["seed", "far", "near"]
+
+
+def test_journey_target_energy_is_explicit_and_monotonic():
+    targets = tuple(journey_target_energy(position, 5) for position in range(5))
+    assert targets == (0.3, 0.45, 0.6, 0.75, 0.9)
+    assert all(left < right for left, right in zip(targets, targets[1:]))
 
 
 def test_journey_moves_through_explicit_energy_arc():
