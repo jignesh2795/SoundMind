@@ -207,7 +207,7 @@ def test_recommend_seed_builds_learned_flow(monkeypatch, capsys) -> None:
     assert captured["kwargs"]["seed_track_id"] == "seed-track"
     assert captured["learned_args"][1] == Path("custom.onnx")
     assert captured["learned_args"][2] == Path("custom-index")
-    assert captured["service_flow"] is captured["flow_learned"]
+    assert captured["service_flow"].learned is captured["flow_learned"]
     assert isinstance(captured["provider"], FakeLearnedService)
     assert capsys.readouterr().out.startswith("Intent: similar to this")
 
