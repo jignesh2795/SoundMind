@@ -1,7 +1,9 @@
 """Learned audio similarity enrichment for recommendation candidates."""
 
-from collections.abc import Iterable, Protocol
+import math
+from collections.abc import Iterable
 from dataclasses import replace
+from typing import Protocol
 
 from soundmind.recommendation.fusion import CandidateSignals
 from soundmind.vector.index import SimilarityResult
@@ -17,7 +19,7 @@ class LearnedSimilarityProvider(Protocol):
 
 def _similarity_score(raw_score: float) -> float:
     """Map cosine similarity from [-1, 1] into the fusion score range [0, 1]."""
-    if raw_score != raw_score or raw_score in (float("inf"), float("-inf")):
+    if not math.isfinite(raw_score):
         return 0.0
     return max(0.0, min(1.0, (raw_score + 1.0) / 2.0))
 
