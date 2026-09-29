@@ -8,8 +8,8 @@ from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.preferences.repository import ListeningEventRepository
 from soundmind.recommendation.fusion import FusionWeights
 from soundmind.storage.database import create_session_factory
-from soundmind.storage.models import TrackRow
 from soundmind.sequence import SequenceMode
+from soundmind.storage.models import TrackRow
 
 
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
