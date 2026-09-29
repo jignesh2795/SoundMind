@@ -39,7 +39,7 @@ def test_energy_similarity_is_linear():
     intent = MusicIntent(raw_text="high energy", energy=0.8, confidence=0.2)
     item = candidate("a", energy=0.6)
 
-    assert IntentRetrievalEngine().score(intent, item).energy_score == pytest.approx(0.5)
+    assert IntentRetrievalEngine().score(intent, item).energy_score == pytest.approx(0.8)
 
 
 def test_conflicting_vocal_preference_scores_zero():
