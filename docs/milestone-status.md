@@ -27,15 +27,17 @@ This document is the project-level implementation ledger. It records completed m
 | M11.1 | Catalog-backed contextual recommendation from persisted SQLite state | Complete |
 | M11.2 | CLI recommendation surface over M11.1 | Complete |
 | M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
-| M11.4 | CLI recommendation explanations | In progress |
+| M11.4 | CLI recommendation explanations | Complete |
 
 ## Current milestone
 
 ### M11.4 — CLI Recommendation Explanations
 
-Branch: `feat/m11-cli-explanations`
+Branch: `feat/m11-cli-explanations` (merged)
 
 Base: M11.3 docs-close merge `6e2a817`
+
+Merge: `63a5a67`
 
 M11.4 exposes the existing `RecommendationExplanation` and `SignalContribution` data through the recommendation CLI.
 
@@ -140,11 +142,11 @@ Ordered playlist
 Latest completed-milestone gate:
 
 ```
-M11.3: ruff: All checks passed!
-M11.3: pytest: 135 passed
+M11.4: ruff: All checks passed!
+M11.4: pytest: 136 passed
 ```
 
-M11.4 validation is pending the local Ruff and pytest gate on `feat/m11-cli-explanations`.
+M11.4 validation is complete: the user-reported local gate on `feat/m11-cli-explanations` passed with Ruff clean and 136 tests.
 
 ## Documentation rule
 
