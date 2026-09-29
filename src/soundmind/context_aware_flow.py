@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from datetime import datetime
 
-from soundmind.flow import EndToEndCandidate, EndToEndRequest, EndToEndResult
+from soundmind.flow import EndToEndRequest, EndToEndResult
 from soundmind.intent import parse_intent
 from soundmind.preferences.contextual import ContextualPreferenceScorer
 from soundmind.preferences.models import ListeningEvent
