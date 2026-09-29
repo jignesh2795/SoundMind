@@ -11,7 +11,6 @@ from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.sequence import SequenceMode
 from soundmind.vector.index import SimilarityResult
 
-
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
 
 
