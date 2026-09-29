@@ -6,41 +6,56 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M11.4 — CLI Recommendation Explanations.
+M12.1 — Deterministic Text Retrieval Foundation.
 
 The current pipeline now supports:
 
 - evidence: metadata and measured audio features
 - Music DNA: structured acoustic evidence derived from stored analysis
 - learned representation: optional Discogs-EffNet embeddings
-- retrieval: intent matching and optional learned audio similarity from a supplied seed
+- retrieval: intent matching, deterministic catalog text search, and optional learned audio similarity from a supplied seed
 - preference: decayed global and contextual listening history
 - personalization: contextual novelty/familiarity from listening exposure
 - ranking: existing M1 fusion with contextual preference, novelty, and learned signals
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
 - CLI recommendations through the existing soundmind command
+- deterministic catalog text search through `soundmind search`
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 
-M11.1 established the SQLite application boundary. M11.2 exposed it through the CLI. M11.3 added explicit seeded learned retrieval. M11.4 exposes the existing recommendation explanations without changing ranking behavior.
+M11 established the application-facing recommendation and CLI boundaries. M12.1 adds a separate model-free lexical retrieval layer over existing catalog metadata. It is a foundation for later semantic retrieval, not a replacement for the current recommendation ranking.
 
 Example:
 
-    soundmind recommend "cinematic BGM for coding" --context coding --explain
+    soundmind search "hero entry" --limit 10
 
-With --explain, each ranked candidate shows its strongest signal plus the existing raw score, normalized weight, and weighted contribution for each signal.
+Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Results are deterministic and stable for the same catalog state and query.
 
 ## Architecture
 
 ```
-CLI
+CLI search
  ↓
-existing recommendation result
+M12.1 deterministic text retrieval
+ ↓
+SQLite catalog metadata
+```
+
+Recommendation remains separate:
+
+```
+CLI recommend
+ ↓
+M11 application boundary
+ ↓
+M10.3 context-aware flow
+ ↓
+M3 → M4 → M8(optional) → M9 → M10 → M1 → M2
  ↓
 optional explanation formatting
  ↓
-M2 ordered playlist
+Ordered playlist
 ```
 
 AI/ML remains an optional enhancement layer around deterministic contracts. The project does not require an LLM or cloud service for the current pipeline.
@@ -76,7 +91,8 @@ Validation uses Ruff and pytest.
 - M11.2: CLI recommendation surface
 - M11.3: seeded learned recommendation
 - M11.4: CLI recommendation explanations
-- later: richer contextual explanations, semantic text retrieval, source adapters, editing, stems and advanced creation
+- M12.1: deterministic text retrieval foundation
+- later: semantic embedding retrieval, hybrid lexical/semantic fusion, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 

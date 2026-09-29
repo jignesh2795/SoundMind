@@ -28,107 +28,98 @@ This document is the project-level implementation ledger. It records completed m
 | M11.2 | CLI recommendation surface over M11.1 | Complete |
 | M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
 | M11.4 | CLI recommendation explanations | Complete |
+| M12.1 | Deterministic text retrieval foundation over catalog metadata | In progress |
 
 ## Current milestone
 
-### M11.4 — CLI Recommendation Explanations
+### M12.1 — Deterministic Text Retrieval Foundation
 
-Branch: `feat/m11-cli-explanations` (merged)
+Branch: `feat/m12-deterministic-text-retrieval`
 
-Base: M11.3 docs-close merge `6e2a817`
+Base: M11.4 docs-close merge `9607845`
 
-Merge: `63a5a67`
-
-M11.4 exposes the existing `RecommendationExplanation` and `SignalContribution` data through the recommendation CLI.
+M12.1 adds a separate model-free catalog text-search layer that can later serve as the lexical half of a hybrid semantic retrieval system.
 
 Command:
 
-    soundmind recommend "<request>" --context <context> --explain [options]
+    soundmind search "<query>" [--db <path>] [--limit <n>]
 
 Behavior:
 
-- without `--explain`, the M11.3 output remains unchanged;
-- with `--explain`, each ranked candidate prints its strongest signal;
-- each existing contribution is printed with raw score, normalized weight, and weighted contribution;
-- the CLI only formats fields already produced by the recommendation stack;
-- no ranking, fusion, persistence, or model behavior changes.
+- searches active SQLite catalog rows only;
+- tokenizes query and metadata case-insensitively;
+- scores matches using fixed field weights;
+- supports title, artist, album, album artist, composer, genre, and file name;
+- penalizes partial query coverage;
+- resolves ties by stable track ID;
+- returns metadata and matched-field evidence;
+- does not alter recommendation ranking.
 
-## M11 layering
-
-```
-CLI
- ↓
-existing EndToEndResult
- ↓
-RecommendationExplanation
- ├─ strongest signal
- └─ per-signal contributions
- ↓
-human-readable CLI output
-```
-
-M11.4 is intentionally a presentation-only boundary.
-
-## M11.3 seeded learned boundary
+## M12 layering
 
 ```
-CLI
- ↓
-optional seed
- ↓
-M8 LearnedEmbeddingService
- ↓
-M8 LearnedRetrievalEngine
- ↓
-M11.1 catalog + listening history
- ↓
+CLI search
+    ↓
+CatalogTextSearchService
+    ↓
+active TrackRow metadata
+    ↓
+CatalogTextRetrievalEngine
+    ↓
+TextSearchResult
+```
+
+This is deliberately separate from:
+
+```
+CLI recommend
+    ↓
+M11 application boundary
+    ↓
 M10.3 context-aware flow
- ↓
-M1 fusion ranking
- ↓
-M2 sequence engine
- ↓
-CLI output + optional explanation
+    ↓
+M1 ranking
 ```
 
-M11.3 activates learned retrieval only for an explicitly supplied seed and never downloads the model implicitly.
+M12.1 is a retrieval foundation, not a new recommendation algorithm.
 
-## M11.1 persistence boundary
+## Scoring boundary
 
 ```
-SQLite TrackRow records
-        ↓
-CatalogCandidateRepository
-        ↓
-EndToEndCandidate
-
-SQLite ListeningEventRow records
-        ↓
-ListeningEventRepository
-        ↓
-ListeningEvent
-
-        └──────────────┐
-                       ↓
-          M10.3 ContextAwareMusicFlow
-                       ↓
-               EndToEndResult
+query tokens
+    ↓
+metadata token matches
+    ↓
+fixed field weights
+    ↓
+coverage-normalized score
+    ↓
+(-score, track_id)
 ```
 
-M11.1 uses only active catalog tracks and bounded recent listening history. SQLite timestamps are restored to UTC-aware datetimes at the repository boundary.
+No persistence schema, model download, LLM, cloud service, or recommendation-weight change is introduced.
+
+## Future M12 slices
+
+The deterministic lexical layer is the baseline. Later slices may add semantic embeddings, phrase/synonym understanding, or hybrid lexical-plus-semantic retrieval behind this boundary while retaining a model-free fallback.
 
 ## Architecture progression
 
 ```
 CLI
  ↓
-optional seeded M8 learned retrieval
+M12.1 deterministic text retrieval
  ↓
-SQLite catalog + listening history
+SQLite catalog metadata
+ ↓
+future semantic retrieval / hybrid fusion
+
+Recommendation path:
+CLI
  ↓
 M11 application boundary
  ↓
-M10.3 Context-Aware Flow
+M10.3 context-aware flow
  ↓
 M3 → M4 → M8 → M9 → M10 → M1 → M2
  ↓
@@ -146,7 +137,7 @@ M11.4: ruff: All checks passed!
 M11.4: pytest: 136 passed
 ```
 
-M11.4 validation is complete: the user-reported local gate on `feat/m11-cli-explanations` passed with Ruff clean and 136 tests.
+M12.1 validation is pending the local Ruff and pytest gate on `feat/m12-deterministic-text-retrieval`.
 
 ## Documentation rule
 
