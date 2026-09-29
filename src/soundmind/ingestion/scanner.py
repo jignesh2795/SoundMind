@@ -29,6 +29,7 @@ def scan_directory(
 ) -> int:
     root = root.expanduser().resolve()
     analysis_config = analysis_config or AnalysisConfig()
+    expected_analysis_version = analysis_config.analysis_version
     if not root.is_dir():
         raise NotADirectoryError(root)
     now = datetime.now(UTC)
@@ -47,7 +48,7 @@ def scan_directory(
             and state.file_size == stat.st_size
             and state.modified_at_ns == stat.st_mtime_ns
             and existing is not None
-            and (not analyze or existing.analysis_version == "m0.5")
+            and (not analyze or existing.analysis_version == expected_analysis_version)
             and (not analyze or existing.analysis_seconds is not None)
         )
         if unchanged:
@@ -86,6 +87,7 @@ def scan_directory(
             existing.updated_at = now
         for key, value in metadata.__dict__.items():
             setattr(existing, key, value)
+        metadata_duration = metadata.duration_seconds
 
         if analyze:
             try:
@@ -104,7 +106,7 @@ def scan_directory(
             if analysis is None:
                 existing.analysis_mode = "failed"
                 existing.analysis_seconds = None
-                existing.analysis_version = "m0.5"
+                existing.analysis_version = expected_analysis_version
             else:
                 existing.sample_rate = analysis.sample_rate
                 existing.channels = analysis.channels
@@ -118,7 +120,8 @@ def scan_directory(
                 existing.chroma_json = json.dumps(analysis.chroma)
                 existing.analysis_mode = analysis.analysis_mode
                 existing.analysis_seconds = analysis.analyzed_seconds
-                existing.analysis_version = "m0.5"
+                existing.analysis_version = expected_analysis_version
+            existing.duration_seconds = metadata_duration
 
         if state is None:
             state = ScanStateRow(
