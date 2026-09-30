@@ -91,7 +91,24 @@ def build_parser():
         action="store_true",
         help="use a persisted local semantic index",
     )
+    search.add_argument(
+        "--hybrid",
+        action="store_true",
+        help="fuse lexical results with semantic results",
+    )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
+    search.add_argument(
+        "--lexical-weight",
+        type=float,
+        default=0.5,
+        help="hybrid fusion weight for lexical scores",
+    )
+    search.add_argument(
+        "--semantic-weight",
+        type=float,
+        default=0.5,
+        help="hybrid fusion weight for semantic scores",
+    )
     search.add_argument(
         "--semantic-index",
         type=Path,
@@ -160,6 +177,19 @@ def _print_semantic_search(results) -> None:
         )
         suffix = f"\t{details}" if details else ""
         print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}\tsemantic")
+
+
+def _print_hybrid_search(results) -> None:
+    for index, result in enumerate(results, start=1):
+        details = " — ".join(
+            value for value in (result.title, result.artist, result.album) if value
+        )
+        suffix = f"\t{details}" if details else ""
+        print(
+            f"{index}. {result.track_id}\t{result.score:.6f}{suffix}"
+            f"\thybrid lexical={result.lexical_score:.6f}"
+            f" semantic={result.semantic_score:.6f}"
+        )
 
 
 def _print_recommendation(result, *, explain=False) -> None:
@@ -239,7 +269,28 @@ def main(argv=None):
         sf = create_session_factory(a.db)
         with sf() as session:
             service = CatalogTextSearchService(session)
-            if a.semantic:
+            if a.hybrid:
+                provider = FastEmbedTextProvider(a.semantic_model)
+                if a.semantic_indexed:
+                    results = service.hybrid_search_indexed(
+                        a.query,
+                        provider=provider,
+                        model_name=a.semantic_model,
+                        index_path=a.semantic_index,
+                        limit=a.limit,
+                        lexical_weight=a.lexical_weight,
+                        semantic_weight=a.semantic_weight,
+                    )
+                else:
+                    results = service.hybrid_search(
+                        a.query,
+                        provider=provider,
+                        limit=a.limit,
+                        lexical_weight=a.lexical_weight,
+                        semantic_weight=a.semantic_weight,
+                    )
+                _print_hybrid_search(results)
+            elif a.semantic:
                 provider = FastEmbedTextProvider(a.semantic_model)
                 results = service.semantic_search(
                     a.query,
