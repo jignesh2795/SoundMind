@@ -109,6 +109,11 @@ def build_parser():
         action="store_true",
         help="expand supported music-domain phrases for lexical retrieval",
     )
+    search.add_argument(
+        "--explain-retrieval",
+        action="store_true",
+        help="print deterministic lexical or hybrid retrieval evidence",
+    )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
     search.add_argument("--semantic-query-prefix", default=DEFAULT_TEXT_QUERY_PREFIX)
     search.add_argument("--semantic-document-prefix", default=DEFAULT_TEXT_DOCUMENT_PREFIX)
@@ -220,7 +225,7 @@ def build_parser():
     return p
 
 
-def _print_search(results) -> None:
+def _print_search(results, *, explain=False) -> None:
     for index, result in enumerate(results, start=1):
         details = " — ".join(
             value for value in (result.title, result.artist, result.album) if value
@@ -240,7 +245,7 @@ def _print_semantic_search(results) -> None:
         print(f"{index}. {result.track_id}	{result.score:.6f}{suffix}	semantic")
 
 
-def _print_hybrid_search(results) -> None:
+def _print_hybrid_search(results, *, explain=False) -> None:
     for index, result in enumerate(results, start=1):
         details = " — ".join(
             value for value in (result.title, result.artist, result.album) if value
@@ -358,7 +363,7 @@ def main(argv=None):
                         semantic_weight=a.semantic_weight,
                         expand=a.expand_query,
                     )
-                _print_hybrid_search(results)
+                _print_hybrid_search(results, explain=a.explain_retrieval)
             elif a.semantic:
                 provider = FastEmbedTextProvider(
                     a.semantic_model,
@@ -396,7 +401,7 @@ def main(argv=None):
                     limit=a.limit,
                     expand=a.expand_query,
                 )
-                _print_search(results)
+                _print_search(results, explain=a.explain_retrieval)
         return 0
 
     if a.command == "semantic-index":
