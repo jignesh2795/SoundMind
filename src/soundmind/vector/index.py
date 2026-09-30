@@ -147,6 +147,6 @@ def _validate_integrity_manifest(
             or not isinstance(mtime_ns, int)
             or mtime_ns < 0
         ):
-            raise ValueError(  # noqa: TRY004
+            raise ValueError(
                 "Persisted vector index integrity metadata is invalid; rebuild the index"
             )
