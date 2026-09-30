@@ -174,7 +174,7 @@ def test_hybrid_retrieval_feeds_existing_ranking_and_sequence(tmp_path) -> None:
             context="coding",
             now=NOW,
             retrieval_mode="hybrid",
-            retrieval_limit=1,
+            retrieval_limit=2,
             text_provider=StaticTextProvider(),
         )
 
@@ -218,7 +218,7 @@ def test_hybrid_indexed_retrieval_feeds_recommendation(tmp_path) -> None:
             context="coding",
             now=NOW,
             retrieval_mode="hybrid-indexed",
-            retrieval_limit=1,
+            retrieval_limit=2,
             text_provider=provider,
             text_model="model-v1",
             text_index_path=index_path,
