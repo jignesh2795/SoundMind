@@ -137,5 +137,5 @@ Derived indexes follow:
         ↓
     query
 
-A stale index should be rejected rather than silently reused.
+A stale or internally inconsistent index should be rejected rather than silently reused. The shared NumPy vector index publishes its IDs and vectors through temporary files and an integrity manifest; readers reject partial/torn publication instead of serving a mismatched pair.
 
