@@ -1,5 +1,4 @@
 import argparse
-from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -274,7 +273,7 @@ def _print_hybrid_search(results, *, explain=False) -> None:
             print(f"   semantic-contribution: {result.semantic_contribution:.6f}")
 
 
-def _print_recommendation(result, *, explain=False) -> None:
+def _print_recommendation(result, *, explain=False, playlist=None) -> None:
     print(f"Intent: {result.intent.raw_text}")
     print("Ranked:")
     for index, candidate in enumerate(result.ranked, start=1):
@@ -290,7 +289,8 @@ def _print_recommendation(result, *, explain=False) -> None:
                     f"contribution={contribution.contribution:.6f}"
                 )
     print("Playlist:")
-    for index, item in enumerate(result.playlist, start=1):
+    selected_playlist = result.playlist if playlist is None else playlist
+    for index, item in enumerate(selected_playlist, start=1):
         print(f"{index}. {item.track_id}")
 
 
@@ -488,8 +488,9 @@ def main(argv=None):
             if a.edit:
                 edits = parse_playlist_edits(a.edit)
                 edited_playlist = apply_playlist_edits(result.playlist, edits)
-                result = replace(result, playlist=edited_playlist)
-        _print_recommendation(result, explain=a.explain)
+            else:
+                edited_playlist = None
+        _print_recommendation(result, explain=a.explain, playlist=edited_playlist)
         return 0
 
     return 1
