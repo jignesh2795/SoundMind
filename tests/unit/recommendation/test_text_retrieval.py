@@ -105,15 +105,15 @@ def test_search_rejects_invalid_input(query: str, limit: int, message: str) -> N
 def test_search_can_expand_music_domain_aliases_without_changing_default() -> None:
     engine = CatalogTextRetrievalEngine()
     rows = [
-        row("bgm-title", title="Hero BGM"),
-        row("background-music", title="Hero Background Music"),
+        row("soundtrack", title="Hero Soundtrack"),
+        row("original-soundtrack", title="Hero Original Soundtrack"),
     ]
 
-    default_results = engine.search("score", rows)
-    expanded_results = engine.search("score", rows, expand=True)
+    default_results = engine.search("ost", rows)
+    expanded_results = engine.search("ost", rows, expand=True)
 
     assert default_results == []
     assert [item.track_id for item in expanded_results] == [
-        "background-music",
-        "bgm-title",
+        "original-soundtrack",
+        "soundtrack",
     ]
