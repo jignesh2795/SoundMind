@@ -37,17 +37,24 @@ This document is the project-level implementation ledger. It records completed m
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
 | M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
-| M13.1 | Deterministic playlist editing primitives | In validation |
+| M13.1 | Deterministic playlist editing primitives | Complete |
 
 ## Current milestone
 
-### M13.1 — Deterministic Playlist Editing Primitives (in validation)
+### M13.1 — Deterministic Playlist Editing Primitives (completed)
 
 M13.1 introduces a separate structural-editing layer for already-generated playlists. It supports deterministic removal, movement, swapping, and trimming without changing M1 ranking or M2 sequencing.
 
 Contract: [M13.1 playlist editing primitives](m13-1-playlist-editing-contract.md)
 
-Validation is pending; no new test count is recorded until OpenCode reports the gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 234 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M12.9 — Deterministic Retrieval Evidence (completed)
 
@@ -303,6 +310,7 @@ M12.6: Ruff clean, 208 tests passed
 M12.7: Ruff clean, 215 tests passed
 M12.8: Ruff clean, 217 tests passed
 M12.9: Ruff clean, 220 tests passed
+M13.1: Ruff clean, 234 tests passed
 ```
 
 ## Documentation rule
