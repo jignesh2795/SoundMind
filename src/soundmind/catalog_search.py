@@ -3,6 +3,11 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from soundmind.recommendation.hybrid_retrieval import (
+    HybridSearchResult,
+    HybridWeights,
+    fuse_search_results,
+)
 from soundmind.recommendation.semantic_text_index import PersistentSemanticTextIndex
 from soundmind.recommendation.semantic_text_retrieval import (
     SemanticTextRetrievalEngine,
@@ -92,3 +97,56 @@ class CatalogTextSearchService:
             for track_id, score in scores
             if track_id in rows_by_id
         ]
+
+    def hybrid_search(
+        self,
+        query: str,
+        *,
+        provider: TextEmbeddingProvider,
+        limit: int = 10,
+        lexical_weight: float = 0.5,
+        semantic_weight: float = 0.5,
+    ) -> list[HybridSearchResult]:
+        weights = HybridWeights(lexical_weight, semantic_weight)
+        rows = self._active_rows()
+        lexical_results = self._engine.search(query, rows, limit=limit)
+        engine = self._semantic_engine or SemanticTextRetrievalEngine(provider)
+        semantic_results = engine.search(query, rows, limit=limit)
+        return list(
+            fuse_search_results(
+                lexical_results,
+                semantic_results,
+                weights=weights,
+                limit=limit,
+            )
+        )
+
+    def hybrid_search_indexed(
+        self,
+        query: str,
+        *,
+        provider: TextEmbeddingProvider,
+        model_name: str,
+        index_path,
+        limit: int = 10,
+        lexical_weight: float = 0.5,
+        semantic_weight: float = 0.5,
+    ) -> list[HybridSearchResult]:
+        weights = HybridWeights(lexical_weight, semantic_weight)
+        rows = self._active_rows()
+        lexical_results = self._engine.search(query, rows, limit=limit)
+        semantic_results = self.semantic_search_indexed(
+            query,
+            provider=provider,
+            model_name=model_name,
+            index_path=index_path,
+            limit=limit,
+        )
+        return list(
+            fuse_search_results(
+                lexical_results,
+                semantic_results,
+                weights=weights,
+                limit=limit,
+            )
+        )
