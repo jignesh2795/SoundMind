@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M12.5 — Recommendation Retrieval Bridge.
+M12.6 — Configurable Text Embedding Profiles.
 
 The current pipeline now supports:
 
