@@ -34,11 +34,22 @@ This document is the project-level implementation ledger. It records completed m
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
 | M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
-| M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | In validation |
+| M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
+| M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | In validation |
 
 ## Current milestone
 
-### M12.7 — Deterministic Query Expansion (in validation)
+### M12.8 — Configurable Hybrid Retrieval Weights (in validation)
+
+M12.8 exposes the existing deterministic hybrid lexical/semantic fusion weights through the catalog-backed recommendation boundary. Defaults remain 0.5 lexical / 0.5 semantic; configured weights are normalized by the existing HybridWeights contract.
+
+The weights affect only M12 candidate generation for live and persisted hybrid retrieval. M1 ranking and M2 sequencing remain unchanged. The default catalog recommendation path remains model-free and unchanged.
+
+Contract: [M12.8 configurable hybrid retrieval weights](m12-8-configurable-hybrid-weights-contract.md)
+
+Validation is pending; no new test count is recorded until OpenCode reports the gate.
+
+### M12.7 — Deterministic Query Expansion (completed)
 
 M12.7 adds a small, explicit, local vocabulary of music-domain phrase and abbreviation aliases to improve lexical retrieval recall. Expansion is opt-in and deterministic; the original query is always retained.
 
@@ -46,7 +57,14 @@ Expansion affects only lexical retrieval and the lexical side of hybrid candidat
 
 Contract: [M12.7 query expansion](m12-7-query-expansion-contract.md)
 
-Validation is pending; no new test count is recorded until OpenCode reports the gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 215 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M12.6 — Configurable Text Embedding Profiles (completed)
 
@@ -234,7 +252,7 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 ## Future M12 slices
 
-M12.7 is the current retrieval-recall extension while retaining a deterministic model-free default. Query expansion remains opt-in and deliberately small.
+M12.8 is the current hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
 
 Potential later M12 work includes richer retrieval evidence, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
@@ -248,6 +266,7 @@ M12.3: Ruff clean, 170 tests passed
 M12.4: Ruff clean, 194 tests passed
 M12.5: Ruff clean, 201 tests passed
 M12.6: Ruff clean, 208 tests passed
+M12.7: Ruff clean, 215 tests passed
 ```
 
 ## Documentation rule
