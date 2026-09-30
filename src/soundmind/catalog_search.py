@@ -138,6 +138,8 @@ class CatalogTextSearchService:
         provider: TextEmbeddingProvider,
         model_name: str,
         index_path,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
         limit: int = 10,
         lexical_weight: float = 0.5,
         semantic_weight: float = 0.5,
@@ -150,6 +152,8 @@ class CatalogTextSearchService:
             provider=provider,
             model_name=model_name,
             index_path=index_path,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
             limit=limit,
         )
         return list(
