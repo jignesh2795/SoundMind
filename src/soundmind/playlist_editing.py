@@ -1,7 +1,6 @@
 """Deterministic structural editing of generated playlists."""
 
 from dataclasses import dataclass
-from typing import TypeAlias
 
 from soundmind.sequence import SequenceItem
 
@@ -36,7 +35,7 @@ class TrimPlaylist:
     limit: int
 
 
-PlaylistEdit: TypeAlias = RemoveTrack | MoveTrack | SwapTracks | TrimPlaylist
+type PlaylistEdit = RemoveTrack | MoveTrack | SwapTracks | TrimPlaylist
 
 
 def _validate_items(items: tuple[SequenceItem, ...]) -> None:
