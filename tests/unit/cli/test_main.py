@@ -726,3 +726,42 @@ def test_semantic_index_parser_captures_embedding_profile() -> None:
     assert args.model == "multilingual-model"
     assert args.query_prefix == ""
     assert args.document_prefix == ""
+
+
+def test_search_explain_retrieval_prints_lexical_evidence(monkeypatch, capsys) -> None:
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            pass
+
+        def search(self, query, *, limit, expand=False):
+            return (
+                SimpleNamespace(
+                    track_id="hero",
+                    score=1.0,
+                    title="Hero Entry",
+                    artist="Composer",
+                    album=None,
+                    matched_fields=("title",),
+                    matched_query="hero entry",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["search", "hero entry", "--explain-retrieval"]) == 0
+
+    assert capsys.readouterr().out == (
+        "1. hero\t1.000000\tHero Entry — Composer\tmatched=title\n"
+        "   matched-query: hero entry\n"
+    )

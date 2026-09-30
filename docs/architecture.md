@@ -52,7 +52,7 @@ M12 provides catalog text retrieval:
       ├─ indexed semantic → persisted document vectors + freshness check
       └─ hybrid → min-max normalized lexical/semantic fusion
 
-These retrieval paths can evolve independently of M1 ranking. Hybrid retrieval fuses retrieval scores only; it does not change M1 ranking weights.
+These retrieval paths can evolve independently of M1 ranking. Hybrid retrieval fuses retrieval scores only; it does not change M1 ranking weights. Retrieval results may also expose deterministic evidence such as the winning lexical query variant or the normalized/weighted hybrid source contributions without promoting that evidence into an M1 signal.
 
 ## Recommendation candidate boundary
 

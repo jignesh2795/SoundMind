@@ -117,3 +117,16 @@ def test_search_can_expand_music_domain_aliases_without_changing_default() -> No
         "original-soundtrack",
         "soundtrack",
     ]
+
+
+def test_expanded_search_reports_best_query_variant() -> None:
+    engine = CatalogTextRetrievalEngine()
+    rows = [
+        row("soundtrack", title="Hero Soundtrack"),
+        row("original-soundtrack", title="Hero Original Soundtrack"),
+    ]
+
+    results = engine.search("ost", rows, expand=True)
+
+    assert results[0].matched_query == "original soundtrack"
+    assert results[1].matched_query == "soundtrack"

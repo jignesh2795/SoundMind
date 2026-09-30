@@ -36,8 +36,19 @@ This document is the project-level implementation ledger. It records completed m
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
+| M12.9 | Deterministic retrieval evidence for lexical and hybrid search | In validation |
 
 ## Current milestone
+
+### M12.9 — Deterministic Retrieval Evidence (in validation)
+
+M12.9 makes retrieval decisions inspectable without changing retrieval scoring or recommendation ranking. Lexical results can report the winning query variant, while hybrid results expose normalized source scores and weighted source contributions.
+
+The evidence is informational and remains inside M12. It does not become an M1 ranking signal. The default search output remains unchanged; `--explain-retrieval` is opt-in.
+
+Contract: [M12.9 deterministic retrieval evidence](m12-9-retrieval-evidence-contract.md)
+
+Validation is pending; no new test count is recorded until OpenCode reports the gate.
 
 ### M12.8 — Configurable Hybrid Retrieval Weights (completed)
 
@@ -259,9 +270,9 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 ## Future M12 slices
 
-M12.8 completes the current hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
+M12.8 completes the hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
 
-Potential later M12 work includes richer retrieval evidence, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
+M12.9 is the current evidence/traceability extension. Potential later M12 work includes multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
 ## Validation baseline
 

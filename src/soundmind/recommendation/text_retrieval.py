@@ -26,6 +26,7 @@ class TextSearchResult:
     track_id: str
     score: float
     matched_fields: tuple[str, ...]
+    matched_query: str | None = None
     title: str | None = None
     artist: str | None = None
     album: str | None = None
@@ -103,13 +104,22 @@ class CatalogTextRetrievalEngine:
 
             best_score = 0.0
             best_fields: tuple[str, ...] = ()
-            for tokens in query_tokens:
+            best_query: str | None = None
+            for variant, tokens in zip(queries, query_tokens, strict=True):
                 score, matched_fields = _field_score(tokens, row)
                 if score > best_score or (
-                    score == best_score and matched_fields < best_fields
+                    score == best_score
+                    and (
+                        matched_fields < best_fields
+                        or (
+                            matched_fields == best_fields
+                            and (best_query is None or variant < best_query)
+                        )
+                    )
                 ):
                     best_score = score
                     best_fields = matched_fields
+                    best_query = variant.strip()
 
             if best_score <= 0:
                 continue
@@ -118,6 +128,7 @@ class CatalogTextRetrievalEngine:
                     track_id=row.track_id,
                     score=best_score,
                     matched_fields=best_fields,
+                    matched_query=best_query,
                     title=row.title,
                     artist=row.artist,
                     album=row.album,
