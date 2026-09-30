@@ -4,6 +4,7 @@ import pytest
 
 from soundmind.catalog_search import CatalogTextSearchService
 from soundmind.recommendation.hybrid_retrieval import HybridWeights
+from soundmind.recommendation.semantic_text_index import SemanticIndexStaleError
 from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
 
@@ -100,6 +101,53 @@ def test_hybrid_search_rejects_invalid_weights(tmp_path) -> None:
                 lexical_weight=-1.0,
                 semantic_weight=0.5,
             )
+
+
+def test_hybrid_search_rejects_empty_query(tmp_path) -> None:
+    factory = create_session_factory(tmp_path / "soundmind.db")
+    with factory() as session:
+        session.add(row("hero", title="Hero Entry", artist="Composer"))
+        session.commit()
+
+        with pytest.raises(ValueError, match="non-empty"):
+            CatalogTextSearchService(session).hybrid_search(
+                "   ",
+                provider=StaticProvider(),
+            )
+
+
+def test_hybrid_search_indexed_rejects_stale_index_without_rebuild(tmp_path) -> None:
+    factory = create_session_factory(tmp_path / "soundmind.db")
+    with factory() as session:
+        session.add_all(
+            [
+                row("hero", title="Hero Entry", artist="Composer"),
+                row("calm", title="Calm", artist="Composer"),
+            ]
+        )
+        session.commit()
+
+        service = CatalogTextSearchService(session)
+        service.rebuild_semantic_index(
+            provider=StaticProvider(),
+            model_name="model-v1",
+            index_path=tmp_path / "semantic_vectors",
+        )
+        manifest_before = (tmp_path / "semantic_vectors.meta.json").read_text(
+            encoding="utf-8"
+        )
+
+        with pytest.raises(SemanticIndexStaleError, match="model"):
+            service.hybrid_search_indexed(
+                "hero",
+                provider=StaticProvider(),
+                model_name="model-v2",
+                index_path=tmp_path / "semantic_vectors",
+            )
+
+        assert (tmp_path / "semantic_vectors.meta.json").read_text(
+            encoding="utf-8"
+        ) == manifest_before
 
 
 def test_hybrid_weights_must_be_positive() -> None:
