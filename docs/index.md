@@ -44,6 +44,10 @@
 - [M12.8 configurable hybrid retrieval weights](m12-8-configurable-hybrid-weights-contract.md)
 - [M12.9 deterministic retrieval evidence](m12-9-retrieval-evidence-contract.md)
 
+### Playlist editing
+
+- [M13.1 deterministic playlist editing](m13-1-playlist-editing-contract.md)
+
 ## Documentation rule
 
 Feature work should update the relevant contract, the project-level milestone ledger, and the README when the public project boundary changes. Validation status should only be updated from an actual local gate.

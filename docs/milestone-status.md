@@ -37,8 +37,17 @@ This document is the project-level implementation ledger. It records completed m
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
 | M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
+| M13.1 | Deterministic playlist editing primitives | In validation |
 
 ## Current milestone
+
+### M13.1 — Deterministic Playlist Editing Primitives (in validation)
+
+M13.1 introduces a separate structural-editing layer for already-generated playlists. It supports deterministic removal, movement, swapping, and trimming without changing M1 ranking or M2 sequencing.
+
+Contract: [M13.1 playlist editing primitives](m13-1-playlist-editing-contract.md)
+
+Validation is pending; no new test count is recorded until OpenCode reports the gate.
 
 ### M12.9 — Deterministic Retrieval Evidence (completed)
 
@@ -279,7 +288,7 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 M12.8 completes the hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
 
-M12.9 is the current evidence/traceability extension. Potential later M12 work includes multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
+M12.9 completed the retrieval evidence/traceability extension. Future M12 work includes multilingual catalog evidence; playlist editing now begins separately at M13.1. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
 ## Validation baseline
 
