@@ -336,7 +336,11 @@ def main(argv=None):
                     )
                 _print_hybrid_search(results)
             elif a.semantic:
-                provider = FastEmbedTextProvider(a.semantic_model)
+                provider = FastEmbedTextProvider(
+                    a.semantic_model,
+                    query_prefix=a.semantic_query_prefix,
+                    document_prefix=a.semantic_document_prefix,
+                )
                 results = service.semantic_search(
                     a.query,
                     provider=provider,
@@ -344,7 +348,11 @@ def main(argv=None):
                 )
                 _print_semantic_search(results)
             elif a.semantic_indexed:
-                provider = FastEmbedTextProvider(a.semantic_model)
+                provider = FastEmbedTextProvider(
+                    a.semantic_model,
+                    query_prefix=a.semantic_query_prefix,
+                    document_prefix=a.semantic_document_prefix,
+                )
                 results = service.semantic_search_indexed(
                     a.query,
                     provider=provider,
