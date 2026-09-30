@@ -375,24 +375,34 @@ def main(argv=None):
         )
         with sf() as session:
             service = _recommend_service(a, session)
-            text_provider = (
-                FastEmbedTextProvider(a.text_model)
-                if a.retrieval in {"semantic", "semantic-indexed", "hybrid", "hybrid-indexed"}
-                else None
-            )
-            result = service.recommend(
-                request,
-                context=a.context,
-                now=now,
-                event_limit=a.event_limit,
-                catalog_limit=a.catalog_limit,
-                seed_track_id=a.seed_track_id,
-                retrieval_mode=a.retrieval,
-                retrieval_limit=a.retrieval_limit,
-                text_provider=text_provider,
-                text_model=a.text_model,
-                text_index_path=a.text_index,
-            )
+            recommend_kwargs = {
+                "context": a.context,
+                "now": now,
+                "event_limit": a.event_limit,
+                "catalog_limit": a.catalog_limit,
+                "seed_track_id": a.seed_track_id,
+            }
+            if a.retrieval != "catalog":
+                text_provider = (
+                    FastEmbedTextProvider(a.text_model)
+                    if a.retrieval in {
+                        "semantic",
+                        "semantic-indexed",
+                        "hybrid",
+                        "hybrid-indexed",
+                    }
+                    else None
+                )
+                recommend_kwargs.update(
+                    {
+                        "retrieval_mode": a.retrieval,
+                        "retrieval_limit": a.retrieval_limit,
+                        "text_provider": text_provider,
+                        "text_model": a.text_model,
+                        "text_index_path": a.text_index,
+                    }
+                )
+            result = service.recommend(request, **recommend_kwargs)
         _print_recommendation(result, explain=a.explain)
         return 0
 
