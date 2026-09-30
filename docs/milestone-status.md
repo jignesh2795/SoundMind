@@ -38,8 +38,17 @@ This document is the project-level implementation ledger. It records completed m
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
 | M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
 | M13.1 | Deterministic playlist editing primitives | Complete |
+| M13.2 | Deterministic natural-language playlist edit parser | In validation |
 
 ## Current milestone
+
+### M13.2 — Deterministic Natural-Language Playlist Edit Parser (in validation)
+
+M13.2 converts a small explicit set of natural-language playlist edit commands into M13.1 edit objects. It remains deterministic and does not infer tracks semantically or call an LLM.
+
+Contract: [M13.2 playlist edit parser](m13-2-playlist-edit-parser-contract.md)
+
+Validation is pending; no new test count is recorded until OpenCode reports the gate.
 
 ### M13.1 — Deterministic Playlist Editing Primitives (completed)
 
