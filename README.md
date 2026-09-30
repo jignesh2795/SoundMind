@@ -102,7 +102,9 @@ Validation uses Ruff and pytest.
 - M11.3: seeded learned recommendation
 - M11.4: CLI recommendation explanations
 - M12.1: deterministic text retrieval foundation
-- later: semantic embedding retrieval, hybrid lexical/semantic fusion, source adapters, editing, stems and advanced creation
+- M12.2: local semantic text retrieval
+- M12.3: persisted semantic retrieval index
+- later: hybrid lexical/semantic fusion, source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 

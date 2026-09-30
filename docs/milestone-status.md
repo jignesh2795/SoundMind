@@ -29,16 +29,22 @@ This document is the project-level implementation ledger. It records completed m
 | M11.3 | Seeded learned recommendation through the existing M8 path | Complete |
 | M11.4 | CLI recommendation explanations | Complete |
 | M12.1 | Deterministic text retrieval foundation over catalog metadata | Complete |
+| M12.2 | Local semantic text retrieval with explicit provider boundary | Complete |
+| M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
 
 ## Current milestone
 
-### M12.3 — Persisted Semantic Retrieval Index
+### M12.3 — Persisted Semantic Retrieval Index (completed)
 
-Branch: `feat/m12-persisted-semantic-index`
+M12.3 is merged into `main` via PR #21. It persists semantic document vectors as derived data and fingerprints the active catalog plus model so indexed search reuses vectors safely.
 
-Base: M12.2 merge `e3e84a7`
+Validation:
 
-M12.3 persists semantic document vectors as derived data and fingerprints the active catalog plus model so indexed search can reuse vectors safely.
+```
+M12.1: ruff: All checks passed! / pytest: 147 passed
+M12.2: ruff: All checks passed! / pytest: 161 passed
+M12.3: ruff: All checks passed! / pytest: 170 passed
+```
 
 Command:
 
@@ -189,7 +195,7 @@ M12.1 gate: Ruff clean, 147 tests passed.
 
 M12.2 gate: Ruff clean, 161 tests passed.
 
-M12.3 validation is pending the local Ruff and pytest gate on `feat/m12-persisted-semantic-index`.
+M12.3 gate: Ruff clean, 170 tests passed (PR #21 merged).
 
 ## Documentation rule
 
