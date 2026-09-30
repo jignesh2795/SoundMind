@@ -49,9 +49,14 @@ M12 provides catalog text retrieval:
     query
       ├─ lexical → fixed metadata weights
       ├─ semantic → local text embeddings
-      └─ indexed semantic → persisted document vectors + freshness check
+      ├─ indexed semantic → persisted document vectors + freshness check
+      └─ hybrid → min-max normalized lexical/semantic fusion
 
-These retrieval paths can evolve independently of M1 ranking.
+These retrieval paths can evolve independently of M1 ranking. Hybrid
+retrieval fuses retrieval scores only; it does not change M1 ranking
+weights. The pipeline boundary stays:
+
+    retrieval → ranking → sequencing
 
 ## Recommendation layers
 
@@ -94,7 +99,7 @@ AI/ML is an enhancement layer, not a prerequisite for the base system.
           ↓
     optional local semantic model
           ↓
-    future hybrid retrieval
+    hybrid lexical/semantic retrieval
 
 Optional dependencies should be loaded at their boundary. Basic catalog search should remain usable without model packages.
 

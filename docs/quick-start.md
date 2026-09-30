@@ -68,7 +68,31 @@ Then query the persisted index:
 
 The persisted index is derived data. It is fingerprinted against the active catalog and selected model; stale indexes must be rebuilt.
 
-## 7. Learned audio similarity
+## 7. Hybrid lexical + semantic retrieval
+
+Combine lexical metadata matching with semantic similarity:
+
+    uv run soundmind search "hero entry" --hybrid
+
+Use the persisted index for the semantic side:
+
+    uv run soundmind search "hero entry" \
+        --hybrid \
+        --semantic-indexed
+
+Tune the convex fusion weights (they must sum positive and are
+normalized deterministically):
+
+    uv run soundmind search "hero entry" \
+        --hybrid \
+        --lexical-weight 0.7 \
+        --semantic-weight 0.3
+
+Hybrid retrieval fuses retrieval scores only; it does not change
+recommendation ranking. The persisted semantic index must be fresh and
+is never rebuilt automatically.
+
+## 8. Learned audio similarity
 
 Learned audio retrieval uses the existing Discogs-EffNet path and is intentionally separate from text search.
 
@@ -86,7 +110,7 @@ A seeded recommendation can then use the existing learned path:
 
 See the M8/M11 contracts for model and index behavior.
 
-## 8. Deterministic recommendation runs
+## 9. Deterministic recommendation runs
 
 For reproducible recommendation experiments, provide an explicit reference time:
 

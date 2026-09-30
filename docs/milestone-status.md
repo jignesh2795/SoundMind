@@ -31,19 +31,15 @@ This document is the project-level implementation ledger. It records completed m
 | M12.1 | Deterministic text retrieval foundation over catalog metadata | Complete |
 | M12.2 | Local semantic text retrieval with explicit provider boundary | Complete |
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
-| M12.4 | Hybrid lexical + semantic retrieval fusion | In progress |
+| M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
 
 ## Current milestone
 
-### M12.4 — Hybrid Lexical + Semantic Retrieval (in progress)
+### M12.4 — Hybrid Lexical + Semantic Retrieval (completed)
 
-Branch: `feat/m12-hybrid-retrieval`
-
-M12.4 fuses the existing M12.1 lexical scores with M12.2/M12.3 semantic
-scores into one deterministic union. Retrieval only: no ranking,
-sequencing, schema, or model changes.
-
-Validation: pending the local Ruff and pytest gate.
+M12.4 is merged into `main` via PR #24. It fuses the existing M12.1
+lexical scores with M12.2/M12.3 semantic scores into one deterministic
+union. Retrieval only: no ranking, sequencing, schema, or model changes.
 
 Validation:
 
@@ -51,6 +47,7 @@ Validation:
 M12.1: ruff: All checks passed! / pytest: 147 passed
 M12.2: ruff: All checks passed! / pytest: 161 passed
 M12.3: ruff: All checks passed! / pytest: 170 passed
+M12.4: ruff: All checks passed! / pytest: 194 passed
 ```
 
 Command:
@@ -118,6 +115,24 @@ query embedding only
 SemanticTextSearchResult
 ```
 
+Hybrid path:
+
+```
+CLI search --hybrid
+    ↓
+CatalogTextSearchService
+    ↓
+lexical retrieval
+    +
+live semantic retrieval
+    OR
+persisted semantic retrieval
+    ↓
+deterministic hybrid fusion
+    ↓
+HybridSearchResult
+```
+
 Both are deliberately separate from:
 
 ```
@@ -130,7 +145,13 @@ M10.3 context-aware flow
 M1 ranking
 ```
 
-M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides local semantic retrieval; M12.3 persists semantic vectors as derived data.
+M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides local semantic retrieval; M12.3 persists semantic vectors as derived data; M12.4 fuses lexical and semantic scores into one deterministic union.
+
+```
+M12 retrieval
+    ≠
+M1 personal ranking
+```
 
 ## Scoring boundaries
 
@@ -162,7 +183,7 @@ M12.3 keeps vectors outside the source-of-truth SQLite catalog. It does not chan
 
 ## Future M12 slices
 
-M12.1 lexical retrieval, M12.2 semantic retrieval, and M12.3 persisted semantic retrieval now share the catalog-search boundary. Later slices can add hybrid lexical-plus-semantic fusion, phrase/synonym expansion, or recommendation integration while retaining a model-free fallback.
+M12.1 lexical retrieval, M12.2 semantic retrieval, M12.3 persisted semantic retrieval, and M12.4 hybrid fusion now share the catalog-search boundary. Later slices can add phrase/synonym expansion or recommendation integration while retaining a model-free fallback.
 
 ## Architecture progression
 
@@ -170,10 +191,14 @@ M12.1 lexical retrieval, M12.2 semantic retrieval, and M12.3 persisted semantic 
 CLI
  ↓
 M12.1 deterministic text retrieval
- ↓
+  ↓
 SQLite catalog metadata
- ↓
-future semantic retrieval / hybrid fusion
+  ↓
+M12.2 local semantic retrieval
+  ↓
+M12.3 persisted semantic retrieval
+  ↓
+M12.4 hybrid lexical/semantic fusion
 
 Recommendation path:
 CLI
@@ -203,6 +228,8 @@ M12.1 gate: Ruff clean, 147 tests passed.
 M12.2 gate: Ruff clean, 161 tests passed.
 
 M12.3 gate: Ruff clean, 170 tests passed (PR #21 merged).
+
+M12.4 gate: Ruff clean, 194 tests passed (PR #24 merged).
 
 ## Documentation rule
 
