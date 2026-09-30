@@ -504,7 +504,13 @@ def test_search_hybrid_with_explicit_semantic_stays_live(monkeypatch, capsys) ->
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             pass
 
     class FakeSearchService:
@@ -538,7 +544,13 @@ def test_search_hybrid_dispatches_to_catalog_service(monkeypatch, capsys) -> Non
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             captured["model_name"] = model_name
 
     class FakeSearchService:
@@ -607,7 +619,13 @@ def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             pass
 
     class FakeSearchService:
