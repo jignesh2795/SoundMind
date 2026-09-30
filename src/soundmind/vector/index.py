@@ -1,6 +1,5 @@
 """Persistent NumPy vector index with integrity-checked publication."""
 
-import hashlib
 import json
 import os
 from dataclasses import dataclass
@@ -44,8 +43,8 @@ class NumpyVectorIndex:
             "version": 1,
             "dimension": self.dimension,
             "track_count": len(track_ids),
-            "ids_sha256": _sha256_file(ti),
-            "vectors_sha256": _sha256_file(tv),
+            "ids_signature": _file_signature(ti),
+            "vectors_signature": _file_signature(tv),
         }
         tm.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
 
@@ -64,9 +63,9 @@ class NumpyVectorIndex:
         manifest = _load_integrity_manifest(self.integrity_path)
         _validate_integrity_manifest(manifest, dimension=self.dimension)
 
-        if _sha256_file(self.ids_path) != manifest["ids_sha256"]:
+        if _file_signature(self.ids_path) != manifest["ids_signature"]:
             raise ValueError("Persisted vector index failed integrity validation; rebuild the index")
-        if _sha256_file(self.vectors_path) != manifest["vectors_sha256"]:
+        if _file_signature(self.vectors_path) != manifest["vectors_signature"]:
             raise ValueError("Persisted vector index failed integrity validation; rebuild the index")
 
         ids = np.load(self.ids_path, allow_pickle=False).astype(str).tolist()
@@ -97,12 +96,9 @@ class NumpyVectorIndex:
         return [SimilarityResult(ids[int(i)], float(scores[int(i)])) for i in order]
 
 
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _file_signature(path: Path) -> dict[str, int]:
+    stat = path.stat()
+    return {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
 
 
 def _load_integrity_manifest(path: Path) -> dict[str, object]:
@@ -127,15 +123,30 @@ def _validate_integrity_manifest(
     if manifest.get("version") != 1:
         raise ValueError("Persisted vector index integrity version is unsupported; rebuild the index")
     if manifest.get("dimension") != dimension:
-        raise ValueError("Persisted vector index integrity dimension does not match; rebuild the index")
+        raise ValueError(
+            "Persisted vector index integrity dimension does not match; rebuild the index"
+        )
 
     track_count = manifest.get("track_count")
     if isinstance(track_count, bool) or not isinstance(track_count, int) or track_count < 0:
         raise ValueError("Persisted vector index integrity count is invalid; rebuild the index")
 
-    for key in ("ids_sha256", "vectors_sha256"):
+    for key in ("ids_signature", "vectors_signature"):
         value = manifest.get(key)
-        if not isinstance(value, str) or len(value) != 64:
+        if not isinstance(value, dict):
+            raise ValueError(
+                "Persisted vector index integrity metadata is invalid; rebuild the index"
+            )
+        size = value.get("size")
+        mtime_ns = value.get("mtime_ns")
+        if (
+            isinstance(size, bool)
+            or not isinstance(size, int)
+            or size < 0
+            or isinstance(mtime_ns, bool)
+            or not isinstance(mtime_ns, int)
+            or mtime_ns < 0
+        ):
             raise ValueError(
                 "Persisted vector index integrity metadata is invalid; rebuild the index"
             )
