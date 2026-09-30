@@ -109,4 +109,15 @@ Evidence must not be interpreted as an additional M1 ranking signal unless a sep
 
 ## Validation
 
-The implementation branch requires the normal OpenCode Ruff and pytest gate before merge.
+The implementation branch passed the normal OpenCode Ruff and pytest gate before merge.
+
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 220 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
+
+The CLI printer gap discovered during validation was fixed in the implementation branch before the final green gate. No default output regression was observed.

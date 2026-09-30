@@ -36,11 +36,11 @@ This document is the project-level implementation ledger. It records completed m
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
-| M12.9 | Deterministic retrieval evidence for lexical and hybrid search | In validation |
+| M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
 
 ## Current milestone
 
-### M12.9 — Deterministic Retrieval Evidence (in validation)
+### M12.9 — Deterministic Retrieval Evidence (completed)
 
 M12.9 makes retrieval decisions inspectable without changing retrieval scoring or recommendation ranking. Lexical results can report the winning query variant, while hybrid results expose normalized source scores and weighted source contributions.
 
@@ -48,7 +48,14 @@ The evidence is informational and remains inside M12. It does not become an M1 r
 
 Contract: [M12.9 deterministic retrieval evidence](m12-9-retrieval-evidence-contract.md)
 
-Validation is pending; no new test count is recorded until OpenCode reports the gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 220 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M12.8 — Configurable Hybrid Retrieval Weights (completed)
 
@@ -286,6 +293,7 @@ M12.5: Ruff clean, 201 tests passed
 M12.6: Ruff clean, 208 tests passed
 M12.7: Ruff clean, 215 tests passed
 M12.8: Ruff clean, 217 tests passed
+M12.9: Ruff clean, 220 tests passed
 ```
 
 ## Documentation rule
