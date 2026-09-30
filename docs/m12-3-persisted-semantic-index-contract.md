@@ -90,7 +90,7 @@ Custom model/index paths remain explicit:
 
 ## Publication integrity
 
-The shared `NumpyVectorIndex` writes new vector and ID files to temporary paths, then atomically replaces the published files and writes the integrity manifest last. Readers validate both data-file signatures before loading vectors. An interrupted publication is therefore rejected and must be rebuilt rather than serving a mismatched ID/vector pair.
+The shared `NumpyVectorIndex` writes new vector and ID files to temporary paths, then publishes each file with atomic replacement and publishes the integrity manifest last. Readers validate both data-file signatures before loading vectors. An interrupted publication is therefore rejected and must be rebuilt rather than serving a mismatched ID/vector pair.
 
 ## Safety and freshness
 
