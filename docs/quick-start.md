@@ -88,6 +88,13 @@ normalized deterministically):
         --lexical-weight 0.7 \
         --semantic-weight 0.3
 
+Inspect deterministic retrieval evidence without changing the result set:
+
+    uv run soundmind search "hero bgm" \
+        --hybrid \
+        --expand-query \
+        --explain-retrieval
+
 Hybrid retrieval fuses retrieval scores only; it does not change
 recommendation ranking. The persisted semantic index must be fresh and
 is never rebuilt automatically.
