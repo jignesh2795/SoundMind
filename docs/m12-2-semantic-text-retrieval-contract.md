@@ -18,7 +18,7 @@ TextEmbeddingProvider
 local text embeddings
 ```
 
-The engine is provider-agnostic. The reference adapter uses FastEmbed with the local CPU-oriented `BAAI/bge-small-en-v1.5` model.
+The engine is provider-agnostic. The reference adapter uses FastEmbed with the local CPU-oriented `BAAI/bge-small-en-v1.5` model. The text embedding profile explicitly binds the model name and query/document prefixes.
 
 ## Catalog representation
 
@@ -36,10 +36,13 @@ The field labels are included in a fixed order so the same catalog row produces 
 
 ## Query/document embedding
 
-For retrieval-oriented embedding providers:
+The default text embedding profile is:
 
-- the query is encoded as `query: <query>`;
-- each catalog document is encoded as `passage: <catalog text>`.
+- model: `BAAI/bge-small-en-v1.5`;
+- query prefix: `query: `;
+- document prefix: `passage: `.
+
+Query and document prefixes are configurable. Empty prefixes are valid for models that expect raw query/document text.
 
 The engine does not persist embeddings or create a new database schema in M12.2.
 
@@ -93,7 +96,7 @@ Semantic retrieval is explicitly selected:
 
     soundmind search "<query>" --semantic
 
-No automatic model download is triggered by ordinary lexical search.
+No automatic model download is triggered by ordinary lexical search. Semantic commands may select an explicit model and prefix profile.
 
 ## Non-goals
 
