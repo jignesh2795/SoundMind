@@ -2,7 +2,10 @@ import argparse
 from datetime import UTC, datetime
 from pathlib import Path
 
-from soundmind.catalog_recommendation import CatalogContextRecommendationService
+from soundmind.catalog_recommendation import (
+    RETRIEVAL_MODES,
+    CatalogContextRecommendationService,
+)
 from soundmind.catalog_search import CatalogTextSearchService
 from soundmind.config import AnalysisConfig
 from soundmind.context_aware_flow import ContextAwareMusicFlow
@@ -137,6 +140,31 @@ def build_parser():
     rec.add_argument("--catalog-limit", type=int)
     rec.add_argument("--event-limit", type=int, default=1000)
     rec.add_argument(
+        "--retrieval",
+        choices=RETRIEVAL_MODES,
+        default="catalog",
+        help=(
+            "candidate generation mode: catalog, lexical, semantic, "
+            "semantic-indexed, hybrid, or hybrid-indexed"
+        ),
+    )
+    rec.add_argument(
+        "--retrieval-limit",
+        type=int,
+        help="maximum candidates requested from the M12 retrieval layer",
+    )
+    rec.add_argument(
+        "--text-model",
+        default=DEFAULT_TEXT_MODEL,
+        help="local text embedding model for semantic retrieval",
+    )
+    rec.add_argument(
+        "--text-index",
+        type=Path,
+        default=Path("data/index/text_vectors"),
+        help="persisted text index for semantic-indexed and hybrid-indexed retrieval",
+    )
+    rec.add_argument(
         "--mode",
         choices=tuple(mode.value for mode in SequenceMode),
         default=SequenceMode.SMOOTH.value,
@@ -168,9 +196,9 @@ def _print_search(results) -> None:
             value for value in (result.title, result.artist, result.album) if value
         )
         matched = ", ".join(result.matched_fields)
-        suffix = f"\t{details}" if details else ""
-        field_suffix = f"\tmatched={matched}" if matched else ""
-        print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}{field_suffix}")
+        suffix = f"	{details}" if details else ""
+        field_suffix = f"	matched={matched}" if matched else ""
+        print(f"{index}. {result.track_id}	{result.score:.6f}{suffix}{field_suffix}")
 
 
 def _print_semantic_search(results) -> None:
@@ -178,8 +206,8 @@ def _print_semantic_search(results) -> None:
         details = " — ".join(
             value for value in (result.title, result.artist, result.album) if value
         )
-        suffix = f"\t{details}" if details else ""
-        print(f"{index}. {result.track_id}\t{result.score:.6f}{suffix}\tsemantic")
+        suffix = f"	{details}" if details else ""
+        print(f"{index}. {result.track_id}	{result.score:.6f}{suffix}	semantic")
 
 
 def _print_hybrid_search(results) -> None:
@@ -187,10 +215,10 @@ def _print_hybrid_search(results) -> None:
         details = " — ".join(
             value for value in (result.title, result.artist, result.album) if value
         )
-        suffix = f"\t{details}" if details else ""
+        suffix = f"	{details}" if details else ""
         print(
-            f"{index}. {result.track_id}\t{result.score:.6f}{suffix}"
-            f"\thybrid lexical={result.lexical_score:.6f}"
+            f"{index}. {result.track_id}	{result.score:.6f}{suffix}"
+            f"	hybrid lexical={result.lexical_score:.6f}"
             f" semantic={result.semantic_score:.6f}"
         )
 
@@ -199,7 +227,7 @@ def _print_recommendation(result, *, explain=False) -> None:
     print(f"Intent: {result.intent.raw_text}")
     print("Ranked:")
     for index, candidate in enumerate(result.ranked, start=1):
-        print(f"{index}. {candidate.track_id}\t{candidate.score:.6f}")
+        print(f"{index}. {candidate.track_id}	{candidate.score:.6f}")
         if explain:
             strongest = candidate.explanation.strongest_signal
             print(f"   strongest: {strongest or 'none'}")
@@ -265,7 +293,7 @@ def main(argv=None):
                 print(f"Indexed learned embeddings: {svc.rebuild(limit=a.limit)}")
                 return 0
             for x in svc.similar(a.track_id, limit=a.limit):
-                print(f"{x.track_id}\t{x.score:.6f}")
+                print(f"{x.track_id}	{x.score:.6f}")
             return 0
 
     if a.command == "search":
@@ -314,8 +342,8 @@ def main(argv=None):
                     details = " — ".join(
                         value for value in (result.title, result.artist, result.album) if value
                     )
-                    suffix = f"\\t{details}" if details else ""
-                    print(f"{index}. {result.track_id}\\t{result.score:.6f}{suffix}\\tsemantic-indexed")
+                    suffix = f"	{details}" if details else ""
+                    print(f"{index}. {result.track_id}	{result.score:.6f}{suffix}	semantic-indexed")
             else:
                 results = service.search(
                     a.query,
@@ -346,13 +374,24 @@ def main(argv=None):
             limit=a.limit,
         )
         with sf() as session:
-            result = _recommend_service(a, session).recommend(
+            service = _recommend_service(a, session)
+            text_provider = (
+                FastEmbedTextProvider(a.text_model)
+                if a.retrieval in {"semantic", "semantic-indexed", "hybrid", "hybrid-indexed"}
+                else None
+            )
+            result = service.recommend(
                 request,
                 context=a.context,
                 now=now,
                 event_limit=a.event_limit,
                 catalog_limit=a.catalog_limit,
                 seed_track_id=a.seed_track_id,
+                retrieval_mode=a.retrieval,
+                retrieval_limit=a.retrieval_limit,
+                text_provider=text_provider,
+                text_model=a.text_model,
+                text_index_path=a.text_index,
             )
         _print_recommendation(result, explain=a.explain)
         return 0
