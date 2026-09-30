@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.2 — Deterministic Natural-Language Playlist Edit Parser (in validation).
+M13.2 — Deterministic Natural-Language Playlist Edit Parser.
 
 The current pipeline now supports:
 
