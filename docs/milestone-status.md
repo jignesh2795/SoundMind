@@ -32,15 +32,15 @@ This document is the project-level implementation ledger. It records completed m
 | M12.2 | Local semantic text retrieval with explicit provider boundary | Complete |
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
-| M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | In progress |
+| M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
 
 ## Current milestone
 
-### M12.5 — Recommendation Retrieval Bridge (in progress)
+### M12.5 — Recommendation Retrieval Bridge (completed)
 
-Branch: `feat/m12-5-recommendation-retrieval`
+M12.5 was merged into `main` via PR #26, merge commit `9e98846265b1b3d3c6213578f69fc47a0b3dd5f0`.
 
-M12.5 connects the M12 catalog retrieval layer to the existing catalog-backed recommendation boundary. The default recommendation path remains the existing full active catalog; explicit retrieval modes can bound the candidate pool before the unchanged contextual ranking and sequencing flow.
+It connects the M12 catalog retrieval layer to the existing catalog-backed recommendation boundary. The default recommendation path remains the existing full active catalog; explicit retrieval modes can bound the candidate pool before the unchanged contextual ranking and sequencing flow.
 
 Current retrieval modes:
 
@@ -73,7 +73,13 @@ M12.5 does not add retrieval scores to M1 ranking. Retrieval supplies the candid
 
 Default retrieval-pool limit: `max(50, recommendation_limit)`. An explicit retrieval limit may be supplied independently from the final recommendation limit.
 
-Validation: pending the local Ruff and pytest gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 201 passed
+git diff --check: clean
+```
 
 ## M12 layering
 
@@ -205,7 +211,7 @@ M12.1: Ruff clean, 147 tests passed
 M12.2: Ruff clean, 161 tests passed
 M12.3: Ruff clean, 170 tests passed
 M12.4: Ruff clean, 194 tests passed
-M12.5: pending local gate
+M12.5: Ruff clean, 201 tests passed
 ```
 
 ## Documentation rule
