@@ -75,7 +75,9 @@ lexical + persisted semantic → hybrid
 
 The persisted path reuses `PersistentSemanticTextIndex`, including its
 model/catalog freshness checks. The index is never rebuilt
-automatically.
+automatically. The `provider` remains required on the persisted path
+because the query itself is still embedded live; only the catalog
+document vectors are reused from storage.
 
 ## CLI
 

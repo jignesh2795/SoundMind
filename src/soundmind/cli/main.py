@@ -94,7 +94,10 @@ def build_parser():
     search.add_argument(
         "--hybrid",
         action="store_true",
-        help="fuse lexical results with semantic results",
+        help=(
+            "fuse lexical results with live semantic results, "
+            "or with persisted-index results when --semantic-indexed is given"
+        ),
     )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
     search.add_argument(
