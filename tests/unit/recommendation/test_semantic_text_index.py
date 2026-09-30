@@ -7,7 +7,6 @@ from soundmind.recommendation.semantic_text_index import (
     PersistentSemanticTextIndex,
     SemanticIndexStaleError,
 )
-from soundmind.recommendation.semantic_text_retrieval import catalog_text
 from soundmind.storage.models import TrackRow
 
 
@@ -111,6 +110,30 @@ def test_search_rejects_stale_catalog_and_model(tmp_path: Path) -> None:
             provider=provider,
             model_name="model-v2",
         )
+
+
+def test_rebuild_rejects_inconsistent_dimensions(tmp_path: Path) -> None:
+    class RaggedProvider(FakeProvider):
+        def embed_documents(self, texts):
+            return ((1.0, 0.0), (0.0,))
+
+    index = PersistentSemanticTextIndex(tmp_path / "semantic_vectors")
+    rows = [row("a", title="Hero Entry"), row("b", title="Calm")]
+
+    with pytest.raises(ValueError, match="inconsistent dimensions"):
+        index.rebuild(rows, provider=RaggedProvider(), model_name="model-v1")
+
+
+def test_rebuild_rejects_non_finite_values(tmp_path: Path) -> None:
+    class NonFiniteProvider(FakeProvider):
+        def embed_documents(self, texts):
+            return ((1.0, float("nan")), (0.0, 1.0))
+
+    index = PersistentSemanticTextIndex(tmp_path / "semantic_vectors")
+    rows = [row("a", title="Hero Entry"), row("b", title="Calm")]
+
+    with pytest.raises(ValueError, match="finite"):
+        index.rebuild(rows, provider=NonFiniteProvider(), model_name="model-v1")
 
 
 def test_rebuild_is_deterministic_for_same_catalog(tmp_path: Path) -> None:

@@ -2,9 +2,10 @@
 
 import hashlib
 import json
+import math
 import os
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from soundmind.recommendation.semantic_text_retrieval import (
     TextEmbeddingProvider,
@@ -58,6 +59,16 @@ class PersistentSemanticTextIndex:
             dimension = len(vectors[0])
             if dimension <= 0:
                 raise ValueError("embeddings must be non-empty")
+            for vector in vectors:
+                if len(vector) != dimension:
+                    raise ValueError("embedding provider returned inconsistent dimensions")
+                for value in vector:
+                    if isinstance(value, bool) or not isinstance(value, (int, float)):
+                        raise ValueError(  # noqa: TRY004
+                            "embeddings must contain finite numeric values"
+                        )
+                    if not math.isfinite(value):
+                        raise ValueError("embeddings must contain finite numeric values")
             matrix = list(vectors)
         else:
             dimension = 1
