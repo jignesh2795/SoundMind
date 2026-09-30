@@ -82,6 +82,25 @@ def test_union_keeps_single_source_candidates() -> None:
     assert sem_only.lexical_score == 0.0
 
 
+def test_negative_semantic_scores_normalize_correctly() -> None:
+    fused = fuse_search_results(
+        [],
+        [semantic("neg", -0.5), semantic("pos", 0.5)],
+    )
+
+    assert [(item.track_id, item.score) for item in fused] == [
+        ("pos", pytest.approx(0.5)),
+        ("neg", pytest.approx(0.0)),
+    ]
+
+
+def test_non_finite_source_scores_are_rejected() -> None:
+    with pytest.raises(ValueError, match="finite"):
+        fuse_search_results([lexical("a", float("nan"))], [])
+    with pytest.raises(ValueError, match="finite"):
+        fuse_search_results([], [semantic("a", float("inf"))])
+
+
 def test_tie_breaking_is_deterministic_by_track_id() -> None:
     first = fuse_search_results([lexical("b", 0.5)], [semantic("a", 0.5)])
     second = fuse_search_results([lexical("b", 0.5)], [semantic("a", 0.5)])
@@ -102,6 +121,16 @@ def test_limit_truncates_fused_results() -> None:
     )
 
     assert [item.track_id for item in fused] == ["a", "b"]
+
+
+def test_limit_one_returns_top_candidate() -> None:
+    fused = fuse_search_results(
+        [lexical("a", 1.0), lexical("b", 0.9)],
+        [semantic("c", 1.0)],
+        limit=1,
+    )
+
+    assert [item.track_id for item in fused] == ["a"]
 
 
 def test_duplicate_candidate_ids_are_rejected() -> None:
