@@ -36,7 +36,8 @@ The persisted semantic index is derived data, not catalog source-of-truth data:
 
 - `<index>.vectors.npy` stores float32 document vectors;
 - `<index>.ids.npy` stores track IDs in the same row order;
-- `<index>.meta.json` stores index version, model name, dimension, catalog fingerprint, and track count.
+- `<index>.meta.json` stores index version, model name, dimension, catalog fingerprint, and track count;
+- `<index>.integrity.json` records the publication signatures for the paired NumPy data files.
 
 The existing `NumpyVectorIndex` persistence boundary is reused.
 
@@ -86,6 +87,10 @@ Custom model/index paths remain explicit:
 
     soundmind semantic-index rebuild --model <model> --index <path>
     soundmind search "<query>" --semantic-indexed --semantic-model <model> --semantic-index <path>
+
+## Publication integrity
+
+The shared `NumpyVectorIndex` writes new vector and ID files to temporary paths, then publishes each file with atomic replacement and publishes the integrity manifest last. Readers validate both data-file signatures before loading vectors. An interrupted publication is therefore rejected and must be rebuilt rather than serving a mismatched ID/vector pair.
 
 ## Safety and freshness
 

@@ -54,7 +54,7 @@ The existing `LearnedEmbeddingService` remains responsible for:
 - reading the derived persistent vector index;
 - returning `SimilarityResult` values.
 
-M8 adds only the adapter that converts those results into recommendation evidence. Rebuilding the learned index remains an explicit derived-data operation.
+M8 adds only the adapter that converts those results into recommendation evidence. Rebuilding the learned index remains an explicit derived-data operation. The shared NumPy vector index also validates publication integrity so an interrupted rebuild cannot silently pair IDs from one generation with vectors from another.
 
 ## Non-goals
 
