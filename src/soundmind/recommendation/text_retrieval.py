@@ -3,6 +3,7 @@
 import re
 from dataclasses import dataclass
 
+from soundmind.recommendation.query_expansion import expand_query
 from soundmind.storage.models import TrackRow
 
 _TOKEN_RE = re.compile(r"[\w]+", re.UNICODE)
@@ -83,28 +84,40 @@ class CatalogTextRetrievalEngine:
         rows: list[TrackRow],
         *,
         limit: int = 10,
+        expand: bool = False,
     ) -> list[TextSearchResult]:
         if query is None or not query.strip():
             raise ValueError("query must be non-empty")
         if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
             raise ValueError("limit must be a positive integer")
 
-        query_tokens = _tokens(query)
-        if not query_tokens:
+        queries = expand_query(query) if expand else (query,)
+        query_tokens = [_tokens(value) for value in queries]
+        if not any(query_tokens):
             raise ValueError("query must contain searchable text")
 
         results: list[TextSearchResult] = []
         for row in rows:
             if row.status != "active":
                 continue
-            score, matched_fields = _field_score(query_tokens, row)
-            if score <= 0:
+
+            best_score = 0.0
+            best_fields: tuple[str, ...] = ()
+            for tokens in query_tokens:
+                score, matched_fields = _field_score(tokens, row)
+                if score > best_score or (
+                    score == best_score and matched_fields < best_fields
+                ):
+                    best_score = score
+                    best_fields = matched_fields
+
+            if best_score <= 0:
                 continue
             results.append(
                 TextSearchResult(
                     track_id=row.track_id,
-                    score=score,
-                    matched_fields=matched_fields,
+                    score=best_score,
+                    matched_fields=best_fields,
                     title=row.title,
                     artist=row.artist,
                     album=row.album,
