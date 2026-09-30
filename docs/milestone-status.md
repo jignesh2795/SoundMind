@@ -32,13 +32,13 @@ This document is the project-level implementation ledger. It records completed m
 
 ## Current milestone
 
-### M12.2 — Semantic Text Retrieval
+### M12.3 — Persisted Semantic Retrieval Index
 
-Branch: `feat/m12-semantic-text-retrieval`
+Branch: `feat/m12-persisted-semantic-index`
 
-Base: M12.1 merge `aa417c7`
+Base: M12.2 merge `e3e84a7`
 
-M12.2 adds an explicit local semantic-text retrieval path behind a provider boundary. The default lexical search remains unchanged and model-free.
+M12.3 persists semantic document vectors as derived data and fingerprints the active catalog plus model so indexed search can reuse vectors safely.
 
 Command:
 
@@ -78,11 +78,29 @@ CLI search --semantic
     ↓
 CatalogTextSearchService
     ↓
-active TrackRow metadata
-    ↓
 SemanticTextRetrievalEngine
     ↓
 TextEmbeddingProvider
+```
+
+Persisted semantic path:
+
+```
+semantic-index rebuild
+    ↓
+active TrackRow metadata
+    ↓
+TextEmbeddingProvider
+    ↓
+NumpyVectorIndex + manifest
+
+CLI search --semantic-indexed
+    ↓
+active catalog fingerprint check
+    ↓
+persisted vectors
+    ↓
+query embedding only
     ↓
 SemanticTextSearchResult
 ```
@@ -99,7 +117,7 @@ M10.3 context-aware flow
 M1 ranking
 ```
 
-M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides optional local semantic retrieval.
+M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides local semantic retrieval; M12.3 persists semantic vectors as derived data.
 
 ## Scoring boundaries
 
@@ -127,11 +145,11 @@ cosine similarity
 (-score, track_id)
 ```
 
-M12.2 does not persist semantic vectors, change recommendation weights, invoke an LLM, or require a cloud inference service.
+M12.3 keeps vectors outside the source-of-truth SQLite catalog. It does not change recommendation weights, invoke an LLM, or require a cloud inference service.
 
 ## Future M12 slices
 
-M12.1 lexical retrieval and M12.2 semantic retrieval now share the catalog-search boundary. Later slices can add persisted semantic indexes, hybrid lexical-plus-semantic fusion, phrase/synonym expansion, or recommendation integration while retaining a model-free fallback.
+M12.1 lexical retrieval, M12.2 semantic retrieval, and M12.3 persisted semantic retrieval now share the catalog-search boundary. Later slices can add hybrid lexical-plus-semantic fusion, phrase/synonym expansion, or recommendation integration while retaining a model-free fallback.
 
 ## Architecture progression
 
@@ -169,7 +187,9 @@ M11.4: pytest: 136 passed
 
 M12.1 gate: Ruff clean, 147 tests passed.
 
-M12.2 validation is pending the local Ruff and pytest gate on `feat/m12-semantic-text-retrieval`.
+M12.2 gate: Ruff clean, 161 tests passed.
+
+M12.3 validation is pending the local Ruff and pytest gate on `feat/m12-persisted-semantic-index`.
 
 ## Documentation rule
 
