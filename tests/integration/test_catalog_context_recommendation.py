@@ -274,6 +274,28 @@ def test_hybrid_indexed_retrieval_feeds_recommendation(tmp_path) -> None:
     assert [item.track_id for item in result.ranked] == ["lexical", "semantic"]
 
 
+def test_hybrid_recommendation_rejects_invalid_weights(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("hero", title="Hero Entry"))
+        session.commit()
+
+        request = EndToEndRequest(text="hero", candidates=[], limit=1)
+
+        with pytest.raises(ValueError, match="weight"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="hybrid",
+                retrieval_limit=1,
+                text_provider=StaticTextProvider(),
+                lexical_weight=-0.1,
+                semantic_weight=0.5,
+            )
+
+
 def test_non_catalog_retrieval_rejects_catalog_limit(tmp_path) -> None:
     session_factory = create_session_factory(tmp_path / "soundmind.db")
 
