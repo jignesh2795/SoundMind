@@ -321,9 +321,10 @@ def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> Non
         def __init__(self, session) -> None:
             captured["session"] = session
 
-        def search(self, query, *, limit):
+        def search(self, query, *, limit, expand=False):
             captured["query"] = query
             captured["limit"] = limit
+            captured["expand"] = expand
             return (
                 SimpleNamespace(
                     track_id="hero-a",
@@ -348,9 +349,23 @@ def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> Non
         lambda path: lambda: FakeSession(),
     )
 
-    assert main(["search", "hero entry", "--db", "library.db", "--limit", "5"]) == 0
+    assert (
+        main(
+            [
+                "search",
+                "hero entry",
+                "--expand-query",
+                "--db",
+                "library.db",
+                "--limit",
+                "5",
+            ]
+        )
+        == 0
+    )
     assert captured["query"] == "hero entry"
     assert captured["limit"] == 5
+    assert captured["expand"] is True
     assert capsys.readouterr().out == (
         "1. hero-a\t1.000000\tHero Entry — Composer A — Album A"
         "\tmatched=title\n"
