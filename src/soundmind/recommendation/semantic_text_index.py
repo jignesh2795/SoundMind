@@ -8,6 +8,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_DOCUMENT_PREFIX,
+    DEFAULT_TEXT_QUERY_PREFIX,
     TextEmbeddingProvider,
     catalog_text,
 )
@@ -40,6 +42,8 @@ class PersistentSemanticTextIndex:
         *,
         provider: TextEmbeddingProvider,
         model_name: str,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
     ) -> int:
         active_rows = sorted(
             (row for row in rows if row.status == "active"),
@@ -80,6 +84,8 @@ class PersistentSemanticTextIndex:
         manifest = {
             "version": 1,
             "model_name": model_name,
+            "query_prefix": query_prefix,
+            "document_prefix": document_prefix,
             "dimension": dimension,
             "catalog_fingerprint": _catalog_fingerprint(active_rows),
             "track_count": len(active_rows),
@@ -97,6 +103,8 @@ class PersistentSemanticTextIndex:
         *,
         provider: TextEmbeddingProvider,
         model_name: str,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
         limit: int = 10,
     ) -> list[tuple[str, float]]:
         if not query.strip():
@@ -113,6 +121,13 @@ class PersistentSemanticTextIndex:
         if manifest["model_name"] != model_name:
             raise SemanticIndexStaleError(
                 "semantic index model does not match the requested model; rebuild it"
+            )
+        if (
+            manifest.get("query_prefix", DEFAULT_TEXT_QUERY_PREFIX) != query_prefix
+            or manifest.get("document_prefix", DEFAULT_TEXT_DOCUMENT_PREFIX) != document_prefix
+        ):
+            raise SemanticIndexStaleError(
+                "semantic index embedding prompt configuration does not match; rebuild it"
             )
         if manifest["catalog_fingerprint"] != current_fingerprint:
             raise SemanticIndexStaleError(

@@ -148,3 +148,26 @@ def test_rebuild_is_deterministic_for_same_catalog(tmp_path: Path) -> None:
 
     assert first == second
     assert "catalog_fingerprint" in first
+
+
+
+def test_search_rejects_changed_embedding_prompt_configuration(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    index = PersistentSemanticTextIndex(tmp_path / "semantic_vectors")
+    rows = [row("hero", title="Hero Entry")]
+
+    index.rebuild(
+        rows,
+        provider=provider,
+        model_name="model-v1",
+        query_prefix="",
+        document_prefix="",
+    )
+
+    with pytest.raises(SemanticIndexStaleError, match="prompt configuration"):
+        index.search(
+            "hero",
+            rows,
+            provider=provider,
+            model_name="model-v1",
+        )

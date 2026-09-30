@@ -10,6 +10,8 @@ from soundmind.recommendation.hybrid_retrieval import (
 )
 from soundmind.recommendation.semantic_text_index import PersistentSemanticTextIndex
 from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_DOCUMENT_PREFIX,
+    DEFAULT_TEXT_QUERY_PREFIX,
     SemanticTextRetrievalEngine,
     SemanticTextSearchResult,
     TextEmbeddingProvider,
@@ -60,12 +62,16 @@ class CatalogTextSearchService:
         provider: TextEmbeddingProvider,
         model_name: str,
         index_path,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
     ) -> int:
         index = PersistentSemanticTextIndex(index_path)
         return index.rebuild(
             self._active_rows(),
             provider=provider,
             model_name=model_name,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
         )
 
     def semantic_search_indexed(
@@ -75,6 +81,8 @@ class CatalogTextSearchService:
         provider: TextEmbeddingProvider,
         model_name: str,
         index_path,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
         limit: int = 10,
     ) -> list[SemanticTextSearchResult]:
         index = PersistentSemanticTextIndex(index_path)
@@ -83,6 +91,8 @@ class CatalogTextSearchService:
             self._active_rows(),
             provider=provider,
             model_name=model_name,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
             limit=limit,
         )
         rows_by_id = {row.track_id: row for row in self._active_rows()}
@@ -128,6 +138,8 @@ class CatalogTextSearchService:
         provider: TextEmbeddingProvider,
         model_name: str,
         index_path,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
         limit: int = 10,
         lexical_weight: float = 0.5,
         semantic_weight: float = 0.5,
@@ -140,6 +152,8 @@ class CatalogTextSearchService:
             provider=provider,
             model_name=model_name,
             index_path=index_path,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
             limit=limit,
         )
         return list(
