@@ -34,8 +34,19 @@ This document is the project-level implementation ledger. It records completed m
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
 | M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
+| M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | In validation |
 
 ## Current milestone
+
+### M12.7 — Deterministic Query Expansion (in validation)
+
+M12.7 adds a small, explicit, local vocabulary of music-domain phrase and abbreviation aliases to improve lexical retrieval recall. Expansion is opt-in and deterministic; the original query is always retained.
+
+Expansion affects only lexical retrieval and the lexical side of hybrid candidate generation. Semantic retrieval continues to embed the original query, and M1 ranking/M2 sequencing remain unchanged.
+
+Contract: [M12.7 query expansion](m12-7-query-expansion-contract.md)
+
+Validation is pending; no new test count is recorded until OpenCode reports the gate.
 
 ### M12.6 — Configurable Text Embedding Profiles (completed)
 
@@ -209,7 +220,7 @@ M12 retrieval score
 M1 ranking score
 ```
 
-M12.5 and M12.6 intentionally do not alter recommendation weights, contextual preference, novelty, learned audio scoring, or sequencing.
+M12.5, M12.6, and M12.7 intentionally do not alter recommendation weights, contextual preference, novelty, learned audio scoring, or sequencing.
 
 ## Candidate-pool semantics
 
@@ -223,9 +234,9 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 ## Future M12 slices
 
-M12.6 completes the configurable text-embedding boundary while retaining a deterministic model-free default.
+M12.7 is the current retrieval-recall extension while retaining a deterministic model-free default. Query expansion remains opt-in and deliberately small.
 
-Potential later M12 work includes richer retrieval evidence, phrase/synonym expansion, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
+Potential later M12 work includes richer retrieval evidence, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
 ## Validation baseline
 
