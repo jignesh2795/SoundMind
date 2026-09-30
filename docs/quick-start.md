@@ -113,6 +113,15 @@ Use M12.4 hybrid retrieval:
         --retrieval-limit 50 \
         --limit 10
 
+Tune the hybrid candidate-generation blend explicitly:
+
+    uv run soundmind recommend "hero entry" \
+        --context coding \
+        --retrieval hybrid \
+        --lexical-weight 0.7 \
+        --semantic-weight 0.3 \
+        --limit 10
+
 Use the persisted semantic path:
 
     uv run soundmind recommend "hero entry" \
