@@ -109,13 +109,10 @@ def test_search_can_expand_music_domain_aliases_without_changing_default() -> No
         row("background-music", title="Hero Background Music"),
     ]
 
-    default_results = engine.search("hero background music", rows)
-    expanded_results = engine.search("hero bgm", rows, expand=True)
+    default_results = engine.search("background score", rows)
+    expanded_results = engine.search("background score", rows, expand=True)
 
-    assert [item.track_id for item in default_results] == [
-        "background-music",
-        "bgm-title",
-    ]
+    assert default_results == []
     assert [item.track_id for item in expanded_results] == [
         "background-music",
         "bgm-title",
