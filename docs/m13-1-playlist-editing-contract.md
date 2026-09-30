@@ -87,3 +87,16 @@ M13.1 does not provide:
 - LLM or cloud-service dependency.
 
 Those capabilities can be added later behind explicit contracts.
+
+## Validation
+
+The implementation branch passed the normal OpenCode Ruff and pytest gate before merge.
+
+```
+Ruff: All checks passed!
+pytest: 234 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
+
+The only validation fix was the Python 3.12 `type` alias syntax required by Ruff `UP040`.
