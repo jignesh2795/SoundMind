@@ -1,4 +1,5 @@
 import argparse
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.playlist_edit_parser import parse_playlist_edits
+from soundmind.playlist_editing import apply_playlist_edits
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
@@ -220,6 +223,12 @@ def build_parser():
         "--explain",
         action="store_true",
         help="print per-signal ranking contributions",
+    )
+    rec.add_argument(
+        "--edit",
+        action="append",
+        default=[],
+        help="apply a deterministic playlist edit command after sequencing; repeatable",
     )
 
     return p
@@ -476,6 +485,10 @@ def main(argv=None):
                     }
                 )
             result = service.recommend(request, **recommend_kwargs)
+            if a.edit:
+                edits = parse_playlist_edits(a.edit)
+                edited_playlist = apply_playlist_edits(result.playlist, edits)
+                result = replace(result, playlist=edited_playlist)
         _print_recommendation(result, explain=a.explain)
         return 0
 
