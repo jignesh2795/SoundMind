@@ -32,45 +32,55 @@ This document is the project-level implementation ledger. It records completed m
 | M12.2 | Local semantic text retrieval with explicit provider boundary | Complete |
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
+| M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | In progress |
 
 ## Current milestone
 
-### M12.4 — Hybrid Lexical + Semantic Retrieval (completed)
+### M12.5 — Recommendation Retrieval Bridge (in progress)
 
-M12.4 is merged into `main` via PR #24. It fuses the existing M12.1
-lexical scores with M12.2/M12.3 semantic scores into one deterministic
-union. Retrieval only: no ranking, sequencing, schema, or model changes.
+Branch: `feat/m12-5-recommendation-retrieval`
 
-Validation:
+M12.5 connects the M12 catalog retrieval layer to the existing catalog-backed recommendation boundary. The default recommendation path remains the existing full active catalog; explicit retrieval modes can bound the candidate pool before the unchanged contextual ranking and sequencing flow.
+
+Current retrieval modes:
 
 ```
-M12.1: ruff: All checks passed! / pytest: 147 passed
-M12.2: ruff: All checks passed! / pytest: 161 passed
-M12.3: ruff: All checks passed! / pytest: 170 passed
-M12.4: ruff: All checks passed! / pytest: 194 passed
+catalog          = existing full active-catalog behavior
+lexical          = M12.1 deterministic metadata retrieval
+semantic         = M12.2 live local semantic retrieval
+semantic-indexed = M12.3 persisted semantic retrieval
+hybrid           = M12.4 lexical + live semantic retrieval
+hybrid-indexed   = M12.4 lexical + persisted semantic retrieval
 ```
 
-Command:
+Candidate flow:
 
-    soundmind search "<query>" [--db <path>] [--limit <n>]
+```
+CLI recommend
+    ↓
+M12 candidate generation (optional)
+    ↓
+active TrackRow → CatalogCandidate
+    ↓
+ContextAwareMusicFlow
+    ↓
+M1 ranking
+    ↓
+M2 sequencing
+```
 
-Behavior:
+M12.5 does not add retrieval scores to M1 ranking. Retrieval supplies the candidate set; M1 remains the ranking authority and M2 remains the sequencing authority.
 
-- searches active SQLite catalog rows only;
-- tokenizes query and metadata case-insensitively;
-- scores matches using fixed field weights;
-- supports title, artist, album, album artist, composer, genre, and file name;
-- penalizes partial query coverage;
-- resolves ties by stable track ID;
-- returns metadata and matched-field evidence;
-- does not alter recommendation ranking.
+Default retrieval-pool limit: `max(50, recommendation_limit)`. An explicit retrieval limit may be supplied independently from the final recommendation limit.
+
+Validation: pending the local Ruff and pytest gate.
 
 ## M12 layering
 
 Lexical path:
 
 ```
-CLI search
+CLI search / recommend --retrieval lexical
     ↓
 CatalogTextSearchService
     ↓
@@ -78,13 +88,15 @@ active TrackRow metadata
     ↓
 CatalogTextRetrievalEngine
     ↓
-TextSearchResult
+track IDs
+    ↓
+CatalogCandidateRepository.candidates_by_ids
 ```
 
 Semantic path:
 
 ```
-CLI search --semantic
+CLI search / recommend --retrieval semantic
     ↓
 CatalogTextSearchService
     ↓
@@ -102,55 +114,29 @@ active TrackRow metadata
     ↓
 TextEmbeddingProvider
     ↓
-NumpyVectorIndex + manifest
+persisted semantic vectors + manifest
 
-CLI search --semantic-indexed
+recommend --retrieval semantic-indexed / hybrid-indexed
     ↓
-active catalog fingerprint check
+freshness validation
     ↓
-persisted vectors
-    ↓
-query embedding only
-    ↓
-SemanticTextSearchResult
+query embedding + persisted catalog vectors
 ```
 
 Hybrid path:
 
 ```
-CLI search --hybrid
+CLI search / recommend --retrieval hybrid
     ↓
-CatalogTextSearchService
+lexical + semantic retrieval
     ↓
-lexical retrieval
-    +
-live semantic retrieval
-    OR
-persisted semantic retrieval
+deterministic hybrid union
     ↓
-deterministic hybrid fusion
+track IDs
     ↓
-HybridSearchResult
-```
-
-Both are deliberately separate from:
-
-```
-CLI recommend
+full CatalogCandidate adaptation
     ↓
-M11 application boundary
-    ↓
-M10.3 context-aware flow
-    ↓
-M1 ranking
-```
-
-M12 is a retrieval foundation, not a new recommendation algorithm. M12.1 provides the deterministic lexical baseline; M12.2 provides local semantic retrieval; M12.3 persists semantic vectors as derived data; M12.4 fuses lexical and semantic scores into one deterministic union.
-
-```
-M12 retrieval
-    ≠
-M1 personal ranking
+existing M1/M2 recommendation flow
 ```
 
 ## Scoring boundaries
@@ -164,9 +150,7 @@ metadata token matches
     ↓
 fixed field weights
     ↓
-coverage-normalized score
-    ↓
-(-score, track_id)
+coverage-normalized retrieval score
 ```
 
 Semantic:
@@ -176,60 +160,53 @@ query vector + catalog vectors
     ↓
 cosine similarity
     ↓
-(-score, track_id)
+semantic retrieval score
 ```
 
-M12.3 keeps vectors outside the source-of-truth SQLite catalog. It does not change recommendation weights, invoke an LLM, or require a cloud inference service.
+Hybrid:
+
+```
+lexical score + semantic score
+    ↓
+per-source min-max normalization
+    ↓
+explicit convex weights
+    ↓
+hybrid retrieval score
+```
+
+Recommendation boundary:
+
+```
+M12 retrieval score
+    ≠
+M1 ranking score
+```
+
+M12.5 intentionally does not alter recommendation weights, contextual preference, novelty, learned audio scoring, or sequencing.
+
+## Candidate-pool semantics
+
+M12 retrieval uses a separate candidate-pool limit from the final recommendation limit. For hybrid retrieval, M12.4 applies the candidate limit to each source before fusion. The resulting track IDs are then resolved against active catalog rows so the recommendation flow receives the full structured candidate evidence it already expects.
+
+## Optional AI/ML
+
+Semantic-backed retrieval modes require the optional text-ML provider. The default catalog recommendation path remains model-free. The application does not silently install or download model dependencies.
 
 ## Future M12 slices
 
-M12.1 lexical retrieval, M12.2 semantic retrieval, M12.3 persisted semantic retrieval, and M12.4 hybrid fusion now share the catalog-search boundary. Later slices can add phrase/synonym expansion or recommendation integration while retaining a model-free fallback.
-
-## Architecture progression
-
-```
-CLI
- ↓
-M12.1 deterministic text retrieval
-  ↓
-SQLite catalog metadata
-  ↓
-M12.2 local semantic retrieval
-  ↓
-M12.3 persisted semantic retrieval
-  ↓
-M12.4 hybrid lexical/semantic fusion
-
-Recommendation path:
-CLI
- ↓
-M11 application boundary
- ↓
-M10.3 context-aware flow
- ↓
-M3 → M4 → M8 → M9 → M10 → M1 → M2
- ↓
-optional explanation formatting
- ↓
-Ordered playlist
-```
+M12.5 completes the retrieval-to-ranking application bridge while retaining a deterministic model-free default. Later slices can add richer retrieval evidence, phrase/synonym expansion, or more advanced recommendation integration without collapsing retrieval and ranking into one boundary.
 
 ## Validation baseline
 
-Latest completed-milestone gate:
-
 ```
-M11.4: ruff: All checks passed!
-M11.4: pytest: 136 passed
+M11.4: ruff: All checks passed! / pytest: 136 passed
+M12.1: Ruff clean, 147 tests passed
+M12.2: Ruff clean, 161 tests passed
+M12.3: Ruff clean, 170 tests passed
+M12.4: Ruff clean, 194 tests passed
+M12.5: pending local gate
 ```
-
-M12.1 gate: Ruff clean, 147 tests passed.
-
-M12.2 gate: Ruff clean, 161 tests passed.
-
-M12.3 gate: Ruff clean, 170 tests passed (PR #21 merged).
-
-M12.4 gate: Ruff clean, 194 tests passed (PR #24 merged).
 
 ## Documentation rule
 
