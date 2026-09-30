@@ -36,7 +36,8 @@ This document is the project-level implementation ledger. It records completed m
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
 | M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
-| M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |\n| M13.1 | Deterministic playlist editing primitives | In validation |
+| M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
+| M13.1 | Deterministic playlist editing primitives | In validation |
 
 ## Current milestone
 
