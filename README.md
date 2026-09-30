@@ -13,7 +13,7 @@ The current pipeline now supports:
 - evidence: metadata and measured audio features
 - Music DNA: structured acoustic evidence derived from stored analysis
 - learned representation: optional Discogs-EffNet embeddings
-- retrieval: intent matching, deterministic catalog text search, optional semantic text retrieval, persisted semantic retrieval, and optional learned audio similarity from a supplied seed
+- retrieval: intent matching, deterministic catalog text search, optional semantic text retrieval, persisted semantic retrieval, hybrid lexical/semantic fusion, and optional learned audio similarity from a supplied seed
 - preference: decayed global and contextual listening history
 - personalization: contextual novelty/familiarity from listening exposure
 - ranking: existing M1 fusion with contextual preference, novelty, and learned signals
@@ -30,6 +30,7 @@ Example:
 
     soundmind search "hero entry" --limit 10
     soundmind search "calm cinematic background music" --semantic --limit 10
+    soundmind search "hero entry" --hybrid --limit 10
     soundmind semantic-index rebuild
     soundmind search "calm cinematic background music" --semantic-indexed --limit 10
 
@@ -104,7 +105,8 @@ Validation uses Ruff and pytest.
 - M12.1: deterministic text retrieval foundation
 - M12.2: local semantic text retrieval
 - M12.3: persisted semantic retrieval index
-- later: hybrid lexical/semantic fusion, source adapters, editing, stems and advanced creation
+- M12.4: hybrid lexical/semantic retrieval (in progress)
+- later: source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 

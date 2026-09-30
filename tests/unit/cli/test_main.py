@@ -476,3 +476,172 @@ def test_search_semantic_modes_are_mutually_exclusive() -> None:
         assert exc.code == 2
     else:
         raise AssertionError("expected argparse failure")
+
+
+def test_search_parser_hybrid_defaults() -> None:
+    args = build_parser().parse_args(["search", "hero entry"])
+
+    assert args.hybrid is False
+    assert args.lexical_weight == 0.5
+    assert args.semantic_weight == 0.5
+
+
+def test_search_hybrid_with_explicit_semantic_stays_live(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(self, model_name) -> None:
+            pass
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            pass
+
+        def hybrid_search(self, query, **kwargs):
+            captured["live"] = True
+            return ()
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["search", "hero", "--hybrid", "--semantic"]) == 0
+    assert captured == {"live": True}
+    assert capsys.readouterr().out == ""
+
+
+def test_search_hybrid_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(self, model_name) -> None:
+            captured["model_name"] = model_name
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            captured["session"] = session
+
+        def hybrid_search(
+            self, query, *, provider, limit, lexical_weight, semantic_weight
+        ):
+            captured["query"] = query
+            captured["provider"] = provider
+            captured["limit"] = limit
+            captured["weights"] = (lexical_weight, semantic_weight)
+            return (
+                SimpleNamespace(
+                    track_id="hero-a",
+                    score=0.9,
+                    lexical_score=1.0,
+                    semantic_score=0.8,
+                    title="Hero Entry",
+                    artist="Composer A",
+                    album=None,
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "search",
+                "hero entry",
+                "--hybrid",
+                "--lexical-weight",
+                "0.7",
+                "--semantic-weight",
+                "0.3",
+                "--limit",
+                "5",
+            ]
+        )
+        == 0
+    )
+    assert captured["query"] == "hero entry"
+    assert captured["weights"] == (0.7, 0.3)
+    assert isinstance(captured["provider"], FakeProvider)
+    assert capsys.readouterr().out == (
+        "1. hero-a\t0.900000\tHero Entry — Composer A"
+        "\thybrid lexical=1.000000 semantic=0.800000\n"
+    )
+
+
+def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(self, model_name) -> None:
+            pass
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            pass
+
+        def hybrid_search_indexed(
+            self,
+            query,
+            *,
+            provider,
+            model_name,
+            index_path,
+            limit,
+            lexical_weight,
+            semantic_weight,
+        ):
+            captured["model_name"] = model_name
+            captured["index_path"] = index_path
+            return ()
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "search",
+                "hero",
+                "--hybrid",
+                "--semantic-indexed",
+                "--semantic-index",
+                "text-index",
+            ]
+        )
+        == 0
+    )
+    assert captured["model_name"] == "BAAI/bge-small-en-v1.5"
+    assert captured["index_path"] == Path("text-index")
+    assert capsys.readouterr().out == ""
