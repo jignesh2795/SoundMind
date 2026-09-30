@@ -146,6 +146,11 @@ def build_parser():
     rec.add_argument("--catalog-limit", type=int)
     rec.add_argument("--event-limit", type=int, default=1000)
     rec.add_argument(
+        "--expand-query",
+        action="store_true",
+        help="expand supported music-domain phrases for lexical retrieval",
+    )
+    rec.add_argument(
         "--retrieval",
         choices=RETRIEVAL_MODES,
         default="catalog",
