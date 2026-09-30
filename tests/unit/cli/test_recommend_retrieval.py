@@ -32,7 +32,13 @@ def test_recommend_hybrid_dispatches_with_text_provider(monkeypatch, capsys) -> 
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             captured["model_name"] = model_name
 
     class FakeService:
@@ -97,7 +103,13 @@ def test_recommend_hybrid_indexed_dispatches_to_persisted_path(monkeypatch, caps
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             captured["model_name"] = model_name
 
     class FakeService:
