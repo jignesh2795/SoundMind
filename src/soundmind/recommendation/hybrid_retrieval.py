@@ -44,6 +44,10 @@ class HybridSearchResult:
     score: float
     lexical_score: float = 0.0
     semantic_score: float = 0.0
+    lexical_normalized_score: float = 0.0
+    semantic_normalized_score: float = 0.0
+    lexical_contribution: float = 0.0
+    semantic_contribution: float = 0.0
     title: str | None = None
     artist: str | None = None
     album: str | None = None
@@ -131,6 +135,12 @@ def fuse_search_results(
             + effective.semantic * normalized_semantic.get(track_id, 0.0),
             lexical_score=lexical_scores.get(track_id, 0.0),
             semantic_score=semantic_scores.get(track_id, 0.0),
+            lexical_normalized_score=normalized_lexical.get(track_id, 0.0),
+            semantic_normalized_score=normalized_semantic.get(track_id, 0.0),
+            lexical_contribution=effective.lexical
+            * normalized_lexical.get(track_id, 0.0),
+            semantic_contribution=effective.semantic
+            * normalized_semantic.get(track_id, 0.0),
             title=metadata[track_id][0],
             artist=metadata[track_id][1],
             album=metadata[track_id][2],
