@@ -1,6 +1,5 @@
 """SQLite-backed application boundary for context-aware recommendations."""
 
-from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
