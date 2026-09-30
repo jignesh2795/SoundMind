@@ -98,3 +98,14 @@ M13.2 does not provide:
 - playback-provider integration.
 
 Those capabilities can be added later behind explicit contracts.
+
+## Validation
+
+The implementation branch passed the normal OpenCode Ruff and pytest gate before merge.
+
+```
+Ruff: All checks passed!
+pytest: 259 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
