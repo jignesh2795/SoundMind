@@ -35,11 +35,11 @@ This document is the project-level implementation ledger. It records completed m
 | M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
 | M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
 | M12.7 | Deterministic opt-in music-domain query expansion for lexical retrieval | Complete |
-| M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | In validation |
+| M12.8 | Configurable hybrid lexical/semantic retrieval weights for recommendation candidate generation | Complete |
 
 ## Current milestone
 
-### M12.8 — Configurable Hybrid Retrieval Weights (in validation)
+### M12.8 — Configurable Hybrid Retrieval Weights (completed)
 
 M12.8 exposes the existing deterministic hybrid lexical/semantic fusion weights through the catalog-backed recommendation boundary. Defaults remain 0.5 lexical / 0.5 semantic; configured weights are normalized by the existing HybridWeights contract.
 
@@ -47,7 +47,14 @@ The weights affect only M12 candidate generation for live and persisted hybrid r
 
 Contract: [M12.8 configurable hybrid retrieval weights](m12-8-configurable-hybrid-weights-contract.md)
 
-Validation is pending; no new test count is recorded until OpenCode reports the gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 217 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M12.7 — Deterministic Query Expansion (completed)
 
@@ -252,7 +259,7 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 ## Future M12 slices
 
-M12.8 is the current hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
+M12.8 completes the current hybrid-control extension. Hybrid weights are explicit at both search and recommendation surfaces while remaining confined to candidate generation.
 
 Potential later M12 work includes richer retrieval evidence, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
@@ -267,6 +274,7 @@ M12.4: Ruff clean, 194 tests passed
 M12.5: Ruff clean, 201 tests passed
 M12.6: Ruff clean, 208 tests passed
 M12.7: Ruff clean, 215 tests passed
+M12.8: Ruff clean, 217 tests passed
 ```
 
 ## Documentation rule

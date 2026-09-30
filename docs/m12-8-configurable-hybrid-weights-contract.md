@@ -110,4 +110,11 @@ Changing hybrid weights is therefore an explicit retrieval configuration choice 
 
 ## Validation
 
-The implementation branch requires the normal OpenCode Ruff and pytest gate before merge.
+The implementation branch was validated through the normal OpenCode gate:
+
+```
+Ruff: All checks passed!
+pytest: 217 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
