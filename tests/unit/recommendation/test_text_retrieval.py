@@ -114,6 +114,6 @@ def test_search_can_expand_music_domain_aliases_without_changing_default() -> No
 
     assert [item.track_id for item in default_results] == ["background-music"]
     assert [item.track_id for item in expanded_results] == [
-        "bgm-title",
         "background-music",
+        "bgm-title",
     ]
