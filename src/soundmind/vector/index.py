@@ -109,7 +109,7 @@ def _load_integrity_manifest(path: Path) -> dict[str, object]:
             "Persisted vector index integrity metadata is invalid; rebuild the index"
         ) from exc
     if not isinstance(value, dict):
-        raise ValueError(  # noqa: TRY004
+        raise ValueError(
             "Persisted vector index integrity metadata is invalid; rebuild the index"
         )
     return value
@@ -134,7 +134,7 @@ def _validate_integrity_manifest(
     for key in ("ids_signature", "vectors_signature"):
         value = manifest.get(key)
         if not isinstance(value, dict):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 "Persisted vector index integrity metadata is invalid; rebuild the index"
             )
         size = value.get("size")
