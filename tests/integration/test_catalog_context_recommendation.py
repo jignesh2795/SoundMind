@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from soundmind.catalog_recommendation import CatalogContextRecommendationService
+from soundmind.catalog_search import CatalogTextSearchService
 from soundmind.flow import EndToEndRequest
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.preferences.repository import ListeningEventRepository
@@ -166,7 +167,7 @@ def test_hybrid_retrieval_feeds_existing_ranking_and_sequence(tmp_path) -> None:
             text="high energy",
             candidates=[],
             mode=SequenceMode.SMOOTH,
-            limit=1,
+            limit=2,
         )
         result = CatalogContextRecommendationService(session).recommend(
             request,
@@ -177,8 +178,53 @@ def test_hybrid_retrieval_feeds_existing_ranking_and_sequence(tmp_path) -> None:
             text_provider=StaticTextProvider(),
         )
 
-    assert [item.track_id for item in result.ranked] == ["lexical"]
-    assert [item.track_id for item in result.playlist] == ["lexical"]
+    assert [item.track_id for item in result.ranked] == ["lexical", "semantic"]
+    assert [item.track_id for item in result.playlist] == ["lexical", "semantic"]
+
+
+def test_hybrid_indexed_retrieval_feeds_recommendation(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+    index_path = tmp_path / "semantic_vectors"
+
+    with session_factory() as session:
+        session.add_all(
+            [
+                track("lexical", title="High Energy Entry", energy=0.8),
+                track(
+                    "semantic",
+                    title="Semantic Track",
+                    genre="ambient",
+                    energy=0.3,
+                ),
+            ]
+        )
+        session.commit()
+
+        provider = StaticTextProvider()
+        CatalogTextSearchService(session).rebuild_semantic_index(
+            provider=provider,
+            model_name="model-v1",
+            index_path=index_path,
+        )
+
+        request = EndToEndRequest(
+            text="high energy",
+            candidates=[],
+            mode=SequenceMode.SMOOTH,
+            limit=2,
+        )
+        result = CatalogContextRecommendationService(session).recommend(
+            request,
+            context="coding",
+            now=NOW,
+            retrieval_mode="hybrid-indexed",
+            retrieval_limit=1,
+            text_provider=provider,
+            text_model="model-v1",
+            text_index_path=index_path,
+        )
+
+    assert [item.track_id for item in result.ranked] == ["lexical", "semantic"]
 
 
 def test_non_catalog_retrieval_rejects_catalog_limit(tmp_path) -> None:
