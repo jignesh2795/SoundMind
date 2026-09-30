@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M12.3 — Persisted Semantic Retrieval Index.
+M12.4 — Hybrid Lexical + Semantic Retrieval.
 
 The current pipeline now supports:
 
@@ -24,13 +24,14 @@ The current pipeline now supports:
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 
-M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval; M12.3 persists semantic document vectors as derived data with freshness checks. These retrieval paths remain separate from recommendation ranking.
+M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval; M12.3 persists semantic document vectors as derived data with freshness checks; M12.4 fuses lexical and semantic scores into one deterministic union. These retrieval paths remain separate from recommendation ranking: hybrid retrieval does not change M1 ranking weights.
 
 Example:
 
     soundmind search "hero entry" --limit 10
     soundmind search "calm cinematic background music" --semantic --limit 10
     soundmind search "hero entry" --hybrid --limit 10
+    soundmind search "hero entry" --hybrid --semantic-indexed --limit 10
     soundmind semantic-index rebuild
     soundmind search "calm cinematic background music" --semantic-indexed --limit 10
 
@@ -48,9 +49,12 @@ CLI search
  │                 ↓
  │              TextEmbeddingProvider
  │
- └─ --semantic-indexed → M12.3 persisted semantic vectors
-                          ↓
-                       query embedding + freshness check
+  ├─ --semantic-indexed → M12.3 persisted semantic vectors
+  │                           ↓
+  │                        query embedding + freshness check
+  │
+  └─ --hybrid → M12.4 lexical + live semantic
+                or lexical + persisted semantic
 ```
 
 Recommendation remains separate:
@@ -105,7 +109,7 @@ Validation uses Ruff and pytest.
 - M12.1: deterministic text retrieval foundation
 - M12.2: local semantic text retrieval
 - M12.3: persisted semantic retrieval index
-- M12.4: hybrid lexical/semantic retrieval (in progress)
+- M12.4: hybrid lexical/semantic retrieval
 - later: source adapters, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
