@@ -165,7 +165,7 @@ Validation uses Ruff and pytest.
 - M12.8: configurable hybrid lexical/semantic retrieval weights
 - M12.9: deterministic retrieval evidence
 - M13.1: deterministic playlist editing primitives
-- later: multilingual catalog evidence, editing, stems and advanced creation
+- later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
