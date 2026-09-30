@@ -374,6 +374,10 @@ def test_search_parser_captures_semantic_options() -> None:
             "--semantic",
             "--semantic-model",
             "custom-model",
+            "--semantic-query-prefix",
+            "",
+            "--semantic-document-prefix",
+            "",
             "--limit",
             "6",
         ]
@@ -383,6 +387,8 @@ def test_search_parser_captures_semantic_options() -> None:
     assert args.query == "calm cinematic background music"
     assert args.semantic is True
     assert args.semantic_model == "custom-model"
+    assert args.semantic_query_prefix == ""
+    assert args.semantic_document_prefix == ""
     assert args.limit == 6
 
 
@@ -390,8 +396,16 @@ def test_search_semantic_dispatches_to_catalog_service(monkeypatch, capsys) -> N
     captured = {}
 
     class FakeProvider:
-        def __init__(self, model_name) -> None:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
             captured["model_name"] = model_name
+            captured["query_prefix"] = query_prefix
+            captured["document_prefix"] = document_prefix
 
     class FakeSearchService:
         def __init__(self, session) -> None:
@@ -607,6 +621,8 @@ def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys
             provider,
             model_name,
             index_path,
+            query_prefix,
+            document_prefix,
             limit,
             lexical_weight,
             semantic_weight,
@@ -645,3 +661,23 @@ def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys
     assert captured["model_name"] == "BAAI/bge-small-en-v1.5"
     assert captured["index_path"] == Path("text-index")
     assert capsys.readouterr().out == ""
+
+
+
+def test_semantic_index_parser_captures_embedding_profile() -> None:
+    args = build_parser().parse_args(
+        [
+            "semantic-index",
+            "rebuild",
+            "--model",
+            "multilingual-model",
+            "--query-prefix",
+            "",
+            "--document-prefix",
+            "",
+        ]
+    )
+
+    assert args.model == "multilingual-model"
+    assert args.query_prefix == ""
+    assert args.document_prefix == ""
