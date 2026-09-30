@@ -14,7 +14,14 @@ from soundmind.storage.models import TrackRow
 NOW = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
 
 
-def track(track_id: str, *, genre: str = "cinematic", status: str = "active") -> TrackRow:
+def track(
+    track_id: str,
+    *,
+    genre: str = "cinematic",
+    status: str = "active",
+    title: str | None = None,
+    energy: float = 0.5,
+) -> TrackRow:
     return TrackRow(
         track_id=track_id,
         content_hash=track_id * 64,
@@ -26,9 +33,9 @@ def track(track_id: str, *, genre: str = "cinematic", status: str = "active") ->
         status=status,
         created_at=NOW,
         updated_at=NOW,
-        title=f"Track {track_id}",
+        title=title or f"Track {track_id}",
         genre=genre,
-        rms_energy=0.5,
+        rms_energy=energy,
         tempo_bpm=100.0,
     )
 
@@ -71,7 +78,9 @@ def test_sqlite_catalog_and_events_feed_context_aware_flow(tmp_path) -> None:
     assert by_id["seen"].signals.novelty_score == pytest.approx(0.5)
     assert by_id["new"].signals.preference_score == pytest.approx(0.0)
     assert by_id["new"].signals.novelty_score == pytest.approx(1.0)
-    assert [item.track_id for item in result.playlist] == [item.track_id for item in result.ranked]
+    assert [item.track_id for item in result.playlist] == [
+        item.track_id for item in result.ranked
+    ]
 
 
 def test_inactive_catalog_tracks_are_excluded(tmp_path) -> None:
@@ -113,3 +122,92 @@ def test_catalog_context_service_is_deterministic(tmp_path) -> None:
         second = service.recommend(request, context="coding", now=NOW)
 
     assert first == second
+
+
+class StaticTextProvider:
+    def embed_query(self, text: str):
+        return (1.0, 0.0)
+
+    def embed_documents(self, texts):
+        return tuple(
+            (1.0, 0.0) if "semantic" in text.casefold() else (0.0, 1.0)
+            for text in texts
+        )
+
+
+def test_hybrid_retrieval_feeds_existing_ranking_and_sequence(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add_all(
+            [
+                track(
+                    "lexical",
+                    title="High Energy Entry",
+                    energy=0.8,
+                ),
+                track(
+                    "semantic",
+                    title="Semantic Track",
+                    genre="ambient",
+                    energy=0.3,
+                ),
+                track(
+                    "excluded",
+                    title="Other Track",
+                    genre="ambient",
+                    energy=0.3,
+                ),
+            ]
+        )
+        session.commit()
+
+        request = EndToEndRequest(
+            text="high energy",
+            candidates=[],
+            mode=SequenceMode.SMOOTH,
+            limit=1,
+        )
+        result = CatalogContextRecommendationService(session).recommend(
+            request,
+            context="coding",
+            now=NOW,
+            retrieval_mode="hybrid",
+            retrieval_limit=1,
+            text_provider=StaticTextProvider(),
+        )
+
+    assert [item.track_id for item in result.ranked] == ["lexical"]
+    assert [item.track_id for item in result.playlist] == ["lexical"]
+
+
+def test_non_catalog_retrieval_rejects_catalog_limit(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        request = EndToEndRequest(text="high energy", candidates=[], limit=1)
+
+        with pytest.raises(ValueError, match="catalog_limit"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                catalog_limit=10,
+                retrieval_mode="lexical",
+            )
+
+
+def test_hybrid_retrieval_requires_text_provider(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        request = EndToEndRequest(text="high energy", candidates=[], limit=1)
+
+        with pytest.raises(ValueError, match="text embedding provider"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="hybrid",
+                retrieval_limit=1,
+            )
