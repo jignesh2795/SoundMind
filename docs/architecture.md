@@ -52,11 +52,29 @@ M12 provides catalog text retrieval:
       ├─ indexed semantic → persisted document vectors + freshness check
       └─ hybrid → min-max normalized lexical/semantic fusion
 
-These retrieval paths can evolve independently of M1 ranking. Hybrid
-retrieval fuses retrieval scores only; it does not change M1 ranking
-weights. The pipeline boundary stays:
+These retrieval paths can evolve independently of M1 ranking. Hybrid retrieval fuses retrieval scores only; it does not change M1 ranking weights.
 
-    retrieval → ranking → sequencing
+## Recommendation candidate boundary
+
+M12 retrieval can optionally provide the candidate pool consumed by the existing M11/M10 recommendation application boundary:
+
+    CLI recommend
+        ↓
+    candidate generation
+        ├─ full active catalog (default)
+        └─ M12 lexical / semantic / hybrid retrieval
+        ↓
+    catalog ID → full CatalogCandidate adaptation
+        ↓
+    ContextAwareMusicFlow
+        ↓
+    M1 ranking
+        ↓
+    M2 sequencing
+
+The retrieval result score is not added to the M1 score. Retrieval selects candidates; M1 remains responsible for personal/contextual ranking and M2 remains responsible for sequence ordering.
+
+M12.5 uses a separate retrieval-pool limit from the final recommendation limit. The default retrieval pool is 50 candidates, or the final request limit when that is larger.
 
 ## Recommendation layers
 
@@ -74,7 +92,7 @@ Responsibilities remain separated:
 - M1: signal fusion and ranking
 - M2: playlist sequencing
 - M11: SQLite/application and CLI boundaries
-- M12: catalog text retrieval
+- M12: catalog text retrieval and optional recommendation candidate generation
 
 A new retrieval mechanism should normally enrich or feed an existing boundary rather than silently alter ranking weights.
 
@@ -100,8 +118,10 @@ AI/ML is an enhancement layer, not a prerequisite for the base system.
     optional local semantic model
           ↓
     hybrid lexical/semantic retrieval
+          ↓
+    optional recommendation candidate generation
 
-Optional dependencies should be loaded at their boundary. Basic catalog search should remain usable without model packages.
+Optional dependencies should be loaded at their boundary. Basic catalog search and the default catalog-backed recommendation path remain usable without model packages.
 
 ## Derived-index lifecycle
 
@@ -118,3 +138,4 @@ Derived indexes follow:
     query
 
 A stale index should be rejected rather than silently reused.
+
