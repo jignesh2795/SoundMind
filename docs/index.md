@@ -38,6 +38,7 @@
 - [M12.2 semantic text retrieval](m12-2-semantic-text-retrieval-contract.md)
 - [M12.3 persisted semantic index](m12-3-persisted-semantic-index-contract.md)
 - [M12.4 hybrid lexical + semantic retrieval](m12-4-hybrid-retrieval-contract.md)
+- [M12.5 recommendation retrieval bridge](m12-5-recommendation-retrieval-contract.md)
 
 ## Documentation rule
 

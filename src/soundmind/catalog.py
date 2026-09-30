@@ -108,6 +108,36 @@ class CatalogCandidateRepository:
             statement = statement.limit(limit)
         return [candidate_from_row(row) for row in self._session.scalars(statement)]
 
+    def candidates_by_ids(
+        self,
+        track_ids: Iterable[str],
+    ) -> list[CatalogCandidate]:
+        """Load active candidates in the requested deterministic ID order."""
+        ordered_ids = tuple(track_ids)
+        if not ordered_ids:
+            return []
+
+        seen: set[str] = set()
+        unique_ids: list[str] = []
+        for track_id in ordered_ids:
+            if not track_id:
+                raise ValueError("track_id must be non-empty")
+            if track_id in seen:
+                raise ValueError(f"duplicate track_id: {track_id!r}")
+            seen.add(track_id)
+            unique_ids.append(track_id)
+
+        rows = self._session.scalars(
+            select(TrackRow)
+            .where(
+                TrackRow.status == "active",
+                TrackRow.track_id.in_(unique_ids),
+            )
+            .order_by(TrackRow.track_id)
+        )
+        by_id = {row.track_id: candidate_from_row(row) for row in rows}
+        return [by_id[track_id] for track_id in unique_ids if track_id in by_id]
+
 
 def end_to_end_candidates(
     rows: Iterable[TrackRow],

@@ -92,7 +92,43 @@ Hybrid retrieval fuses retrieval scores only; it does not change
 recommendation ranking. The persisted semantic index must be fresh and
 is never rebuilt automatically.
 
-## 8. Learned audio similarity
+## 8. Recommendation candidate retrieval
+
+The existing full-catalog recommendation remains the default:
+
+    uv run soundmind recommend "cinematic BGM" --context coding
+
+Use M12.1 lexical retrieval as the candidate generator:
+
+    uv run soundmind recommend "cinematic BGM" \
+        --context coding \
+        --retrieval lexical \
+        --retrieval-limit 50
+
+Use M12.4 hybrid retrieval:
+
+    uv run soundmind recommend "hero entry" \
+        --context coding \
+        --retrieval hybrid \
+        --retrieval-limit 50 \
+        --limit 10
+
+Use the persisted semantic path:
+
+    uv run soundmind recommend "hero entry" \
+        --context coding \
+        --retrieval hybrid-indexed \
+        --text-model BAAI/bge-small-en-v1.5 \
+        --text-index data/index/text_vectors
+
+The retrieval limit controls candidate generation. The final --limit
+remains owned by the existing M1 ranking/M2 sequencing path. The M12
+retrieval score is not added to the M1 ranking score.
+
+Semantic-backed recommendation modes require the optional text-ML
+dependency; the default catalog mode remains model-free.
+
+## 9. Learned audio similarity
 
 Learned audio retrieval uses the existing Discogs-EffNet path and is intentionally separate from text search.
 
@@ -110,11 +146,11 @@ A seeded recommendation can then use the existing learned path:
 
 See the M8/M11 contracts for model and index behavior.
 
-## 9. Deterministic recommendation runs
+## 10. Deterministic recommendation runs
 
 For reproducible recommendation experiments, provide an explicit reference time:
 
-    uv run soundmind recommend "<request>" --context coding --now 2026-09-30T09:00:00+05:30
+    uv run soundmind recommend "cinematic BGM" --context coding --now 2026-09-30T09:00:00+05:30
 
 Use --explain to print the existing ranking contribution details.
 
