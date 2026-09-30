@@ -31,12 +31,19 @@ This document is the project-level implementation ledger. It records completed m
 | M12.1 | Deterministic text retrieval foundation over catalog metadata | Complete |
 | M12.2 | Local semantic text retrieval with explicit provider boundary | Complete |
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
+| M12.4 | Hybrid lexical + semantic retrieval fusion | In progress |
 
 ## Current milestone
 
-### M12.3 — Persisted Semantic Retrieval Index (completed)
+### M12.4 — Hybrid Lexical + Semantic Retrieval (in progress)
 
-M12.3 is merged into `main` via PR #21. It persists semantic document vectors as derived data and fingerprints the active catalog plus model so indexed search reuses vectors safely.
+Branch: `feat/m12-hybrid-retrieval`
+
+M12.4 fuses the existing M12.1 lexical scores with M12.2/M12.3 semantic
+scores into one deterministic union. Retrieval only: no ranking,
+sequencing, schema, or model changes.
+
+Validation: pending the local Ruff and pytest gate.
 
 Validation:
 
