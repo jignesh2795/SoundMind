@@ -150,3 +150,23 @@ def test_metadata_prefers_lexical_evidence() -> None:
 
     assert isinstance(fused[0], HybridSearchResult)
     assert fused[0].title == "Title a"
+
+
+def test_fusion_reports_normalized_scores_and_contributions() -> None:
+    fused = fuse_search_results(
+        [lexical("a", 1.0), lexical("b", 0.0)],
+        [semantic("a", 0.0), semantic("b", 1.0)],
+    )
+
+    first, second = fused
+    assert first.lexical_normalized_score == pytest.approx(1.0)
+    assert first.semantic_normalized_score == pytest.approx(0.0)
+    assert first.lexical_contribution == pytest.approx(0.5)
+    assert first.semantic_contribution == pytest.approx(0.0)
+    assert first.score == pytest.approx(
+        first.lexical_contribution + first.semantic_contribution
+    )
+    assert second.lexical_normalized_score == pytest.approx(0.0)
+    assert second.semantic_normalized_score == pytest.approx(1.0)
+    assert second.lexical_contribution == pytest.approx(0.0)
+    assert second.semantic_contribution == pytest.approx(0.5)
