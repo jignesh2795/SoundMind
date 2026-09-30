@@ -53,6 +53,8 @@ class CatalogContextRecommendationService:
         query_prefix: str,
         document_prefix: str,
         expand_query: bool,
+        lexical_weight: float,
+        semantic_weight: float,
     ) -> list[CatalogCandidate]:
         search = CatalogTextSearchService(self._session)
 
@@ -87,6 +89,8 @@ class CatalogContextRecommendationService:
                 query,
                 provider=provider,
                 limit=limit,
+                lexical_weight=lexical_weight,
+                semantic_weight=semantic_weight,
                 expand=expand_query,
             )
         elif mode == "hybrid-indexed":
@@ -106,6 +110,8 @@ class CatalogContextRecommendationService:
                 query_prefix=query_prefix,
                 document_prefix=document_prefix,
                 limit=limit,
+                lexical_weight=lexical_weight,
+                semantic_weight=semantic_weight,
                 expand=expand_query,
             )
         else:
@@ -149,6 +155,8 @@ class CatalogContextRecommendationService:
         text_query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
         text_document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
         expand_query: bool = False,
+        lexical_weight: float = 0.5,
+        semantic_weight: float = 0.5,
     ) -> EndToEndResult:
         self._validate_retrieval_mode(retrieval_mode)
 
@@ -169,6 +177,8 @@ class CatalogContextRecommendationService:
                 query_prefix=text_query_prefix,
                 document_prefix=text_document_prefix,
                 expand_query=expand_query,
+                lexical_weight=lexical_weight,
+                semantic_weight=semantic_weight,
             )
 
         events = self._events.list_recent(limit=event_limit)

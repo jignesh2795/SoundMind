@@ -19,6 +19,10 @@ def test_recommend_parser_captures_retrieval_options() -> None:
             "model-v2",
             "--text-index",
             "text-index",
+            "--lexical-weight",
+            "0.8",
+            "--semantic-weight",
+            "0.2",
         ]
     )
 
@@ -26,6 +30,8 @@ def test_recommend_parser_captures_retrieval_options() -> None:
     assert args.retrieval_limit == 25
     assert args.text_model == "model-v2"
     assert args.text_index == Path("text-index")
+    assert args.lexical_weight == 0.8
+    assert args.semantic_weight == 0.2
 
 
 def test_recommend_hybrid_dispatches_with_text_provider(monkeypatch, capsys) -> None:
@@ -84,6 +90,10 @@ def test_recommend_hybrid_dispatches_with_text_provider(monkeypatch, capsys) -> 
                 "25",
                 "--text-model",
                 "model-v2",
+                "--lexical-weight",
+                "0.7",
+                "--semantic-weight",
+                "0.3",
             ]
         )
         == 0
@@ -96,6 +106,8 @@ def test_recommend_hybrid_dispatches_with_text_provider(monkeypatch, capsys) -> 
     assert captured["kwargs"]["text_provider"].__class__ is FakeProvider
     assert captured["kwargs"]["text_model"] == "model-v2"
     assert captured["kwargs"]["text_index_path"] == Path("data/index/text_vectors")
+    assert captured["kwargs"]["lexical_weight"] == 0.7
+    assert captured["kwargs"]["semantic_weight"] == 0.3
     assert capsys.readouterr().out == "Intent: high energy BGM\nRanked:\nPlaylist:\n"
 
 
@@ -154,6 +166,10 @@ def test_recommend_hybrid_indexed_dispatches_to_persisted_path(monkeypatch, caps
                 "model-v2",
                 "--text-index",
                 "custom-index",
+                "--lexical-weight",
+                "0.25",
+                "--semantic-weight",
+                "0.75",
             ]
         )
         == 0
@@ -163,4 +179,6 @@ def test_recommend_hybrid_indexed_dispatches_to_persisted_path(monkeypatch, caps
     assert captured["kwargs"]["retrieval_mode"] == "hybrid-indexed"
     assert captured["kwargs"]["text_index_path"] == Path("custom-index")
     assert captured["kwargs"]["text_provider"].__class__ is FakeProvider
+    assert captured["kwargs"]["lexical_weight"] == 0.25
+    assert captured["kwargs"]["semantic_weight"] == 0.75
     assert capsys.readouterr().out == "Intent: hero entry\nRanked:\nPlaylist:\n"

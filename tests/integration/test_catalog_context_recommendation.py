@@ -182,6 +182,53 @@ def test_hybrid_retrieval_feeds_existing_ranking_and_sequence(tmp_path) -> None:
     assert [item.track_id for item in result.playlist] == ["lexical", "semantic"]
 
 
+def test_hybrid_recommendation_weights_control_candidate_pool(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add_all(
+            [
+                track("lexical", title="Hero Entry", genre="cinematic"),
+                track("mixed", title="Hero", genre="semantic"),
+                track("semantic", title="Unrelated Track", genre="semantic"),
+            ]
+        )
+        session.commit()
+
+        request = EndToEndRequest(
+            text="hero entry",
+            candidates=[],
+            mode=SequenceMode.SMOOTH,
+            limit=2,
+        )
+        provider = StaticTextProvider()
+        service = CatalogContextRecommendationService(session)
+
+        lexical_first = service.recommend(
+            request,
+            context="coding",
+            now=NOW,
+            retrieval_mode="hybrid",
+            retrieval_limit=2,
+            text_provider=provider,
+            lexical_weight=1.0,
+            semantic_weight=0.0,
+        )
+        semantic_first = service.recommend(
+            request,
+            context="coding",
+            now=NOW,
+            retrieval_mode="hybrid",
+            retrieval_limit=2,
+            text_provider=provider,
+            lexical_weight=0.0,
+            semantic_weight=1.0,
+        )
+
+    assert {item.track_id for item in lexical_first.ranked} == {"lexical", "mixed"}
+    assert {item.track_id for item in semantic_first.ranked} == {"mixed", "semantic"}
+
+
 def test_hybrid_indexed_retrieval_feeds_recommendation(tmp_path) -> None:
     session_factory = create_session_factory(tmp_path / "soundmind.db")
     index_path = tmp_path / "semantic_vectors"
@@ -225,6 +272,28 @@ def test_hybrid_indexed_retrieval_feeds_recommendation(tmp_path) -> None:
         )
 
     assert [item.track_id for item in result.ranked] == ["lexical", "semantic"]
+
+
+def test_hybrid_recommendation_rejects_invalid_weights(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("hero", title="Hero Entry"))
+        session.commit()
+
+        request = EndToEndRequest(text="hero", candidates=[], limit=1)
+
+        with pytest.raises(ValueError, match="weight"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="hybrid",
+                retrieval_limit=1,
+                text_provider=StaticTextProvider(),
+                lexical_weight=-0.1,
+                semantic_weight=0.5,
+            )
 
 
 def test_non_catalog_retrieval_rejects_catalog_limit(tmp_path) -> None:

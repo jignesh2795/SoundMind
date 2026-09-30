@@ -41,6 +41,7 @@
 - [M12.5 recommendation retrieval bridge](m12-5-recommendation-retrieval-contract.md)
 - [M12.6 configurable text embedding profiles](m12-6-text-embedding-profiles-contract.md)
 - [M12.7 deterministic query expansion](m12-7-query-expansion-contract.md)
+- [M12.8 configurable hybrid retrieval weights](m12-8-configurable-hybrid-weights-contract.md)
 
 ## Documentation rule
 

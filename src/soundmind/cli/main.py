@@ -156,6 +156,18 @@ def build_parser():
         help="expand supported music-domain phrases for lexical retrieval",
     )
     rec.add_argument(
+        "--lexical-weight",
+        type=float,
+        default=0.5,
+        help="hybrid fusion weight for lexical scores",
+    )
+    rec.add_argument(
+        "--semantic-weight",
+        type=float,
+        default=0.5,
+        help="hybrid fusion weight for semantic scores",
+    )
+    rec.add_argument(
         "--retrieval",
         choices=RETRIEVAL_MODES,
         default="catalog",
@@ -447,6 +459,8 @@ def main(argv=None):
                         "text_index_path": a.text_index,
                         "text_query_prefix": a.text_query_prefix,
                         "text_document_prefix": a.text_document_prefix,
+                        "lexical_weight": a.lexical_weight,
+                        "semantic_weight": a.semantic_weight,
                     }
                 )
             result = service.recommend(request, **recommend_kwargs)
