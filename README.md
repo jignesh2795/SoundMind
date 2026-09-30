@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.1 — Deterministic Playlist Editing Primitives (in validation).
+M13.1 — Deterministic Playlist Editing Primitives.
 
 The current pipeline now supports:
 
