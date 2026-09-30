@@ -33,17 +33,28 @@ This document is the project-level implementation ledger. It records completed m
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
 | M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
-| M12.6 | Configurable text embedding profiles for model-specific query/document prompts | In validation |
+| M12.6 | Configurable text embedding profiles for model-specific query/document prompts | Complete |
 
 ## Current milestone
 
-### M12.6 — Configurable Text Embedding Profiles (in validation)
+### M12.6 — Configurable Text Embedding Profiles (completed)
 
-M12.6 makes the text embedding prompt configuration explicit at the provider and persisted-index boundaries. The existing BGE defaults remain unchanged, while models that expect raw text or different prompt conventions can be selected without changing the retrieval engine.
+M12.6 makes text embedding prompt configuration explicit at the provider and persisted-index boundaries. The existing BGE defaults remain unchanged, while models that expect raw text or different prompt conventions can be selected without changing the retrieval engine.
 
 The persisted semantic index records the query/document prefixes alongside the model name. A mismatch is rejected as stale and requires an explicit rebuild.
 
-Local validation is pending; no new test count is recorded here until OpenCode reports the gate.
+M12.6 also propagates the same profile through live semantic search, persisted semantic search, hybrid retrieval, and recommendation candidate generation.
+
+Contract: [M12.6 text embedding profiles](m12-6-text-embedding-profiles-contract.md)
+
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 208 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M12.5 — Recommendation Retrieval Bridge (completed)
 
@@ -198,7 +209,7 @@ M12 retrieval score
 M1 ranking score
 ```
 
-M12.5 intentionally does not alter recommendation weights, contextual preference, novelty, learned audio scoring, or sequencing.
+M12.5 and M12.6 intentionally do not alter recommendation weights, contextual preference, novelty, learned audio scoring, or sequencing.
 
 ## Candidate-pool semantics
 
@@ -212,7 +223,9 @@ Text embedding profiles are explicit: model name, query prefix, and document pre
 
 ## Future M12 slices
 
-M12.5 completes the retrieval-to-ranking application bridge while retaining a deterministic model-free default. Later slices can add richer retrieval evidence, phrase/synonym expansion, or more advanced recommendation integration without collapsing retrieval and ranking into one boundary.
+M12.6 completes the configurable text-embedding boundary while retaining a deterministic model-free default.
+
+Potential later M12 work includes richer retrieval evidence, phrase/synonym expansion, multilingual catalog evidence, editing, stems, and advanced creation. Such work should remain behind explicit contracts and should not collapse retrieval and recommendation ranking into one boundary.
 
 ## Validation baseline
 
@@ -223,6 +236,7 @@ M12.2: Ruff clean, 161 tests passed
 M12.3: Ruff clean, 170 tests passed
 M12.4: Ruff clean, 194 tests passed
 M12.5: Ruff clean, 201 tests passed
+M12.6: Ruff clean, 208 tests passed
 ```
 
 ## Documentation rule
