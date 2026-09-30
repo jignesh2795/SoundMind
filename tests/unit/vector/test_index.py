@@ -20,6 +20,8 @@ def test_search_rejects_torn_publication(tmp_path):
     replacement = NumpyVectorIndex(tmp_path / "replacement", 2)
     replacement.save(["b"], np.asarray([[0, 1]], dtype=np.float32))
     os.replace(replacement.vectors_path, index.vectors_path)
+    stat = index.vectors_path.stat()
+    os.utime(index.vectors_path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000))
 
     with pytest.raises(ValueError, match="integrity"):
         index.search(np.asarray([1, 0], dtype=np.float32))
