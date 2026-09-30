@@ -102,7 +102,7 @@ Where reproducibility matters, callers provide:
 
 - reference timestamps;
 - explicit query limits;
-- explicit model/index paths;
+- explicit model/index paths and text embedding prompt configuration;
 - explicit seed tracks.
 
 Stable tie-breaking and input-order rules are part of the retrieval contracts.
@@ -115,7 +115,7 @@ AI/ML is an enhancement layer, not a prerequisite for the base system.
           ↓
     optional learned representation
           ↓
-    optional local semantic model
+    optional local semantic model + explicit embedding profile
           ↓
     hybrid lexical/semantic retrieval
           ↓

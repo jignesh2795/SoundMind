@@ -8,6 +8,8 @@ from typing import Protocol
 from soundmind.storage.models import TrackRow
 
 DEFAULT_TEXT_MODEL = "BAAI/bge-small-en-v1.5"
+DEFAULT_TEXT_QUERY_PREFIX = "query: "
+DEFAULT_TEXT_DOCUMENT_PREFIX = "passage: "
 
 _TEXT_FIELDS = (
     ("title", "title"),
@@ -18,6 +20,19 @@ _TEXT_FIELDS = (
     ("genre", "genre"),
     ("file_name", "file name"),
 )
+
+
+@dataclass(frozen=True)
+class TextEmbeddingProfile:
+    """Describe a text embedding model and its query/document prefixes."""
+
+    model_name: str
+    query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX
+    document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX
+
+    def __post_init__(self) -> None:
+        if not self.model_name.strip():
+            raise ValueError("model_name must be non-empty")
 
 
 @dataclass(frozen=True)
@@ -125,7 +140,18 @@ class SemanticTextRetrievalEngine:
 class FastEmbedTextProvider:
     """Optional FastEmbed adapter for CPU-oriented local text embeddings."""
 
-    def __init__(self, model_name: str = DEFAULT_TEXT_MODEL) -> None:
+    def __init__(
+        self,
+        model_name: str = DEFAULT_TEXT_MODEL,
+        *,
+        query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
+    ) -> None:
+        self.profile = TextEmbeddingProfile(
+            model_name=model_name,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
+        )
         try:
             from fastembed import TextEmbedding
         except ImportError as exc:
@@ -134,12 +160,16 @@ class FastEmbedTextProvider:
                 "install it with: uv pip install fastembed"
             ) from exc
 
-        self._model = TextEmbedding(model_name=model_name)
+        self._model = TextEmbedding(model_name=self.profile.model_name)
 
     def embed_query(self, text: str) -> Sequence[float]:
-        """Embed a query with retrieval-oriented query prompting."""
-        return next(iter(self._model.embed([f"query: {text}"])))
+        """Embed a query with the configured query prefix."""
+        return next(iter(self._model.embed([f"{self.profile.query_prefix}{text}"])))
 
     def embed_documents(self, texts: Sequence[str]) -> Sequence[Sequence[float]]:
-        """Embed catalog metadata with retrieval-oriented passage prompting."""
-        return tuple(self._model.embed([f"passage: {text}" for text in texts]))
+        """Embed catalog metadata with the configured document prefix."""
+        return tuple(
+            self._model.embed(
+                [f"{self.profile.document_prefix}{text}" for text in texts]
+            )
+        )

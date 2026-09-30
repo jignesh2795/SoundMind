@@ -10,7 +10,11 @@ from soundmind.catalog_search import CatalogTextSearchService
 from soundmind.context_aware_flow import ContextAwareMusicFlow
 from soundmind.flow import EndToEndRequest, EndToEndResult
 from soundmind.preferences.repository import ListeningEventRepository
-from soundmind.recommendation.semantic_text_retrieval import TextEmbeddingProvider
+from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_DOCUMENT_PREFIX,
+    DEFAULT_TEXT_QUERY_PREFIX,
+    TextEmbeddingProvider,
+)
 
 DEFAULT_RETRIEVAL_LIMIT = 50
 RETRIEVAL_MODES = (
@@ -46,6 +50,8 @@ class CatalogContextRecommendationService:
         provider: TextEmbeddingProvider | None,
         model_name: str | None,
         index_path: Path | None,
+        query_prefix: str,
+        document_prefix: str,
     ) -> list[CatalogCandidate]:
         search = CatalogTextSearchService(self._session)
 
@@ -69,6 +75,8 @@ class CatalogContextRecommendationService:
                 provider=provider,
                 model_name=model_name,
                 index_path=index_path,
+                query_prefix=query_prefix,
+                document_prefix=document_prefix,
                 limit=limit,
             )
         elif mode == "hybrid":
@@ -89,6 +97,8 @@ class CatalogContextRecommendationService:
                 provider=provider,
                 model_name=model_name,
                 index_path=index_path,
+                query_prefix=query_prefix,
+                document_prefix=document_prefix,
                 limit=limit,
             )
         else:
@@ -131,6 +141,8 @@ class CatalogContextRecommendationService:
         text_provider: TextEmbeddingProvider | None = None,
         text_model: str | None = None,
         text_index_path: Path | None = None,
+        text_query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
+        text_document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
     ) -> EndToEndResult:
         self._validate_retrieval_mode(retrieval_mode)
 
@@ -148,6 +160,8 @@ class CatalogContextRecommendationService:
                 provider=text_provider,
                 model_name=text_model,
                 index_path=text_index_path,
+                query_prefix=text_query_prefix,
+                document_prefix=text_document_prefix,
             )
 
         events = self._events.list_recent(limit=event_limit)

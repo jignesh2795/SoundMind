@@ -3,7 +3,11 @@ from datetime import UTC, datetime
 import pytest
 
 from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_DOCUMENT_PREFIX,
+    DEFAULT_TEXT_QUERY_PREFIX,
+    FastEmbedTextProvider,
     SemanticTextRetrievalEngine,
+    TextEmbeddingProfile,
     catalog_text,
 )
 from soundmind.storage.models import TrackRow
@@ -152,3 +156,62 @@ def test_semantic_search_maps_zero_norm_vectors_to_zero() -> None:
     results = SemanticTextRetrievalEngine(provider).search("hero", items)
 
     assert results[0].score == 0.0
+
+
+
+def test_text_embedding_profile_defaults_and_custom_prefixes() -> None:
+    default = TextEmbeddingProfile("model-v1")
+    custom = TextEmbeddingProfile(
+        "multilingual-model",
+        query_prefix="",
+        document_prefix="",
+    )
+
+    assert default.query_prefix == DEFAULT_TEXT_QUERY_PREFIX
+    assert default.document_prefix == DEFAULT_TEXT_DOCUMENT_PREFIX
+    assert custom.model_name == "multilingual-model"
+    assert custom.query_prefix == ""
+    assert custom.document_prefix == ""
+
+
+def test_fastembed_provider_uses_configured_prefixes(monkeypatch) -> None:
+    import sys
+    from types import SimpleNamespace
+
+    captured = []
+
+    class FakeTextEmbedding:
+        def __init__(self, *, model_name):
+            captured.append(("model", model_name))
+
+        def embed(self, texts):
+            captured.append(tuple(texts))
+            return iter(((1.0,),) * len(texts))
+
+    monkeypatch.setitem(
+        sys.modules,
+        "fastembed",
+        SimpleNamespace(TextEmbedding=FakeTextEmbedding),
+    )
+
+    provider = FastEmbedTextProvider(
+        "multilingual-model",
+        query_prefix="",
+        document_prefix="",
+    )
+
+    assert tuple(provider.embed_query("Tamil BGM")) == (1.0,)
+    assert provider.embed_documents(("தமிழ் இசை", "తెలుగు BGM")) == (
+        (1.0,),
+        (1.0,),
+    )
+    assert captured == [
+        ("model", "multilingual-model"),
+        ("Tamil BGM",),
+        ("தமிழ் இசை", "తెలుగు BGM"),
+    ]
+
+
+def test_text_embedding_profile_rejects_empty_model_name() -> None:
+    with pytest.raises(ValueError, match="model_name"):
+        TextEmbeddingProfile("   ")

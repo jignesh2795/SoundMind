@@ -33,8 +33,17 @@ This document is the project-level implementation ledger. It records completed m
 | M12.3 | Persisted semantic retrieval index with freshness checks | Complete |
 | M12.4 | Hybrid lexical + semantic retrieval fusion | Complete |
 | M12.5 | Recommendation retrieval bridge into the existing M1/M2 flow | Complete |
+| M12.6 | Configurable text embedding profiles for model-specific query/document prompts | In validation |
 
 ## Current milestone
+
+### M12.6 — Configurable Text Embedding Profiles (in validation)
+
+M12.6 makes the text embedding prompt configuration explicit at the provider and persisted-index boundaries. The existing BGE defaults remain unchanged, while models that expect raw text or different prompt conventions can be selected without changing the retrieval engine.
+
+The persisted semantic index records the query/document prefixes alongside the model name. A mismatch is rejected as stale and requires an explicit rebuild.
+
+Local validation is pending; no new test count is recorded here until OpenCode reports the gate.
 
 ### M12.5 — Recommendation Retrieval Bridge (completed)
 
@@ -198,6 +207,8 @@ M12 retrieval uses a separate candidate-pool limit from the final recommendation
 ## Optional AI/ML
 
 Semantic-backed retrieval modes require the optional text-ML provider. The default catalog recommendation path remains model-free. The application does not silently install or download model dependencies.
+
+Text embedding profiles are explicit: model name, query prefix, and document prefix travel together through semantic-index rebuild/search and recommendation candidate generation.
 
 ## Future M12 slices
 

@@ -36,7 +36,7 @@ The persisted semantic index is derived data, not catalog source-of-truth data:
 
 - `<index>.vectors.npy` stores float32 document vectors;
 - `<index>.ids.npy` stores track IDs in the same row order;
-- `<index>.meta.json` stores index version, model name, dimension, catalog fingerprint, and track count;
+- `<index>.meta.json` stores index version, model name, query/document prefixes, dimension, catalog fingerprint, and track count;
 - `<index>.integrity.json` records the publication signatures for the paired NumPy data files.
 
 The existing `NumpyVectorIndex` persistence boundary is reused.
@@ -53,7 +53,7 @@ Any change to searchable metadata or active-row membership therefore invalidates
 
 ## Model binding
 
-The manifest records the semantic model name used to build the index. A search using a different model is rejected as stale and requires a rebuild.
+The manifest records the semantic model name and query/document prefixes used to build the index. A search using a different model or prompt configuration is rejected as stale and requires a rebuild.
 
 ## Determinism
 
@@ -85,8 +85,8 @@ Search it:
 
 Custom model/index paths remain explicit:
 
-    soundmind semantic-index rebuild --model <model> --index <path>
-    soundmind search "<query>" --semantic-indexed --semantic-model <model> --semantic-index <path>
+    soundmind semantic-index rebuild --model <model> --query-prefix <prefix> --document-prefix <prefix> --index <path>
+    soundmind search "<query>" --semantic-indexed --semantic-model <model> --semantic-query-prefix <prefix> --semantic-document-prefix <prefix> --semantic-index <path>
 
 ## Publication integrity
 
