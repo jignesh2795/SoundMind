@@ -58,7 +58,7 @@ working tree: clean
 
 ### M12.5 — Recommendation Retrieval Bridge (completed)
 
-M12.5 was merged into `main` via PR #26, merge commit `9e98846265b1d3c6213578f69fc47a0b3dd5f0`.
+M12.5 was merged into `main` via PR #26, merge commit `9e98846265b1b3d3c6213578f69fc47a0b3dd5f0`.
 
 It connects the M12 catalog retrieval layer to the existing catalog-backed recommendation boundary. The default recommendation path remains the existing full active catalog; explicit retrieval modes can bound the candidate pool before the unchanged contextual ranking and sequencing flow.
 
