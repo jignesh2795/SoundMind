@@ -234,6 +234,8 @@ def _print_search(results, *, explain=False) -> None:
         suffix = f"	{details}" if details else ""
         field_suffix = f"	matched={matched}" if matched else ""
         print(f"{index}. {result.track_id}	{result.score:.6f}{suffix}{field_suffix}")
+        if explain and result.matched_query is not None:
+            print(f"   matched-query: {result.matched_query}")
 
 
 def _print_semantic_search(results) -> None:
@@ -256,6 +258,11 @@ def _print_hybrid_search(results, *, explain=False) -> None:
             f"	hybrid lexical={result.lexical_score:.6f}"
             f" semantic={result.semantic_score:.6f}"
         )
+        if explain:
+            print(f"   lexical-normalized-score: {result.lexical_normalized_score:.6f}")
+            print(f"   semantic-normalized-score: {result.semantic_normalized_score:.6f}")
+            print(f"   lexical-contribution: {result.lexical_contribution:.6f}")
+            print(f"   semantic-contribution: {result.semantic_contribution:.6f}")
 
 
 def _print_recommendation(result, *, explain=False) -> None:
