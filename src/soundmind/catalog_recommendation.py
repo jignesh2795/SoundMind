@@ -52,11 +52,12 @@ class CatalogContextRecommendationService:
         index_path: Path | None,
         query_prefix: str,
         document_prefix: str,
+        expand_query: bool,
     ) -> list[CatalogCandidate]:
         search = CatalogTextSearchService(self._session)
 
         if mode == "lexical":
-            results = search.search(query, limit=limit)
+            results = search.search(query, limit=limit, expand=expand_query)
         elif mode == "semantic":
             if provider is None:
                 raise ValueError("text embedding provider is required for semantic retrieval")
@@ -82,7 +83,12 @@ class CatalogContextRecommendationService:
         elif mode == "hybrid":
             if provider is None:
                 raise ValueError("text embedding provider is required for hybrid retrieval")
-            results = search.hybrid_search(query, provider=provider, limit=limit)
+            results = search.hybrid_search(
+                query,
+                provider=provider,
+                limit=limit,
+                expand=expand_query,
+            )
         elif mode == "hybrid-indexed":
             if provider is None:
                 raise ValueError(
@@ -100,13 +106,12 @@ class CatalogContextRecommendationService:
                 query_prefix=query_prefix,
                 document_prefix=document_prefix,
                 limit=limit,
+                expand=expand_query,
             )
         else:
             raise ValueError(f"unsupported retrieval mode: {mode!r}")
 
-        return self._catalog.candidates_by_ids(
-            result.track_id for result in results
-        )
+        return self._catalog.candidates_by_ids(result.track_id for result in results)
 
     @staticmethod
     def _validate_retrieval_mode(mode: str) -> None:
@@ -143,6 +148,7 @@ class CatalogContextRecommendationService:
         text_index_path: Path | None = None,
         text_query_prefix: str = DEFAULT_TEXT_QUERY_PREFIX,
         text_document_prefix: str = DEFAULT_TEXT_DOCUMENT_PREFIX,
+        expand_query: bool = False,
     ) -> EndToEndResult:
         self._validate_retrieval_mode(retrieval_mode)
 
@@ -162,6 +168,7 @@ class CatalogContextRecommendationService:
                 index_path=text_index_path,
                 query_prefix=text_query_prefix,
                 document_prefix=text_document_prefix,
+                expand_query=expand_query,
             )
 
         events = self._events.list_recent(limit=event_limit)
@@ -173,11 +180,7 @@ class CatalogContextRecommendationService:
             limit=request.limit,
             weights=request.weights,
         )
-        effective_seed = (
-            seed_track_id
-            if seed_track_id is not None
-            else request.seed_track_id
-        )
+        effective_seed = seed_track_id if seed_track_id is not None else request.seed_track_id
         return self._flow.run(
             persisted_request,
             events=events,

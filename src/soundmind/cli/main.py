@@ -104,6 +104,11 @@ def build_parser():
             "or with persisted-index results when --semantic-indexed is given"
         ),
     )
+    search.add_argument(
+        "--expand-query",
+        action="store_true",
+        help="expand supported music-domain phrases for lexical retrieval",
+    )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
     search.add_argument("--semantic-query-prefix", default=DEFAULT_TEXT_QUERY_PREFIX)
     search.add_argument("--semantic-document-prefix", default=DEFAULT_TEXT_DOCUMENT_PREFIX)
@@ -145,6 +150,11 @@ def build_parser():
     rec.add_argument("--limit", type=int, default=10)
     rec.add_argument("--catalog-limit", type=int)
     rec.add_argument("--event-limit", type=int, default=1000)
+    rec.add_argument(
+        "--expand-query",
+        action="store_true",
+        help="expand supported music-domain phrases for lexical retrieval",
+    )
     rec.add_argument(
         "--retrieval",
         choices=RETRIEVAL_MODES,
@@ -325,6 +335,7 @@ def main(argv=None):
                         limit=a.limit,
                         lexical_weight=a.lexical_weight,
                         semantic_weight=a.semantic_weight,
+                        expand=a.expand_query,
                     )
                 else:
                     results = service.hybrid_search(
@@ -333,6 +344,7 @@ def main(argv=None):
                         limit=a.limit,
                         lexical_weight=a.lexical_weight,
                         semantic_weight=a.semantic_weight,
+                        expand=a.expand_query,
                     )
                 _print_hybrid_search(results)
             elif a.semantic:
@@ -370,6 +382,7 @@ def main(argv=None):
                 results = service.search(
                     a.query,
                     limit=a.limit,
+                    expand=a.expand_query,
                 )
                 _print_search(results)
         return 0

@@ -321,9 +321,10 @@ def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> Non
         def __init__(self, session) -> None:
             captured["session"] = session
 
-        def search(self, query, *, limit):
+        def search(self, query, *, limit, expand=False):
             captured["query"] = query
             captured["limit"] = limit
+            captured["expand"] = expand
             return (
                 SimpleNamespace(
                     track_id="hero-a",
@@ -348,9 +349,23 @@ def test_search_dispatches_to_catalog_search_service(monkeypatch, capsys) -> Non
         lambda path: lambda: FakeSession(),
     )
 
-    assert main(["search", "hero entry", "--db", "library.db", "--limit", "5"]) == 0
+    assert (
+        main(
+            [
+                "search",
+                "hero entry",
+                "--expand-query",
+                "--db",
+                "library.db",
+                "--limit",
+                "5",
+            ]
+        )
+        == 0
+    )
     assert captured["query"] == "hero entry"
     assert captured["limit"] == 5
+    assert captured["expand"] is True
     assert capsys.readouterr().out == (
         "1. hero-a\t1.000000\tHero Entry — Composer A — Album A"
         "\tmatched=title\n"
@@ -558,9 +573,17 @@ def test_search_hybrid_dispatches_to_catalog_service(monkeypatch, capsys) -> Non
             captured["session"] = session
 
         def hybrid_search(
-            self, query, *, provider, limit, lexical_weight, semantic_weight
+            self,
+            query,
+            *,
+            provider,
+            limit,
+            lexical_weight,
+            semantic_weight,
+            expand=False,
         ):
             captured["query"] = query
+            captured["expand"] = expand
             captured["provider"] = provider
             captured["limit"] = limit
             captured["weights"] = (lexical_weight, semantic_weight)
@@ -608,6 +631,7 @@ def test_search_hybrid_dispatches_to_catalog_service(monkeypatch, capsys) -> Non
     )
     assert captured["query"] == "hero entry"
     assert captured["weights"] == (0.7, 0.3)
+    assert captured["expand"] is False
     assert isinstance(captured["provider"], FakeProvider)
     assert capsys.readouterr().out == (
         "1. hero-a\t0.900000\tHero Entry — Composer A"
@@ -644,8 +668,10 @@ def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys
             limit,
             lexical_weight,
             semantic_weight,
+            expand=False,
         ):
             captured["model_name"] = model_name
+            captured["expand"] = expand
             captured["index_path"] = index_path
             return ()
 
@@ -678,6 +704,7 @@ def test_search_hybrid_indexed_dispatches_to_catalog_service(monkeypatch, capsys
     )
     assert captured["model_name"] == "BAAI/bge-small-en-v1.5"
     assert captured["index_path"] == Path("text-index")
+    assert captured["expand"] is False
     assert capsys.readouterr().out == ""
 
 

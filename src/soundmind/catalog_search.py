@@ -43,8 +43,19 @@ class CatalogTextSearchService:
             )
         )
 
-    def search(self, query: str, *, limit: int = 10) -> list[TextSearchResult]:
-        return self._engine.search(query, self._active_rows(), limit=limit)
+    def search(
+        self,
+        query: str,
+        *,
+        limit: int = 10,
+        expand: bool = False,
+    ) -> list[TextSearchResult]:
+        return self._engine.search(
+            query,
+            self._active_rows(),
+            limit=limit,
+            expand=expand,
+        )
 
     def semantic_search(
         self,
@@ -116,10 +127,11 @@ class CatalogTextSearchService:
         limit: int = 10,
         lexical_weight: float = 0.5,
         semantic_weight: float = 0.5,
+        expand: bool = False,
     ) -> list[HybridSearchResult]:
         weights = HybridWeights(lexical_weight, semantic_weight)
         rows = self._active_rows()
-        lexical_results = self._engine.search(query, rows, limit=limit)
+        lexical_results = self._engine.search(query, rows, limit=limit, expand=expand)
         engine = self._semantic_engine or SemanticTextRetrievalEngine(provider)
         semantic_results = engine.search(query, rows, limit=limit)
         return list(
@@ -143,10 +155,11 @@ class CatalogTextSearchService:
         limit: int = 10,
         lexical_weight: float = 0.5,
         semantic_weight: float = 0.5,
+        expand: bool = False,
     ) -> list[HybridSearchResult]:
         weights = HybridWeights(lexical_weight, semantic_weight)
         rows = self._active_rows()
-        lexical_results = self._engine.search(query, rows, limit=limit)
+        lexical_results = self._engine.search(query, rows, limit=limit, expand=expand)
         semantic_results = self.semantic_search_indexed(
             query,
             provider=provider,

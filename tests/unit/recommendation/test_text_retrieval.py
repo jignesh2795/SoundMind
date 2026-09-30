@@ -100,3 +100,20 @@ def test_search_uses_stable_track_id_tiebreaker() -> None:
 def test_search_rejects_invalid_input(query: str, limit: int, message: str) -> None:
     with pytest.raises(ValueError, match=message):
         CatalogTextRetrievalEngine().search(query, [], limit=limit)
+
+
+def test_search_can_expand_music_domain_aliases_without_changing_default() -> None:
+    engine = CatalogTextRetrievalEngine()
+    rows = [
+        row("soundtrack", title="Hero Soundtrack"),
+        row("original-soundtrack", title="Hero Original Soundtrack"),
+    ]
+
+    default_results = engine.search("ost", rows)
+    expanded_results = engine.search("ost", rows, expand=True)
+
+    assert default_results == []
+    assert [item.track_id for item in expanded_results] == [
+        "original-soundtrack",
+        "soundtrack",
+    ]
