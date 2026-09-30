@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.1 — Deterministic Playlist Editing Primitives.
+M13.2 — Deterministic Natural-Language Playlist Edit Parser (in validation).
 
 The current pipeline now supports:
 
@@ -24,6 +24,7 @@ The current pipeline now supports:
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
 - editing: deterministic post-sequencing playlist edits for removal, movement, swapping, and trimming
+- natural-language editing: deterministic parsing of explicit remove, move, swap, and trim commands
 
 M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval; M12.3 persists semantic document vectors as derived data with freshness checks; M12.4 fuses lexical and semantic scores into one deterministic union; M12.5 connects those retrieval candidates to the existing recommendation flow; M12.6 makes embedding profiles explicit; M12.7 adds opt-in deterministic music-domain query expansion to lexical retrieval; M12.8 exposes configurable lexical/semantic fusion weights through recommendation candidate generation; M12.9 makes retrieval evidence inspectable without changing ranking. Retrieval remains separate from recommendation ranking: M12 retrieval does not change M1 ranking weights.
 
@@ -165,6 +166,7 @@ Validation uses Ruff and pytest.
 - M12.8: configurable hybrid lexical/semantic retrieval weights
 - M12.9: deterministic retrieval evidence
 - M13.1: deterministic playlist editing primitives
+- M13.2: deterministic natural-language playlist edit parser
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
