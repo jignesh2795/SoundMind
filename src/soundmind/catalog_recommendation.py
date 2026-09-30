@@ -20,6 +20,7 @@ RETRIEVAL_MODES = (
     "semantic",
     "semantic-indexed",
     "hybrid",
+    "hybrid-indexed",
 )
 
 
@@ -74,16 +75,23 @@ class CatalogContextRecommendationService:
         elif mode == "hybrid":
             if provider is None:
                 raise ValueError("text embedding provider is required for hybrid retrieval")
-            if model_name and index_path is not None:
-                results = search.hybrid_search_indexed(
-                    query,
-                    provider=provider,
-                    model_name=model_name,
-                    index_path=index_path,
-                    limit=limit,
+            results = search.hybrid_search(query, provider=provider, limit=limit)
+        elif mode == "hybrid-indexed":
+            if provider is None:
+                raise ValueError(
+                    "text embedding provider is required for persisted hybrid retrieval"
                 )
-            else:
-                results = search.hybrid_search(query, provider=provider, limit=limit)
+            if not model_name:
+                raise ValueError("text model name is required for persisted hybrid retrieval")
+            if index_path is None:
+                raise ValueError("text index path is required for persisted hybrid retrieval")
+            results = search.hybrid_search_indexed(
+                query,
+                provider=provider,
+                model_name=model_name,
+                index_path=index_path,
+                limit=limit,
+            )
         else:
             raise ValueError(f"unsupported retrieval mode: {mode!r}")
 
