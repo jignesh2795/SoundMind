@@ -15,7 +15,9 @@ from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
+    DEFAULT_TEXT_DOCUMENT_PREFIX,
     DEFAULT_TEXT_MODEL,
+    DEFAULT_TEXT_QUERY_PREFIX,
     FastEmbedTextProvider,
 )
 from soundmind.sequence import SequenceMode
@@ -103,6 +105,8 @@ def build_parser():
         ),
     )
     search.add_argument("--semantic-model", default=DEFAULT_TEXT_MODEL)
+    search.add_argument("--semantic-query-prefix", default=DEFAULT_TEXT_QUERY_PREFIX)
+    search.add_argument("--semantic-document-prefix", default=DEFAULT_TEXT_DOCUMENT_PREFIX)
     search.add_argument(
         "--lexical-weight",
         type=float,
@@ -126,6 +130,8 @@ def build_parser():
     sir = sis.add_parser("rebuild")
     sir.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
     sir.add_argument("--model", default=DEFAULT_TEXT_MODEL)
+    sir.add_argument("--query-prefix", default=DEFAULT_TEXT_QUERY_PREFIX)
+    sir.add_argument("--document-prefix", default=DEFAULT_TEXT_DOCUMENT_PREFIX)
     sir.add_argument(
         "--index",
         type=Path,
@@ -158,6 +164,8 @@ def build_parser():
         default=DEFAULT_TEXT_MODEL,
         help="local text embedding model for semantic retrieval",
     )
+    rec.add_argument("--text-query-prefix", default=DEFAULT_TEXT_QUERY_PREFIX)
+    rec.add_argument("--text-document-prefix", default=DEFAULT_TEXT_DOCUMENT_PREFIX)
     rec.add_argument(
         "--text-index",
         type=Path,
@@ -301,13 +309,19 @@ def main(argv=None):
         with sf() as session:
             service = CatalogTextSearchService(session)
             if a.hybrid:
-                provider = FastEmbedTextProvider(a.semantic_model)
+                provider = FastEmbedTextProvider(
+                    a.semantic_model,
+                    query_prefix=a.semantic_query_prefix,
+                    document_prefix=a.semantic_document_prefix,
+                )
                 if a.semantic_indexed:
                     results = service.hybrid_search_indexed(
                         a.query,
                         provider=provider,
                         model_name=a.semantic_model,
                         index_path=a.semantic_index,
+                        query_prefix=a.semantic_query_prefix,
+                        document_prefix=a.semantic_document_prefix,
                         limit=a.limit,
                         lexical_weight=a.lexical_weight,
                         semantic_weight=a.semantic_weight,
@@ -355,11 +369,17 @@ def main(argv=None):
     if a.command == "semantic-index":
         sf = create_session_factory(a.db)
         with sf() as session:
-            provider = FastEmbedTextProvider(a.model)
+            provider = FastEmbedTextProvider(
+                a.model,
+                query_prefix=a.query_prefix,
+                document_prefix=a.document_prefix,
+            )
             count = CatalogTextSearchService(session).rebuild_semantic_index(
                 provider=provider,
                 model_name=a.model,
                 index_path=a.index,
+                query_prefix=a.query_prefix,
+                document_prefix=a.document_prefix,
             )
         print(f"Indexed semantic text vectors: {count}")
         return 0
@@ -384,7 +404,11 @@ def main(argv=None):
             }
             if a.retrieval != "catalog":
                 text_provider = (
-                    FastEmbedTextProvider(a.text_model)
+                    FastEmbedTextProvider(
+                        a.text_model,
+                        query_prefix=a.text_query_prefix,
+                        document_prefix=a.text_document_prefix,
+                    )
                     if a.retrieval in {
                         "semantic",
                         "semantic-indexed",
@@ -400,6 +424,8 @@ def main(argv=None):
                         "text_provider": text_provider,
                         "text_model": a.text_model,
                         "text_index_path": a.text_index,
+                        "text_query_prefix": a.text_query_prefix,
+                        "text_document_prefix": a.text_document_prefix,
                     }
                 )
             result = service.recommend(request, **recommend_kwargs)
