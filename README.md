@@ -33,6 +33,7 @@ M11 established the application-facing recommendation and CLI boundaries. M12 ad
     soundmind search "hero entry" --hybrid --limit 10
     soundmind search "hero entry" --hybrid --semantic-indexed --limit 10
     soundmind semantic-index rebuild
+    soundmind semantic-index rebuild --model <model> --query-prefix "" --document-prefix ""
     soundmind search "calm cinematic background music" --semantic-indexed --limit 10
 
 ## Recommendation examples
@@ -59,7 +60,7 @@ Use the persisted semantic index for the hybrid candidate pool:
 
 M12 retrieval controls the candidate pool; the existing M1 ranking still determines the ranked recommendation and M2 still determines playlist sequencing.
 
-Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Lexical results are deterministic and stable for the same catalog state and query. Semantic results are stable for the same model, catalog state, and query.
+Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Lexical results are deterministic and stable for the same catalog state and query. Semantic results are stable for the same model, embedding prompt configuration, catalog state, and query. Query/document prefixes are explicit provider configuration, so models that expect raw text rather than the BGE query/passage convention can be selected without changing the retrieval engine.
 
 ## Architecture
 
@@ -145,7 +146,8 @@ Validation uses Ruff and pytest.
 - M12.3: persisted semantic retrieval index
 - M12.4: hybrid lexical/semantic retrieval
 - M12.5: recommendation retrieval bridge
-- later: phrase/synonym expansion, richer retrieval evidence, editing, stems and advanced creation
+- M12.6: configurable text embedding profiles
+- later: phrase/synonym expansion, richer retrieval evidence, multilingual catalog evidence, editing, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
