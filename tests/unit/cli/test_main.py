@@ -837,10 +837,10 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
     )
 
     output = capsys.readouterr().out
-    assert "1. a\\t0.900000" in output
-    assert "2. b\\t0.800000" in output
-    assert "3. c\\t0.700000" in output
-    assert "4. d\\t0.600000" in output
+    assert "1. a\t0.900000" in output
+    assert "2. b\t0.800000" in output
+    assert "3. c\t0.700000" in output
+    assert "4. d\t0.600000" in output
     assert "Playlist:" in output
     assert "1. a" in output
     assert "2. d" in output
