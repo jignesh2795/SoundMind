@@ -486,6 +486,40 @@ def test_search_parser_hybrid_defaults() -> None:
     assert args.semantic_weight == 0.5
 
 
+def test_search_hybrid_with_explicit_semantic_stays_live(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(self, model_name) -> None:
+            pass
+
+    class FakeSearchService:
+        def __init__(self, session) -> None:
+            pass
+
+        def hybrid_search(self, query, **kwargs):
+            captured["live"] = True
+            return ()
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr("soundmind.cli.main.CatalogTextSearchService", FakeSearchService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["search", "hero", "--hybrid", "--semantic"]) == 0
+    assert captured == {"live": True}
+    assert capsys.readouterr().out == ""
+
+
 def test_search_hybrid_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
     captured = {}
 
