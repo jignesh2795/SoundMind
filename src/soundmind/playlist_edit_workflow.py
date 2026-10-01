@@ -96,7 +96,11 @@ def describe_playlist_edit(edit: PlaylistEdit) -> str:
 def describe_playlist_command(command: PlaylistEditCommand) -> str:
     """Return a stable human-readable description of one parsed command."""
     if isinstance(command, PlaylistMetadataFilter):
-        action = "remove all tracks" if command.action.value == "remove" else "keep only tracks"
+        action = (
+            "remove all tracks"
+            if command.action.value == "remove"
+            else "keep only tracks"
+        )
         field = command.field.value
         if field == "artist":
             return f"{action} by {command.value}"
