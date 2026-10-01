@@ -15,6 +15,7 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
@@ -24,7 +25,6 @@ from soundmind.playlist_edit_workflow import (
     plan_playlist_edit_commands,
 )
 from soundmind.playlist_export import saved_playlist_to_json
-from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_import import load_playlist_json
 from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
 from soundmind.playlist_m3u8_import import load_m3u8
