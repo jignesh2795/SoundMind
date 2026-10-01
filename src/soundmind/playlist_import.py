@@ -24,13 +24,13 @@ class ImportedPlaylist:
 
 def _require_mapping(value: Any, *, field: str) -> dict[str, Any]:
     if not isinstance(value, dict):
-        raise ValueError(f"{field} must be an object")
+        raise ValueError(f"{field} must be an object")  # noqa: TRY004
     return value
 
 
 def _require_string(value: Any, *, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field} must be a non-empty string")
+        raise ValueError(f"{field} must be a non-empty string")  # noqa: TRY004
     return value
 
 
@@ -65,7 +65,7 @@ def parse_playlist_json(text: str) -> ImportedPlaylist:
     document = _require_mapping(payload, field="playlist")
     version = document.get("version")
     if isinstance(version, bool) or not isinstance(version, int):
-        raise ValueError("version must be an integer")
+        raise ValueError("version must be an integer")  # noqa: TRY004
     if version != SUPPORTED_PLAYLIST_JSON_VERSION:
         raise ValueError(f"unsupported playlist JSON version: {version!r}")
 
@@ -75,7 +75,7 @@ def parse_playlist_json(text: str) -> ImportedPlaylist:
 
     raw_items = document.get("items")
     if not isinstance(raw_items, list):
-        raise ValueError("items must be an array")
+        raise ValueError("items must be an array")  # noqa: TRY004
 
     expected_position = 1
     seen: set[str] = set()
@@ -84,7 +84,7 @@ def parse_playlist_json(text: str) -> ImportedPlaylist:
         item = _require_mapping(raw_item, field="item")
         position = item.get("position")
         if isinstance(position, bool) or not isinstance(position, int):
-            raise ValueError("item position must be an integer")
+            raise ValueError("item position must be an integer")  # noqa: TRY004
         if position != expected_position:
             raise ValueError(
                 f"item positions must be consecutive starting at 1; expected {expected_position}"
