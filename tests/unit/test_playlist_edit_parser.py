@@ -9,6 +9,11 @@ from soundmind.playlist_editing import (
     SwapTracks,
     TrimPlaylist,
 )
+from soundmind.playlist_filter import (
+    PlaylistFilterAction,
+    PlaylistFilterField,
+    PlaylistMetadataFilter,
+)
 
 
 @pytest.mark.parametrize(
@@ -119,3 +124,61 @@ def test_quote_pair_is_removed_only_from_track_id_edges() -> None:
 
 def test_unknown_track_text_is_preserved_for_resolution_by_editor() -> None:
     assert parse_playlist_edit("remove future-track") == RemoveTrack("future-track")
+
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (
+            "remove all tracks by Composer A",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.REMOVE,
+                PlaylistFilterField.ARTIST,
+                "Composer A",
+            ),
+        ),
+        (
+            "remove all from album Night Drive",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.REMOVE,
+                PlaylistFilterField.ALBUM,
+                "Night Drive",
+            ),
+        ),
+        (
+            "remove all tracks in genre Soundtrack",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.REMOVE,
+                PlaylistFilterField.GENRE,
+                "Soundtrack",
+            ),
+        ),
+        (
+            "keep only tracks by Composer A",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.KEEP_ONLY,
+                PlaylistFilterField.ARTIST,
+                "Composer A",
+            ),
+        ),
+        (
+            "keep only tracks from album Night Drive",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.KEEP_ONLY,
+                PlaylistFilterField.ALBUM,
+                "Night Drive",
+            ),
+        ),
+        (
+            "keep only tracks in genre Soundtrack",
+            PlaylistMetadataFilter(
+                PlaylistFilterAction.KEEP_ONLY,
+                PlaylistFilterField.GENRE,
+                "Soundtrack",
+            ),
+        ),
+    ],
+)
+def test_parse_playlist_metadata_filters(text: str, expected) -> None:
+    assert parse_playlist_edit(text) == expected

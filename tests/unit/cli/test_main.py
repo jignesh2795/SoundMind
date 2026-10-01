@@ -914,3 +914,62 @@ def test_recommend_resolves_exact_catalog_title_before_edit(monkeypatch, capsys)
     playlist = capsys.readouterr().out.split("Playlist:", 1)[1]
     assert "1. track-b" in playlist
     assert "track-a" not in playlist
+
+
+
+def test_recommend_applies_metadata_filter_after_sequencing(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(
+                    SimpleNamespace(track_id="a", score=0.9),
+                    SimpleNamespace(track_id="b", score=0.8),
+                    SimpleNamespace(track_id="c", score=0.7),
+                ),
+                playlist=(
+                    SimpleNamespace(track_id="a"),
+                    SimpleNamespace(track_id="b"),
+                    SimpleNamespace(track_id="c"),
+                ),
+            )
+
+    class FakeSession:
+        def scalars(self, statement):
+            return (
+                SimpleNamespace(track_id="a", title="Hero", file_name="hero.mp3", artist="A"),
+                SimpleNamespace(track_id="b", title="Night", file_name="night.mp3", artist="B"),
+                SimpleNamespace(track_id="c", title="Outro", file_name="outro.mp3", artist="A"),
+            )
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "remove all tracks by A",
+        ]
+    ) == 0
+
+    output = capsys.readouterr().out
+    playlist = output.split("Playlist:", 1)[1]
+    assert "1. b" in playlist
+    assert "a" not in playlist
+    assert "c" not in playlist

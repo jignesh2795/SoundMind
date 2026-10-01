@@ -12,6 +12,13 @@ from soundmind.playlist_editing import (
     SwapTracks,
     TrimPlaylist,
 )
+from soundmind.playlist_filter import (
+    PlaylistFilterAction,
+    PlaylistFilterField,
+    PlaylistMetadataFilter,
+)
+
+type PlaylistEditCommand = PlaylistEdit | PlaylistMetadataFilter
 
 _REMOVE_RE = re.compile(
     r"^(?:remove|delete|drop|skip)(?:\s+track)?\s+(?P<track>.+)$",
@@ -20,6 +27,14 @@ _REMOVE_RE = re.compile(
 _MOVE_RELATIVE_RE = re.compile(
     r"^move(?:\s+track)?\s+(?P<track>.+?)\s+(?P<relation>before|after)\s+"
     r"(?:track\s+)?(?P<target>.+)$",
+    re.IGNORECASE,
+)
+_FILTER_RE = re.compile(
+    r"^(?P<action>remove\s+all|keep\s+only)\s+"
+    r"(?:tracks?\s+)?"
+    r"(?:(?:by\s+(?P<artist>.+))|"
+    r"(?:from\s+album\s+(?P<album>.+))|"
+    r"(?:in\s+genre\s+(?P<genre>.+)))$",
     re.IGNORECASE,
 )
 _MOVE_RE = re.compile(
@@ -65,9 +80,25 @@ def _positive_integer(value: str, *, name: str) -> int:
     return parsed
 
 
-def parse_playlist_edit(text: str) -> PlaylistEdit:
+def parse_playlist_edit(text: str) -> PlaylistEditCommand:
     """Parse one explicit playlist-edit command into an M13.1 edit."""
     command = _normalize_command(text)
+
+    if match := _FILTER_RE.fullmatch(command):
+        value_field = (
+            (PlaylistFilterField.ARTIST, match.group("artist"))
+            if match.group("artist") is not None
+            else (PlaylistFilterField.ALBUM, match.group("album"))
+            if match.group("album") is not None
+            else (PlaylistFilterField.GENRE, match.group("genre"))
+        )
+        field, value = value_field
+        action = (
+            PlaylistFilterAction.KEEP_ONLY
+            if match.group("action").casefold().startswith("keep")
+            else PlaylistFilterAction.REMOVE
+        )
+        return PlaylistMetadataFilter(action=action, field=field, value=_track_id(value))
 
     if match := _REMOVE_RE.fullmatch(command):
         return RemoveTrack(_track_id(match.group("track")))
@@ -106,6 +137,6 @@ def parse_playlist_edit(text: str) -> PlaylistEdit:
 
 def parse_playlist_edits(
     commands: Sequence[str],
-) -> tuple[PlaylistEdit, ...]:
+) -> tuple[PlaylistEditCommand, ...]:
     """Parse multiple explicit commands in caller-supplied order."""
     return tuple(parse_playlist_edit(command) for command in commands)

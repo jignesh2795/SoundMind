@@ -42,8 +42,17 @@ This document is the project-level implementation ledger. It records completed m
 | M13.3 | CLI playlist editing workflow after recommendation sequencing | Complete |
 | M13.4 | Relative before/after playlist moves | Complete |
 | M13.5 | Deterministic catalog track-reference resolution | Complete |
+| M13.6 | Deterministic playlist metadata filters | In validation |
 
 ## Current milestone
+
+### M13.6 — Deterministic Playlist Metadata Filters (in validation)
+
+M13.6 adds explicit exact artist, album, and genre filters for already generated playlists. Filter commands are resolved against the current playlist and converted into the existing M13.1 structural removal edits.
+
+Contract: [M13.6 deterministic playlist filters](m13-6-deterministic-playlist-filters-contract.md)
+
+Validation is pending; the M13.5 baseline remains the latest validated gate.
 
 ### M13.5 — Catalog Track Reference Resolution (completed)
 

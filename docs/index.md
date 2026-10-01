@@ -51,6 +51,7 @@
 - [M13.3 CLI playlist editing](m13-3-cli-playlist-editing-contract.md)
 - [M13.4 relative playlist moves](m13-4-relative-playlist-moves-contract.md)
 - [M13.5 catalog track-reference resolution](m13-5-catalog-track-reference-resolution-contract.md)
+- [M13.6 deterministic playlist filters](m13-6-deterministic-playlist-filters-contract.md)
 
 ## Documentation rule
 
