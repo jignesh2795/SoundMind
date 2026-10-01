@@ -73,7 +73,10 @@ def parse_m3u8(
     return ParsedM3U8Playlist(items=tuple(items))
 
 
-def load_m3u8(path: Path, tracks_by_source_uri: dict[str, str]) -> ParsedM3U8Playlist:
+def load_m3u8(
+    path: Path,
+    tracks_by_source_uri: dict[str, str],
+) -> ParsedM3U8Playlist:
     """Load a local UTF-8 M3U8 file and resolve its source URIs."""
     try:
         text = path.read_text(encoding="utf-8")
