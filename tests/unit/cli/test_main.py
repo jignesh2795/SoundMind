@@ -1940,10 +1940,21 @@ def test_playlist_import_preview_reports_create_without_mutation(
 ) -> None:
     source = tmp_path / "source.json"
     source.write_text(
-        '{"version": 1, "name": "Focus", "created_at": "2026-10-01T10:00:00+00:00", '
-        '"updated_at": "2026-10-01T11:00:00+00:00", '
-        '"items": [{"position": 1, "track_id": "a", "sequence_score": 0.9, "base_score": 0.8}]}'
-        "\n",
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T11:00:00+00:00",
+  "items": [
+    {
+      "position": 1,
+      "track_id": "a",
+      "sequence_score": 0.9,
+      "base_score": 0.8
+    }
+  ]
+}
+""",
         encoding="utf-8",
     )
     captured = {"save": False, "commit": False}
@@ -1977,10 +1988,11 @@ def test_playlist_import_preview_reports_create_without_mutation(
     assert main(["playlist", "import", str(source), "--preview"]) == 0
     assert captured == {"save": False, "commit": False}
     assert capsys.readouterr().out == (
-        f"Import preview: {source}\n"
-        "Playlist: Focus\n"
-        "Tracks: 1\n"
-        "Action: create new playlist\n"
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 1
+Action: create new playlist
+"""
     )
 
 
@@ -1989,9 +2001,14 @@ def test_playlist_import_preview_reports_blocked_existing(
 ) -> None:
     source = tmp_path / "source.json"
     source.write_text(
-        '{"version": 1, "name": "Focus", "created_at": "2026-10-01T10:00:00+00:00", '
-        '"updated_at": "2026-10-01T10:00:00+00:00", "items": []}'
-        "\n",
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T10:00:00+00:00",
+  "items": []
+}
+""",
         encoding="utf-8",
     )
 
@@ -2023,10 +2040,11 @@ def test_playlist_import_preview_reports_blocked_existing(
 
     assert main(["playlist", "import", str(source), "--preview"]) == 0
     assert capsys.readouterr().out == (
-        f"Import preview: {source}\n"
-        "Playlist: Focus\n"
-        "Tracks: 0\n"
-        "Action: blocked; playlist already exists (use --replace-existing)\n"
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 0
+Action: blocked; playlist already exists (use --replace-existing)
+"""
     )
 
 
@@ -2035,9 +2053,14 @@ def test_playlist_import_preview_reports_replace_with_explicit_flag(
 ) -> None:
     source = tmp_path / "source.json"
     source.write_text(
-        '{"version": 1, "name": "Focus", "created_at": "2026-10-01T10:00:00+00:00", '
-        '"updated_at": "2026-10-01T10:00:00+00:00", "items": []}'
-        "\n",
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T11:00:00+00:00",
+  "items": []
+}
+""",
         encoding="utf-8",
     )
 
@@ -2080,10 +2103,11 @@ def test_playlist_import_preview_reports_replace_with_explicit_flag(
         == 0
     )
     assert capsys.readouterr().out == (
-        f"Import preview: {source}\n"
-        "Playlist: Focus\n"
-        "Tracks: 0\n"
-        "Action: replace existing playlist\n"
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 0
+Action: replace existing playlist
+"""
     )
 
 
