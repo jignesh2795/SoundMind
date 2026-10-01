@@ -2467,3 +2467,234 @@ def test_playlist_m3u8_import_parser_requires_name(tmp_path) -> None:
             ["playlist", "m3u8-import", str(source)]
         )
     assert exc_info.value.code == 2
+
+
+def test_playlist_m3u8_import_preview_reports_create_without_mutation(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "focus.m3u8"
+    source.write_text(
+        """#EXTM3U
+#EXTINF:12,Hero
+file:///music/a.mp3
+""",
+        encoding="utf-8",
+    )
+    captured = {"save": False, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+        def save(self, name, items):
+            captured["save"] = True
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(
+                    track_id="track-a",
+                    source_uri="file:///music/a.mp3",
+                    status="active",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "m3u8-import",
+                str(source),
+                "--name",
+                "Focus",
+                "--preview",
+            ]
+        )
+        == 0
+    )
+    assert captured == {"save": False, "commit": False}
+    assert capsys.readouterr().out == (
+        f"""M3U8 import preview: {source}
+Playlist: Focus
+Tracks: 1
+Action: create new playlist
+"""
+    )
+
+
+def test_playlist_m3u8_import_preview_reports_blocked_existing(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "focus.m3u8"
+    source.write_text(
+        """#EXTM3U
+#EXTINF:1,Hero
+file:///music/a.mp3
+""",
+        encoding="utf-8",
+    )
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            raise AssertionError("preview must not save")
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(
+                    track_id="track-a",
+                    source_uri="file:///music/a.mp3",
+                    status="active",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+        def commit(self):
+            raise AssertionError("preview must not commit")
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "m3u8-import",
+                str(source),
+                "--name",
+                "Focus",
+                "--preview",
+            ]
+        )
+        == 0
+    )
+    assert capsys.readouterr().out == (
+        f"""M3U8 import preview: {source}
+Playlist: Focus
+Tracks: 1
+Action: blocked; playlist already exists (use --replace-existing)
+"""
+    )
+
+
+def test_playlist_m3u8_import_preview_reports_replace(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "focus.m3u8"
+    source.write_text(
+        """#EXTM3U
+#EXTINF:1,Hero
+file:///music/a.mp3
+""",
+        encoding="utf-8",
+    )
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            raise AssertionError("preview must not save")
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(
+                    track_id="track-a",
+                    source_uri="file:///music/a.mp3",
+                    status="active",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+        def commit(self):
+            raise AssertionError("preview must not commit")
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "m3u8-import",
+                str(source),
+                "--name",
+                "Focus",
+                "--replace-existing",
+                "--preview",
+            ]
+        )
+        == 0
+    )
+    assert capsys.readouterr().out == (
+        f"""M3U8 import preview: {source}
+Playlist: Focus
+Tracks: 1
+Action: replace existing playlist
+"""
+    )
+
+
+def test_playlist_m3u8_import_parser_captures_preview_flag(tmp_path) -> None:
+    source = tmp_path / "focus.m3u8"
+    args = build_parser().parse_args(
+        ["playlist", "m3u8-import", str(source), "--name", "Focus", "--preview"]
+    )
+    assert args.playlist_command == "m3u8-import"
+    assert args.preview is True

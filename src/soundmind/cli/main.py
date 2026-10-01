@@ -184,6 +184,7 @@ def build_parser():
     pls_m3u8_import.add_argument("input", type=Path)
     pls_m3u8_import.add_argument("--name", required=True)
     pls_m3u8_import.add_argument("--replace-existing", action="store_true")
+    pls_m3u8_import.add_argument("--preview", action="store_true")
     pls_m3u8_import.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     pls_import = pls.add_parser("import")
@@ -545,6 +546,20 @@ def main(argv=None):
                 }
                 imported = load_m3u8(a.input, tracks_by_source_uri)
                 existing = repository.get(a.name)
+                if a.preview:
+                    print(f"M3U8 import preview: {a.input}")
+                    print(f"Playlist: {a.name}")
+                    print(f"Tracks: {len(imported.items)}")
+                    if existing is None:
+                        print("Action: create new playlist")
+                    elif a.replace_existing:
+                        print("Action: replace existing playlist")
+                    else:
+                        print(
+                            "Action: blocked; playlist already exists "
+                            "(use --replace-existing)"
+                        )
+                    return 0
                 if existing is not None and not a.replace_existing:
                     raise ValueError(
                         f"playlist already exists: {a.name!r}; use --replace-existing"
