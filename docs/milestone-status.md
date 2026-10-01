@@ -44,17 +44,24 @@ This document is the project-level implementation ledger. It records completed m
 | M13.5 | Deterministic catalog track-reference resolution | Complete |
 | M13.6 | Deterministic playlist metadata filters | Complete |
 | M13.7 | Deterministic playlist edit preview | Complete |
-| M13.8 | Deterministic playlist edit diff | In validation |
+| M13.8 | Deterministic playlist edit diff | Complete |
 
 ## Current milestone
 
-### M13.8 — Deterministic Playlist Edit Diff (in validation)
+### M13.8 — Deterministic Playlist Edit Diff (completed)
 
 M13.8 extends the M13.7 deterministic edit preview with a state diff for each command. The preview reports deterministic playlist membership and position changes between each command's input and output state.
 
 Contract: [M13.8 deterministic playlist edit diff](m13-8-playlist-edit-diff-contract.md)
 
-Validation is pending; M13.7 is the latest validated gate at 298 tests.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 301 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M13.7 — Deterministic Playlist Edit Preview (completed)
 
@@ -422,7 +429,7 @@ M13.4: Ruff clean, 272 tests passed
 M13.5: Ruff clean, 280 tests passed
 M13.6: Ruff clean, 296 tests passed
 M13.7: Ruff clean, 298 tests passed
-M13.8: validation pending
+M13.8: Ruff clean, 301 tests passed
 ```
 
 ## Documentation rule
