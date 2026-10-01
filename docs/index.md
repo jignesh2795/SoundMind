@@ -65,6 +65,7 @@
 - [M16.1 deterministic M3U8 playlist export](m16-1-m3u8-playlist-export-contract.md)
 - [M16.2 deterministic M3U8 playlist import](m16-2-m3u8-playlist-import-contract.md)
 - [M16.3 M3U8 playlist import preview](m16-3-m3u8-import-preview-contract.md)
+- [M17.1 deterministic playlist integrity audit](m17-1-playlist-integrity-audit-contract.md)
 
 ## Documentation rule
 
