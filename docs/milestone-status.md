@@ -46,17 +46,26 @@ This document is the project-level implementation ledger. It records completed m
 | M13.7 | Deterministic playlist edit preview | Complete |
 | M13.8 | Deterministic playlist edit diff | Complete |
 | M14.1 | Named playlist storage primitives | Complete |
-| M14.2 | Named playlist CLI | In validation |
+| M14.2 | Named playlist CLI | Complete |
 
 ## Current milestone
 
-### M14.2 — Named Playlist CLI (in validation)
+### M14.2 — Named Playlist CLI (completed)
 
 M14.2 exposes durable named playlist storage through the CLI. Recommendations can save the final generated or edited playlist, and saved playlists can be listed or shown deterministically.
 
 Contract: [M14.2 named playlist CLI](m14-2-named-playlist-cli-contract.md)
 
-Validation is pending; M14.1 is the latest validated gate at 307 tests.
+Implementation merge: `6682c2a8afc054c982dca6ad1cccdc365c56937a`
+
+Validation:
+
+```text
+Ruff: All checks passed!
+pytest: 311 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M14.1 — Named Playlist Storage Primitives (completed)
 
@@ -456,7 +465,7 @@ M13.6: Ruff clean, 296 tests passed
 M13.7: Ruff clean, 298 tests passed
 M13.8: Ruff clean, 301 tests passed
 M14.1: Ruff clean, 307 tests passed
-M14.2: validation pending
+M14.2: Ruff clean, 311 tests passed
 ```
 
 ## Documentation rule
