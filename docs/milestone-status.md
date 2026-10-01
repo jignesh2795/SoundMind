@@ -48,11 +48,11 @@ This document is the project-level implementation ledger. It records completed m
 | M14.1 | Named playlist storage primitives | Complete |
 | M14.2 | Named playlist CLI | Complete |
 | M14.3 | Persisted playlist editing CLI | Complete |
-| M14.4 | Named playlist deletion | In validation |
+| M14.4 | Named playlist deletion | Complete |
 
 ## Current milestone
 
-### M14.4 — Named Playlist Deletion (in validation)
+### M14.4 — Named Playlist Deletion (completed)
 
 M14.4 adds explicit deletion of an existing named playlist. The repository removes the snapshot rows through the existing persistence boundary, and the CLI commits the successful deletion.
 
@@ -60,7 +60,16 @@ Deletion uses M14.1 name normalization and is case-insensitive. Missing names re
 
 Contract: [M14.4 named playlist deletion](m14-4-named-playlist-deletion-contract.md)
 
-Validation is pending; M14.3 is the latest validated gate at 315 tests.
+Implementation merge: `e2e1848d6882b35a5bc4488ec27829b69c1766bf`
+
+Validation:
+
+```text
+Ruff: All checks passed!
+pytest: 320 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M14.3 — Persisted Playlist Editing CLI (completed)
 
@@ -498,7 +507,7 @@ M13.8: Ruff clean, 301 tests passed
 M14.1: Ruff clean, 307 tests passed
 M14.2: Ruff clean, 311 tests passed
 M14.3: Ruff clean, 315 tests passed
-M14.4: validation pending
+M14.4: Ruff clean, 320 tests passed
 ```
 
 ## Documentation rule
