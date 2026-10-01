@@ -78,7 +78,7 @@ def _positive_integer(value: str, *, name: str) -> int:
     return parsed
 
 
-def parse_playlist_edit(text: str) -> PlaylistEdit | PlaylistMetadataFilter:
+def parse_playlist_edit(text: str) -> PlaylistEditCommand:
     """Parse one explicit playlist-edit command into an M13.1 edit."""
     command = _normalize_command(text)
 
@@ -135,6 +135,6 @@ def parse_playlist_edit(text: str) -> PlaylistEdit | PlaylistMetadataFilter:
 
 def parse_playlist_edits(
     commands: Sequence[str],
-) -> tuple[PlaylistEdit | PlaylistMetadataFilter, ...]:
+) -> tuple[PlaylistEditCommand, ...]:
     """Parse multiple explicit commands in caller-supplied order."""
     return tuple(parse_playlist_edit(command) for command in commands)
