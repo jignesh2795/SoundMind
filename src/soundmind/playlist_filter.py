@@ -6,7 +6,7 @@ from enum import Enum
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from soundmind.playlist_editing import RemoveTrack, PlaylistEdit
+from soundmind.playlist_editing import PlaylistEdit, RemoveTrack
 from soundmind.sequence import SequenceItem
 from soundmind.storage.models import TrackRow
 
