@@ -45,8 +45,17 @@ This document is the project-level implementation ledger. It records completed m
 | M13.6 | Deterministic playlist metadata filters | Complete |
 | M13.7 | Deterministic playlist edit preview | Complete |
 | M13.8 | Deterministic playlist edit diff | Complete |
+| M14.1 | Named playlist storage primitives | In validation |
 
 ## Current milestone
+
+### M14.1 — Named Playlist Storage Primitives (in validation)
+
+M14.1 introduces durable local storage for named playlist snapshots. The persistence boundary preserves playlist order and sequence/base scores without changing M1 ranking, M2 sequencing, or M13 editing semantics.
+
+Contract: [M14.1 named playlist storage](m14-1-named-playlist-storage-contract.md)
+
+Validation is pending; M13.8 is the latest validated gate at 301 tests.
 
 ### M13.8 — Deterministic Playlist Edit Diff (completed)
 
@@ -430,6 +439,7 @@ M13.5: Ruff clean, 280 tests passed
 M13.6: Ruff clean, 296 tests passed
 M13.7: Ruff clean, 298 tests passed
 M13.8: Ruff clean, 301 tests passed
+M14.1: validation pending
 ```
 
 ## Documentation rule
