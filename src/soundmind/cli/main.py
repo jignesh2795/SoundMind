@@ -14,6 +14,7 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.playlist_edit_parser import parse_playlist_edits
+from soundmind.playlist_storage import PlaylistRepository
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
     describe_playlist_command,
@@ -143,6 +144,16 @@ def build_parser():
         default=Path("data/index/text_vectors"),
     )
 
+    pl = s.add_parser("playlist")
+    pls = pl.add_subparsers(dest="playlist_command", required=True)
+
+    pll = pls.add_parser("list")
+    pll.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_show = pls.add_parser("show")
+    pls_show.add_argument("name")
+    pls_show.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     si = s.add_parser("semantic-index")
     sis = si.add_subparsers(dest="semantic_index_command", required=True)
     sir = sis.add_parser("rebuild")
@@ -243,6 +254,11 @@ def build_parser():
             "without normal playlist output"
         ),
     )
+    rec.add_argument(
+        "--save-playlist",
+        metavar="NAME",
+        help="persist the final generated playlist under a local name",
+    )
 
     return p
 
@@ -313,6 +329,17 @@ def _print_recommendation(
         selected_playlist = result.playlist if playlist is None else playlist
         for index, item in enumerate(selected_playlist, start=1):
             print(f"{index}. {item.track_id}")
+
+
+def _print_saved_playlist(name, items) -> None:
+    print(f"Playlist: {name}")
+    for index, item in enumerate(items, start=1):
+        print(f"{index}. {item.track_id}")
+
+
+def _print_playlist_list(playlists) -> None:
+    for index, playlist in enumerate(playlists, start=1):
+        print(f"{index}. {playlist.name}\t{len(playlist.items)} tracks")
 
 
 def _recommend_service(a, session):
@@ -441,6 +468,19 @@ def main(argv=None):
                 _print_search(results, explain=a.explain_retrieval)
         return 0
 
+    if a.command == "playlist":
+        sf = create_session_factory(a.db)
+        with sf() as session:
+            repository = PlaylistRepository(session)
+            if a.playlist_command == "list":
+                _print_playlist_list(repository.list())
+                return 0
+            playlist = repository.get(a.name)
+            if playlist is None:
+                raise ValueError(f"playlist not found: {a.name!r}")
+            _print_saved_playlist(playlist.name, playlist.items)
+            return 0
+
     if a.command == "semantic-index":
         sf = create_session_factory(a.db)
         with sf() as session:
@@ -460,6 +500,8 @@ def main(argv=None):
         return 0
 
     if a.command == "recommend":
+        if a.preview_edits and a.save_playlist:
+            raise ValueError("--save-playlist cannot be combined with --preview-edits")
         sf = create_session_factory(a.db)
         now = a.now or datetime.now(UTC)
         request = EndToEndRequest(
@@ -527,6 +569,11 @@ def main(argv=None):
                 if a.preview_edits:
                     raise ValueError("--preview-edits requires at least one --edit command")
                 edited_playlist = None
+            if a.save_playlist:
+                PlaylistRepository(session).save(
+                    a.save_playlist,
+                    edited_playlist if edited_playlist is not None else result.playlist,
+                )
         _print_recommendation(
             result,
             explain=a.explain,
@@ -551,6 +598,8 @@ def main(argv=None):
             print("Playlist preview:")
             for index, item in enumerate(plan[-1].playlist, start=1) if plan else enumerate(result.playlist, start=1):
                 print(f"{index}. {item.track_id}")
+        if a.save_playlist:
+            print(f"Saved playlist: {a.save_playlist}")
         return 0
 
     return 1
