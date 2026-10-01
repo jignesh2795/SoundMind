@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
-from typing import Iterable
+from collections.abc import Iterable
 
 from soundmind.sequence import SequenceItem
 
@@ -22,7 +22,7 @@ class M3U8Track:
 def _duration_seconds(value: float | None) -> int:
     if value is None or not isfinite(value) or value < 0:
         return -1
-    return int(round(value))
+    return round(value)
 
 
 def _display_name(item: SequenceItem, track: M3U8Track) -> str:
