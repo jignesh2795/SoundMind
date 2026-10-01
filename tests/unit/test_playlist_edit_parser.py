@@ -44,6 +44,10 @@ def test_parse_move_commands_use_human_one_based_positions(text: str, expected) 
         ("swap 'hero-01' with 'hero-02'", SwapTracks("hero-01", "hero-02")),
     ],
 )
+def test_parse_swap_commands(text: str, expected) -> None:
+    assert parse_playlist_edit(text) == expected
+
+
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
@@ -53,10 +57,6 @@ def test_parse_move_commands_use_human_one_based_positions(text: str, expected) 
     ],
 )
 def test_parse_relative_move_commands(text: str, expected) -> None:
-    assert parse_playlist_edit(text) == expected
-
-
-def test_parse_swap_commands(text: str, expected) -> None:
     assert parse_playlist_edit(text) == expected
 
 
