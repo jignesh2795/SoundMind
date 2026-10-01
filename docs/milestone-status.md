@@ -52,8 +52,17 @@ This document is the project-level implementation ledger. It records completed m
 | M14.5 | Named playlist rename | Complete |
 | M15.1 | Named playlist JSON export | Complete |
 | M15.2 | Named playlist JSON import | Complete |
+| M15.3 | Named playlist JSON import preview | Complete |
 
 ## Current milestone
+
+### M15.3 — Named Playlist JSON Import Preview (completed)
+
+M15.3 adds a deterministic read-only preview mode to M15.2 JSON import. It validates the source snapshot, resolves the destination name, checks existing playlist state, and reports whether a real import would create, replace, or be blocked.
+
+Contract: [M15.3 named playlist JSON import preview](m15-3-named-playlist-json-import-preview-contract.md)
+
+Validated gate: Ruff clean, 344 tests passed, diff check clean, working tree clean. Implementation merge: `7b38abf71cb0d0e4be984fdc956dac65b51ed49a`.
 
 ### M15.2 — Named Playlist JSON Import (completed)
 
@@ -560,6 +569,7 @@ M14.4: Ruff clean, 320 tests passed
 M14.5: Ruff clean, 326 tests passed
 M15.1: Ruff clean, 330 tests passed
 M15.2: Ruff clean, 340 tests passed
+M15.3: Ruff clean, 344 tests passed
 ```
 
 ## Documentation rule
