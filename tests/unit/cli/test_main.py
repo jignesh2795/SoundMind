@@ -1318,8 +1318,8 @@ def test_playlist_list_and_show_use_repository(monkeypatch, capsys) -> None:
     )
 
     assert main(["playlist", "list"]) == 0
-    assert capsys.readouterr().out == "1. Focus Music\\t2 tracks\\n"
+    assert capsys.readouterr().out == "1. Focus Music\t2 tracks\n"
 
     assert main(["playlist", "show", "focus music"]) == 0
     assert captured[-1] == "focus music"
-    assert capsys.readouterr().out == "Playlist: Focus Music\\n1. a\\n2. b\\n"
+    assert capsys.readouterr().out == "Playlist: Focus Music\n1. a\n2. b\n"
