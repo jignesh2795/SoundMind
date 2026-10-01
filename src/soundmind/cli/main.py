@@ -174,6 +174,7 @@ def build_parser():
     pls_import.add_argument("input", type=Path)
     pls_import.add_argument("--name")
     pls_import.add_argument("--replace-existing", action="store_true")
+    pls_import.add_argument("--preview", action="store_true")
     pls_import.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     ple = pls.add_parser("edit")
@@ -523,6 +524,20 @@ def main(argv=None):
                 imported = load_playlist_json(a.input)
                 name = a.name or imported.name
                 existing = repository.get(name)
+                if a.preview:
+                    print(f"Import preview: {a.input}")
+                    print(f"Playlist: {name}")
+                    print(f"Tracks: {len(imported.items)}")
+                    if existing is None:
+                        print("Action: create new playlist")
+                    elif a.replace_existing:
+                        print("Action: replace existing playlist")
+                    else:
+                        print(
+                            "Action: blocked; playlist already exists "
+                            "(use --replace-existing)"
+                        )
+                    return 0
                 if existing is not None and not a.replace_existing:
                     raise ValueError(
                         f"playlist already exists: {name!r}; use --replace-existing"
