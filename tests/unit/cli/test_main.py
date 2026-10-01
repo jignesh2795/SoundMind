@@ -2241,7 +2241,6 @@ def test_playlist_m3u8_parser_captures_name_and_output(tmp_path) -> None:
     assert args.output == output
 
 
-
 def test_playlist_m3u8_import_creates_named_playlist(
     monkeypatch, tmp_path, capsys
 ) -> None:
