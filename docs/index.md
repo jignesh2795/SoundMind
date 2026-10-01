@@ -54,6 +54,7 @@
 - [M13.6 deterministic playlist filters](m13-6-deterministic-playlist-filters-contract.md)
 - [M13.7 deterministic playlist edit preview](m13-7-playlist-edit-preview-contract.md)
 - [M13.8 deterministic playlist edit diff](m13-8-playlist-edit-diff-contract.md)
+- [M14.1 named playlist storage](m14-1-named-playlist-storage-contract.md)
 
 ## Documentation rule
 
