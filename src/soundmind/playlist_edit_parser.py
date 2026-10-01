@@ -28,7 +28,8 @@ _MOVE_RELATIVE_RE = re.compile(
     re.IGNORECASE,
 )
 _FILTER_RE = re.compile(
-    r"^(?P<action>remove|keep\s+only)\s+all?\s*(?:tracks?\s+)?"
+    r"^(?P<action>remove\s+all|keep\s+only)\s+"
+    r"(?:tracks?\s+)?"
     r"(?:(?:by\s+(?P<artist>.+))|"
     r"(?:from\s+album\s+(?P<album>.+))|"
     r"(?:in\s+genre\s+(?P<genre>.+)))$",
@@ -77,7 +78,7 @@ def _positive_integer(value: str, *, name: str) -> int:
     return parsed
 
 
-def parse_playlist_edit(text: str) -> PlaylistEdit:
+def parse_playlist_edit(text: str) -> PlaylistEdit | PlaylistMetadataFilter:
     """Parse one explicit playlist-edit command into an M13.1 edit."""
     command = _normalize_command(text)
 
@@ -134,6 +135,6 @@ def parse_playlist_edit(text: str) -> PlaylistEdit:
 
 def parse_playlist_edits(
     commands: Sequence[str],
-) -> tuple[PlaylistEdit, ...]:
+) -> tuple[PlaylistEdit | PlaylistMetadataFilter, ...]:
     """Parse multiple explicit commands in caller-supplied order."""
     return tuple(parse_playlist_edit(command) for command in commands)
