@@ -52,6 +52,7 @@
 - [M13.4 relative playlist moves](m13-4-relative-playlist-moves-contract.md)
 - [M13.5 catalog track-reference resolution](m13-5-catalog-track-reference-resolution-contract.md)
 - [M13.6 deterministic playlist filters](m13-6-deterministic-playlist-filters-contract.md)
+- [M13.7 deterministic playlist edit preview](m13-7-playlist-edit-preview-contract.md)
 
 ## Documentation rule
 
