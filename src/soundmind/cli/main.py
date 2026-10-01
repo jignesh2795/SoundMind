@@ -14,8 +14,7 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.playlist_edit_parser import parse_playlist_edits
-from soundmind.playlist_edit_resolution import resolve_playlist_edit_references
-from soundmind.playlist_editing import apply_playlist_edits
+from soundmind.playlist_edit_workflow import apply_playlist_edit_commands
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
@@ -487,9 +486,12 @@ def main(argv=None):
                 )
             result = service.recommend(request, **recommend_kwargs)
             if a.edit:
-                edits = parse_playlist_edits(a.edit)
-                edits = resolve_playlist_edit_references(session, result.playlist, edits)
-                edited_playlist = apply_playlist_edits(result.playlist, edits)
+                commands = parse_playlist_edits(a.edit)
+                edited_playlist = apply_playlist_edit_commands(
+                    session,
+                    result.playlist,
+                    commands,
+                )
             else:
                 edited_playlist = None
         _print_recommendation(result, explain=a.explain, playlist=edited_playlist)
