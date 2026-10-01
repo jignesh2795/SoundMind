@@ -171,9 +171,6 @@ def test_recommend_seed_builds_learned_flow(monkeypatch, capsys) -> None:
             )
 
     class FakeSession:
-        def scalars(self, statement):
-            return ()
-
         def __enter__(self):
             return self
 
@@ -1117,6 +1114,9 @@ def test_recommend_preview_shows_deterministic_edit_diff(monkeypatch, capsys) ->
             )
 
     class FakeSession:
+        def scalars(self, statement):
+            return ()
+
         def __enter__(self):
             return self
 
