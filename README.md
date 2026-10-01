@@ -248,6 +248,7 @@ Validation uses Ruff and pytest.
 - M14.5: named playlist rename
 - M15.1: named playlist JSON export
 - M15.2: named playlist JSON import
+- M15.3: named playlist JSON import preview
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
