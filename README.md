@@ -145,6 +145,10 @@ Preview an M3U8 import without writing the playlist:
 
     soundmind playlist m3u8-import exports/focus.m3u8 --name "Focus Music" --preview
 
+Audit a saved playlist against the current local catalog:
+
+    soundmind playlist audit "Focus Music"
+
 Use the persisted semantic index for the hybrid candidate pool:
 
     soundmind recommend "hero entry" \
@@ -264,6 +268,7 @@ Validation uses Ruff and pytest.
 - M16.1: deterministic M3U8 playlist export
 - M16.2: deterministic M3U8 playlist import
 - M16.3: M3U8 playlist import preview
+- M17.1: deterministic playlist integrity audit
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
