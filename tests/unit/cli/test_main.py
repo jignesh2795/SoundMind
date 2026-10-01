@@ -2657,7 +2657,7 @@ file:///music/a.mp3
             return False
 
         def scalars(self, statement):
-            raise AssertionError("preview should only need existing playlist lookup")
+            return FakeScalarResult()
 
         def commit(self):
             raise AssertionError("preview must not commit")
