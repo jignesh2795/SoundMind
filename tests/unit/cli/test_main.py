@@ -1201,6 +1201,9 @@ def test_recommend_saves_final_edited_playlist(monkeypatch, capsys) -> None:
         def __exit__(self, exc_type, exc, tb):
             return False
 
+        def commit(self):
+            captured["committed"] = True
+
     monkeypatch.setattr(
         "soundmind.cli.main.CatalogContextRecommendationService",
         FakeService,
