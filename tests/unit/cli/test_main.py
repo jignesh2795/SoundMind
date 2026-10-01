@@ -1767,7 +1767,6 @@ def test_playlist_import_creates_named_playlist(monkeypatch, tmp_path, capsys) -
 
         def get(self, name):
             captured["get"] = name
-            return None
 
         def save(self, name, items):
             captured["save"] = (name, tuple(items))
