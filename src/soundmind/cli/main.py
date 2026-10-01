@@ -17,6 +17,7 @@ from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
     describe_playlist_edit,
+    describe_playlist_command,
     plan_playlist_edit_commands,
 )
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
@@ -531,7 +532,7 @@ def main(argv=None):
         if a.preview_edits:
             print("Edit preview:")
             for index, step in enumerate(plan, start=1):
-                print(f"{index}. command: {step.command}")
+                print(f"{index}. command: {describe_playlist_command(step.command)}")
                 if step.resolved_edits:
                     for edit in step.resolved_edits:
                         print(f"   → {describe_playlist_edit(edit)}")
