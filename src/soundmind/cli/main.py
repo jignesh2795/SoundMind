@@ -26,6 +26,7 @@ from soundmind.playlist_edit_workflow import (
 from soundmind.playlist_export import saved_playlist_to_json
 from soundmind.playlist_import import load_playlist_json
 from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
+from soundmind.playlist_m3u8_import import load_m3u8
 from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
@@ -178,6 +179,12 @@ def build_parser():
     pls_m3u8.add_argument("name")
     pls_m3u8.add_argument("output", type=Path)
     pls_m3u8.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_m3u8_import = pls.add_parser("m3u8-import")
+    pls_m3u8_import.add_argument("input", type=Path)
+    pls_m3u8_import.add_argument("--name", required=True)
+    pls_m3u8_import.add_argument("--replace-existing", action="store_true")
+    pls_m3u8_import.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     pls_import = pls.add_parser("import")
     pls_import.add_argument("input", type=Path)
@@ -528,6 +535,23 @@ def main(argv=None):
                     raise ValueError(f"playlist not found: {a.old_name!r}")
                 session.commit()
                 print(f"Renamed playlist: {a.old_name} -> {renamed.name}")
+                return 0
+            if a.playlist_command == "m3u8-import":
+                rows = session.scalars(select(TrackRow)).all()
+                tracks_by_source_uri = {
+                    row.source_uri: row.track_id
+                    for row in rows
+                    if row.status == "active" and row.source_uri.startswith("file://")
+                }
+                imported = load_m3u8(a.input, tracks_by_source_uri)
+                existing = repository.get(a.name)
+                if existing is not None and not a.replace_existing:
+                    raise ValueError(
+                        f"playlist already exists: {a.name!r}; use --replace-existing"
+                    )
+                saved = repository.save(a.name, imported.items)
+                session.commit()
+                print(f"Imported M3U8 playlist: {saved.name} <- {a.input}")
                 return 0
             if a.playlist_command == "m3u8":
                 playlist = repository.get(a.name)
