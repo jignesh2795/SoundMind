@@ -1149,3 +1149,177 @@ def test_recommend_preview_shows_deterministic_edit_diff(monkeypatch, capsys) ->
     assert "move a from position 1 to position 2" in output
     assert "move b from position 2 to position 3" in output
     assert "move c from position 3 to position 1" in output
+
+def test_recommend_parser_captures_save_playlist() -> None:
+    args = build_parser().parse_args(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--save-playlist",
+            "Focus Music",
+        ]
+    )
+
+    assert args.save_playlist == "Focus Music"
+
+
+def test_recommend_saves_final_edited_playlist(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(SimpleNamespace(track_id="a", score=0.9),),
+                playlist=(
+                    SimpleNamespace(track_id="a", sequence_score=0.9, base_score=0.8),
+                    SimpleNamespace(track_id="b", sequence_score=0.7, base_score=0.6),
+                ),
+            )
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            captured["session"] = session
+
+        def save(self, name, items):
+            captured["name"] = name
+            captured["items"] = tuple(items)
+            return SimpleNamespace(name=name)
+
+    class FakeSession:
+        def scalars(self, statement):
+            return ()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["committed"] = True
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.PlaylistRepository",
+        FakeRepository,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "remove a",
+            "--save-playlist",
+            "Focus Music",
+        ]
+    ) == 0
+
+    assert captured["name"] == "Focus Music"
+    assert captured["committed"] is True
+    assert [item.track_id for item in captured["items"]] == ["b"]
+    assert "Saved playlist: Focus Music" in capsys.readouterr().out
+
+
+def test_preview_save_playlist_is_rejected(monkeypatch) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="cannot be combined"):
+        main(
+            [
+                "recommend",
+                "cinematic BGM",
+                "--context",
+                "coding",
+                "--edit",
+                "remove a",
+                "--preview-edits",
+                "--save-playlist",
+                "Focus Music",
+            ]
+        )
+
+
+def test_playlist_list_and_show_use_repository(monkeypatch, capsys) -> None:
+    now = datetime(2026, 10, 1, tzinfo=UTC)
+    saved = SimpleNamespace(
+        name="Focus Music",
+        items=(SimpleNamespace(track_id="a"), SimpleNamespace(track_id="b")),
+        created_at=now,
+        updated_at=now,
+    )
+    captured = []
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            captured.append("init")
+
+        def list(self):
+            return (saved,)
+
+        def get(self, name):
+            captured.append(name)
+            return saved
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.PlaylistRepository",
+        FakeRepository,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "list"]) == 0
+    assert capsys.readouterr().out == "1. Focus Music\t2 tracks\n"
+
+    assert main(["playlist", "show", "focus music"]) == 0
+    assert captured[-1] == "focus music"
+    assert capsys.readouterr().out == "Playlist: Focus Music\n1. a\n2. b\n"
