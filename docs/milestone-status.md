@@ -39,17 +39,24 @@ This document is the project-level implementation ledger. It records completed m
 | M12.9 | Deterministic retrieval evidence for lexical and hybrid search | Complete |
 | M13.1 | Deterministic playlist editing primitives | Complete |
 | M13.2 | Deterministic natural-language playlist edit parser | Complete |
-| M13.3 | CLI playlist editing workflow after recommendation sequencing | In validation |
+| M13.3 | CLI playlist editing workflow after recommendation sequencing | Complete |
 
 ## Current milestone
 
-### M13.3 — CLI Playlist Editing Workflow (in validation)
+### M13.3 — CLI Playlist Editing Workflow (completed)
 
 M13.3 connects M13.2 command parsing and M13.1 structural editing to the existing `recommend` CLI. Repeatable `--edit` commands are applied only after M2 sequencing; ranked recommendation output remains unchanged.
 
 Contract: [M13.3 CLI playlist editing](m13-3-cli-playlist-editing-contract.md)
 
-Validation is pending; no new test count is recorded until OpenCode reports the gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 261 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M13.2 — Deterministic Natural-Language Playlist Edit Parser (completed)
 
@@ -337,6 +344,7 @@ M12.8: Ruff clean, 217 tests passed
 M12.9: Ruff clean, 220 tests passed
 M13.1: Ruff clean, 234 tests passed
 M13.2: Ruff clean, 259 tests passed
+M13.3: Ruff clean, 261 tests passed
 ```
 
 ## Documentation rule

@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.3 — CLI Playlist Editing Workflow (in validation).
+M13.3 — CLI Playlist Editing Workflow (complete).
 
 The current pipeline now supports:
 
