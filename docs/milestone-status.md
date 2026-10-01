@@ -51,11 +51,11 @@ This document is the project-level implementation ledger. It records completed m
 | M14.4 | Named playlist deletion | Complete |
 | M14.5 | Named playlist rename | Complete |
 | M15.1 | Named playlist JSON export | Complete |
-| M15.2 | Named playlist JSON import | In validation |
+| M15.2 | Named playlist JSON import | Complete |
 
 ## Current milestone
 
-### M15.2 — Named Playlist JSON Import (in validation)
+### M15.2 — Named Playlist JSON Import (completed)
 
 M15.2 adds deterministic local import of version-1 playlist JSON snapshots. Imported track IDs, order, sequence scores, and base scores are validated and persisted through `PlaylistRepository`.
 
@@ -63,7 +63,7 @@ New playlist names are used as the saved playlist identity and receive normal re
 
 Contract: [M15.2 named playlist JSON import](m15-2-named-playlist-json-import-contract.md)
 
-Validation is pending; M15.1 is the latest validated gate at 330 tests.
+Validated gate: Ruff clean, 340 tests passed, diff check clean, working tree clean. Implementation merge: `daf12922436475339ef9311a36ac55454f78aa42`.
 
 ### M15.1 — Named Playlist JSON Export (completed)
 
@@ -559,7 +559,7 @@ M14.3: Ruff clean, 315 tests passed
 M14.4: Ruff clean, 320 tests passed
 M14.5: Ruff clean, 326 tests passed
 M15.1: Ruff clean, 330 tests passed
-M15.2: validation pending
+M15.2: Ruff clean, 340 tests passed
 ```
 
 ## Documentation rule
