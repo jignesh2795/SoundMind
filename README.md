@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.8 — Deterministic Playlist Edit Diff (in validation).
+M13.8 — Deterministic Playlist Edit Diff (completed).
 
 The current pipeline now supports:
 
