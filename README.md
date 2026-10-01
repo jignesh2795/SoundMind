@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.1 — Deterministic Playlist Integrity Audit (completed).
+M17.2 — Deterministic Playlist Repair Plan (in validation).
 
 The current pipeline now supports:
 
@@ -149,6 +149,10 @@ Audit a saved playlist against the current local catalog:
 
     soundmind playlist audit "Focus Music"
 
+Plan stale-reference cleanup without modifying the playlist:
+
+    soundmind playlist repair-plan "Focus Music"
+
 Use the persisted semantic index for the hybrid candidate pool:
 
     soundmind recommend "hero entry" \
@@ -269,6 +273,7 @@ Validation uses Ruff and pytest.
 - M16.2: deterministic M3U8 playlist import
 - M16.3: M3U8 playlist import preview
 - M17.1: deterministic playlist integrity audit
+- M17.2: deterministic playlist repair plan
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
