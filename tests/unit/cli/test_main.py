@@ -811,6 +811,9 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
             )
 
     class FakeSession:
+        def scalars(self, statement):
+            return ()
+
         def __enter__(self):
             return self
 
