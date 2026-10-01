@@ -1743,3 +1743,194 @@ def test_playlist_export_parser_captures_name_and_output(tmp_path) -> None:
     assert args.playlist_command == "export"
     assert args.name == "Focus Music"
     assert args.output == tmp_path / "focus.json"
+
+
+def test_playlist_import_creates_named_playlist(monkeypatch, tmp_path, capsys) -> None:
+    source = tmp_path / "focus.json"
+    source.write_text(
+        "{\n"
+        '  "version": 1,\n'
+        '  "name": "Focus Music",\n'
+        '  "created_at": "2026-10-01T10:00:00+00:00",\n'
+        '  "updated_at": "2026-10-01T11:00:00+00:00",\n'
+        '  "items": [\n'
+        '    {"position": 1, "track_id": "a", "sequence_score": 0.9, "base_score": 0.8}\n'
+        '  ]\n'
+        "}\n",
+        encoding="utf-8",
+    )
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            captured["get"] = name
+            return None
+
+        def save(self, name, items):
+            captured["save"] = (name, tuple(items))
+            return SimpleNamespace(name=name)
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "import", str(source)]) == 0
+    assert captured["get"] == "Focus Music"
+    name, items = captured["save"]
+    assert name == "Focus Music"
+    assert [(item.track_id, item.sequence_score, item.base_score) for item in items] == [
+        ("a", 0.9, 0.8)
+    ]
+    assert captured["commit"] is True
+    assert capsys.readouterr().out == f"Imported playlist: Focus Music <- {source}\n"
+
+
+def test_playlist_import_can_use_explicit_name(monkeypatch, tmp_path, capsys) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        '{"version": 1, "name": "Original", "created_at": "2026-10-01T10:00:00+00:00", '
+        '"updated_at": "2026-10-01T10:00:00+00:00", "items": []}\n',
+        encoding="utf-8",
+    )
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+        def save(self, name, items):
+            captured["save"] = (name, tuple(items))
+            return SimpleNamespace(name=name)
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            pass
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+    assert (
+        main(["playlist", "import", str(source), "--name", "Imported Focus"]) == 0
+    )
+    assert captured["save"][0] == "Imported Focus"
+    assert capsys.readouterr().out == f"Imported playlist: Imported Focus <- {source}\n"
+
+
+def test_playlist_import_requires_replace_for_existing_playlist(monkeypatch, tmp_path) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        '{"version": 1, "name": "Focus", "created_at": "2026-10-01T10:00:00+00:00", '
+        '"updated_at": "2026-10-01T10:00:00+00:00", "items": []}\n',
+        encoding="utf-8",
+    )
+    captured = {"save": False, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            captured["save"] = True
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="--replace-existing"):
+        main(["playlist", "import", str(source)])
+
+    assert captured["save"] is False
+    assert captured["commit"] is False
+
+
+def test_playlist_import_replace_existing(monkeypatch, tmp_path) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        '{"version": 1, "name": "Focus", "created_at": "2026-10-01T10:00:00+00:00", '
+        '"updated_at": "2026-10-01T10:00:00+00:00", "items": []}\n',
+        encoding="utf-8",
+    )
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            captured["save"] = (name, tuple(items))
+            return SimpleNamespace(name=name)
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "import", str(source), "--replace-existing"]) == 0
+    assert captured["save"][0] == "Focus"
+    assert captured["commit"] is True
+
+
+def test_playlist_import_parser_captures_options(tmp_path) -> None:
+    source = tmp_path / "source.json"
+    args = build_parser().parse_args(
+        ["playlist", "import", str(source), "--name", "Focus", "--replace-existing"]
+    )
+    assert args.playlist_command == "import"
+    assert args.input == source
+    assert args.name == "Focus"
+    assert args.replace_existing is True
