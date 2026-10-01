@@ -53,17 +53,17 @@ This document is the project-level implementation ledger. It records completed m
 | M15.1 | Named playlist JSON export | Complete |
 | M15.2 | Named playlist JSON import | Complete |
 | M15.3 | Named playlist JSON import preview | Complete |
-| M16.1 | Deterministic M3U8 playlist export | In validation |
+| M16.1 | Deterministic M3U8 playlist export | Complete |
 
 ## Current milestone
 
-### M16.1 — Deterministic M3U8 Playlist Export (in validation)
+### M16.1 — Deterministic M3U8 Playlist Export (completed)
 
 M16.1 adds a deterministic local M3U8 representation for persisted named playlists. Playlist order is preserved while local catalog file URIs provide player-oriented entries.
 
 Contract: [M16.1 deterministic M3U8 playlist export](m16-1-m3u8-playlist-export-contract.md)
 
-Validation is pending; M15.3 is the latest validated gate at 344 tests.
+Validated gate: Ruff clean, 352 tests passed, diff check clean, working tree clean. Implementation merge: `4dcb57dc45a9c97e34c8e03c872d5a7f629be672`.
 
 ### M15.3 — Named Playlist JSON Import Preview (completed)
 
@@ -579,6 +579,7 @@ M14.5: Ruff clean, 326 tests passed
 M15.1: Ruff clean, 330 tests passed
 M15.2: Ruff clean, 340 tests passed
 M15.3: Ruff clean, 344 tests passed
+M16.1: Ruff clean, 352 tests passed
 ```
 
 ## Documentation rule
