@@ -49,11 +49,11 @@ This document is the project-level implementation ledger. It records completed m
 | M14.2 | Named playlist CLI | Complete |
 | M14.3 | Persisted playlist editing CLI | Complete |
 | M14.4 | Named playlist deletion | Complete |
-| M14.5 | Named playlist rename | In validation |
+| M14.5 | Named playlist rename | Complete |
 
 ## Current milestone
 
-### M14.5 — Named Playlist Rename (in validation)
+### M14.5 — Named Playlist Rename (completed)
 
 M14.5 adds explicit renaming of an existing named playlist. The repository updates only the playlist identity and `updated_at`, preserving the stored items, order, sequence scores, base scores, and original `created_at`.
 
@@ -61,7 +61,16 @@ Rename uses the M14.1 whitespace normalization and case-insensitive name key. Ex
 
 Contract: [M14.5 named playlist rename](m14-5-named-playlist-rename-contract.md)
 
-Validation is pending; M14.4 is the latest validated gate at 320 tests.
+Implementation merge: `78707100e55564c4e3c9594c366837e5641551ef`
+
+Validation:
+
+```text
+Ruff: All checks passed!
+pytest: 326 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M14.4 — Named Playlist Deletion (completed)
 
@@ -519,7 +528,7 @@ M14.1: Ruff clean, 307 tests passed
 M14.2: Ruff clean, 311 tests passed
 M14.3: Ruff clean, 315 tests passed
 M14.4: Ruff clean, 320 tests passed
-M14.5: validation pending
+M14.5: Ruff clean, 326 tests passed
 ```
 
 ## Documentation rule
