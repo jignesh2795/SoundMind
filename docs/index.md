@@ -62,6 +62,7 @@
 - [M15.1 named playlist JSON export](m15-1-named-playlist-json-export-contract.md)
 - [M15.2 named playlist JSON import](m15-2-named-playlist-json-import-contract.md)
 - [M15.3 named playlist JSON import preview](m15-3-named-playlist-json-import-preview-contract.md)
+- [M16.1 deterministic M3U8 playlist export](m16-1-m3u8-playlist-export-contract.md)
 
 ## Documentation rule
 

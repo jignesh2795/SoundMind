@@ -2,6 +2,8 @@ import argparse
 from datetime import UTC, datetime
 from pathlib import Path
 
+from sqlalchemy import select
+
 from soundmind.catalog_recommendation import (
     RETRIEVAL_MODES,
     CatalogContextRecommendationService,
@@ -23,6 +25,7 @@ from soundmind.playlist_edit_workflow import (
 )
 from soundmind.playlist_export import saved_playlist_to_json
 from soundmind.playlist_import import load_playlist_json
+from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
 from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
@@ -33,6 +36,7 @@ from soundmind.recommendation.semantic_text_retrieval import (
 )
 from soundmind.sequence import SequenceMode
 from soundmind.storage.database import create_session_factory
+from soundmind.storage.models import TrackRow
 
 
 def _parse_now(value: str) -> datetime:
@@ -169,6 +173,11 @@ def build_parser():
     pls_export.add_argument("name")
     pls_export.add_argument("output", type=Path)
     pls_export.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_m3u8 = pls.add_parser("m3u8")
+    pls_m3u8.add_argument("name")
+    pls_m3u8.add_argument("output", type=Path)
+    pls_m3u8.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     pls_import = pls.add_parser("import")
     pls_import.add_argument("input", type=Path)
@@ -519,6 +528,29 @@ def main(argv=None):
                     raise ValueError(f"playlist not found: {a.old_name!r}")
                 session.commit()
                 print(f"Renamed playlist: {a.old_name} -> {renamed.name}")
+                return 0
+            if a.playlist_command == "m3u8":
+                playlist = repository.get(a.name)
+                if playlist is None:
+                    raise ValueError(f"playlist not found: {a.name!r}")
+                track_ids = tuple(item.track_id for item in playlist.items)
+                rows = session.scalars(
+                    select(TrackRow).where(TrackRow.track_id.in_(track_ids))
+                ).all()
+                tracks = {
+                    row.track_id: M3U8Track(
+                        source_uri=row.source_uri,
+                        title=row.title,
+                        artist=row.artist,
+                        duration_seconds=row.duration_seconds,
+                    )
+                    for row in rows
+                }
+                a.output.write_text(
+                    saved_playlist_to_m3u8(playlist.items, tracks),
+                    encoding="utf-8",
+                )
+                print(f"Exported M3U8 playlist: {playlist.name} -> {a.output}")
                 return 0
             if a.playlist_command == "import":
                 imported = load_playlist_json(a.input)
