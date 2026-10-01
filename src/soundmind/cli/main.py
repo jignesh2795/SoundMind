@@ -16,8 +16,8 @@ from soundmind.ingestion.scanner import scan_directory
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
-    describe_playlist_edit,
     describe_playlist_command,
+    describe_playlist_edit,
     plan_playlist_edit_commands,
 )
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
