@@ -13,6 +13,8 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.playlist_edit_parser import parse_playlist_edits
+from soundmind.playlist_editing import apply_playlist_edits
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
@@ -221,6 +223,12 @@ def build_parser():
         action="store_true",
         help="print per-signal ranking contributions",
     )
+    rec.add_argument(
+        "--edit",
+        action="append",
+        default=[],
+        help="apply a deterministic playlist edit command after sequencing; repeatable",
+    )
 
     return p
 
@@ -265,7 +273,7 @@ def _print_hybrid_search(results, *, explain=False) -> None:
             print(f"   semantic-contribution: {result.semantic_contribution:.6f}")
 
 
-def _print_recommendation(result, *, explain=False) -> None:
+def _print_recommendation(result, *, explain=False, playlist=None) -> None:
     print(f"Intent: {result.intent.raw_text}")
     print("Ranked:")
     for index, candidate in enumerate(result.ranked, start=1):
@@ -281,7 +289,8 @@ def _print_recommendation(result, *, explain=False) -> None:
                     f"contribution={contribution.contribution:.6f}"
                 )
     print("Playlist:")
-    for index, item in enumerate(result.playlist, start=1):
+    selected_playlist = result.playlist if playlist is None else playlist
+    for index, item in enumerate(selected_playlist, start=1):
         print(f"{index}. {item.track_id}")
 
 
@@ -476,7 +485,12 @@ def main(argv=None):
                     }
                 )
             result = service.recommend(request, **recommend_kwargs)
-        _print_recommendation(result, explain=a.explain)
+            if a.edit:
+                edits = parse_playlist_edits(a.edit)
+                edited_playlist = apply_playlist_edits(result.playlist, edits)
+            else:
+                edited_playlist = None
+        _print_recommendation(result, explain=a.explain, playlist=edited_playlist)
         return 0
 
     return 1

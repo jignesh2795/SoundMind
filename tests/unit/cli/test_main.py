@@ -35,6 +35,7 @@ def test_recommend_parser_captures_options() -> None:
     assert args.event_limit == 50
     assert args.mode == "journey"
     assert args.now == datetime(2026, 9, 29, 6, 30, tzinfo=UTC)
+    assert args.edit == []
 
 
 def test_recommend_parser_requires_timezone_for_now() -> None:
@@ -765,3 +766,84 @@ def test_search_explain_retrieval_prints_lexical_evidence(monkeypatch, capsys) -
         "1. hero\t1.000000\tHero Entry — Composer\tmatched=title\n"
         "   matched-query: hero entry\n"
     )
+
+
+def test_recommend_parser_captures_repeatable_edit_commands() -> None:
+    args = build_parser().parse_args(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "remove a",
+            "--edit",
+            "move d to 1",
+        ]
+    )
+
+    assert args.edit == ["remove a", "move d to 1"]
+
+
+def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(
+                    SimpleNamespace(track_id="a", score=0.9),
+                    SimpleNamespace(track_id="b", score=0.8),
+                    SimpleNamespace(track_id="c", score=0.7),
+                    SimpleNamespace(track_id="d", score=0.6),
+                ),
+                playlist=(
+                    SimpleNamespace(track_id="a"),
+                    SimpleNamespace(track_id="b"),
+                    SimpleNamespace(track_id="c"),
+                    SimpleNamespace(track_id="d"),
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "recommend",
+                "cinematic BGM",
+                "--context",
+                "coding",
+                "--edit",
+                "remove b",
+                "--edit",
+                "move d to 1",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr().out
+    assert "1. a\t0.900000" in output
+    assert "2. b\t0.800000" in output
+    assert "3. c\t0.700000" in output
+    assert "4. d\t0.600000" in output
+    assert "Playlist:" in output
+    playlist = output.split("Playlist:", 1)[1]
+    assert "1. d" in playlist
+    assert "2. a" in playlist
+    assert "3. c" in playlist
+    assert "4. b" not in playlist
