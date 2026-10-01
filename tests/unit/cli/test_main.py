@@ -2119,3 +2119,129 @@ def test_playlist_import_parser_captures_preview_flag(tmp_path) -> None:
     assert args.playlist_command == "import"
     assert args.input == source
     assert args.preview is True
+
+
+def test_playlist_m3u8_export_writes_catalog_file_uris(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    output = tmp_path / "focus.m3u8"
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(
+                name="Focus",
+                items=(
+                    SimpleNamespace(track_id="a"),
+                    SimpleNamespace(track_id="b"),
+                ),
+            )
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(
+                    track_id="b",
+                    source_uri="file:///music/b.mp3",
+                    title="Night",
+                    artist=None,
+                    duration_seconds=None,
+                ),
+                SimpleNamespace(
+                    track_id="a",
+                    source_uri="file:///music/a.mp3",
+                    title="Hero",
+                    artist="Composer",
+                    duration_seconds=12.4,
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            captured["statement"] = statement
+            return FakeScalarResult()
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "m3u8", "Focus", str(output)]) == 0
+    assert output.read_text(encoding="utf-8") == (
+        "#EXTM3U
+"
+        "#EXTINF:12,Hero — Composer
+"
+        "file:///music/a.mp3
+"
+        "#EXTINF:-1,Night
+"
+        "file:///music/b.mp3
+"
+    )
+    assert capsys.readouterr().out == (
+        f"Exported M3U8 playlist: Focus -> {output}
+"
+    )
+
+
+def test_playlist_m3u8_export_rejects_missing_catalog_track(
+    monkeypatch, tmp_path
+) -> None:
+    output = tmp_path / "missing.m3u8"
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(
+                name="Focus",
+                items=(SimpleNamespace(track_id="missing"),),
+            )
+
+    class FakeScalarResult:
+        def all(self):
+            return ()
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with __import__("pytest").raises(
+        ValueError, match="track not found in catalog"
+    ):
+        main(["playlist", "m3u8", "Focus", str(output)])
+    assert not output.exists()
+
+
+def test_playlist_m3u8_parser_captures_name_and_output(tmp_path) -> None:
+    output = tmp_path / "focus.m3u8"
+    args = build_parser().parse_args(
+        ["playlist", "m3u8", "Focus", str(output)]
+    )
+    assert args.playlist_command == "m3u8"
+    assert args.name == "Focus"
+    assert args.output == output
