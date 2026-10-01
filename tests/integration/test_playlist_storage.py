@@ -132,3 +132,43 @@ def test_delete_missing_playlist_returns_false(tmp_path) -> None:
 
     with session_factory() as session:
         assert PlaylistRepository(session).delete("Missing") is False
+
+
+def test_rename_preserves_items_and_created_at(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+    created = datetime(2026, 10, 1, 14, 0, tzinfo=UTC)
+    updated = datetime(2026, 10, 1, 15, 0, tzinfo=UTC)
+    items = (item("a", 0.9, 0.8), item("b", 0.7, 0.6))
+
+    with session_factory() as session:
+        repository = PlaylistRepository(session)
+        repository.save("Focus", items, now=created)
+        renamed = repository.rename(" focus ", "Deep Focus", now=updated)
+
+        assert renamed is not None
+        assert renamed.name == "Deep Focus"
+        assert renamed.items == items
+        assert renamed.created_at == created
+        assert renamed.updated_at == updated
+        assert repository.get("Focus") is None
+        assert repository.get("deep focus") == renamed
+        session.commit()
+
+
+def test_rename_rejects_existing_destination(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        repository = PlaylistRepository(session)
+        repository.save("Focus", (item("a", 1.0, 1.0),))
+        repository.save("Study", (item("b", 1.0, 1.0),))
+
+        with pytest.raises(ValueError, match="already exists"):
+            repository.rename("Focus", " study ")
+
+
+def test_rename_missing_playlist_returns_none(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        assert PlaylistRepository(session).rename("Missing", "New") is None
