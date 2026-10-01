@@ -40,17 +40,24 @@ This document is the project-level implementation ledger. It records completed m
 | M13.1 | Deterministic playlist editing primitives | Complete |
 | M13.2 | Deterministic natural-language playlist edit parser | Complete |
 | M13.3 | CLI playlist editing workflow after recommendation sequencing | Complete |
-| M13.4 | Relative before/after playlist moves | In validation |
+| M13.4 | Relative before/after playlist moves | Complete |
 
 ## Current milestone
 
-### M13.4 — Relative Playlist Moves (in validation)
+### M13.4 — Relative Playlist Moves (completed)
 
 M13.4 extends the deterministic M13.1 editor and M13.2 parser with relative movement commands. Users can move an existing track immediately before or after another existing track without calculating an absolute position.
 
 Contract: [M13.4 relative playlist moves](m13-4-relative-playlist-moves-contract.md)
 
-Validation is pending; the M13.3 baseline remains the latest validated gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 272 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M13.3 — CLI Playlist Editing Workflow (completed)
 
@@ -354,6 +361,7 @@ M12.9: Ruff clean, 220 tests passed
 M13.1: Ruff clean, 234 tests passed
 M13.2: Ruff clean, 259 tests passed
 M13.3: Ruff clean, 261 tests passed
+M13.4: Ruff clean, 272 tests passed
 ```
 
 ## Documentation rule
