@@ -25,11 +25,21 @@ from soundmind.sequence import SequenceItem
 
 
 @dataclass(frozen=True)
+class PlaylistEditChange:
+    """One position or membership change between two playlist states."""
+
+    track_id: str
+    from_position: int | None
+    to_position: int | None
+
+
+@dataclass(frozen=True)
 class PlaylistEditPlanStep:
-    """One parsed command, its resolved structural edits, and resulting playlist."""
+    """One parsed command, its resolved edits, diff, and resulting playlist."""
 
     command: PlaylistEditCommand
     resolved_edits: tuple[PlaylistEdit, ...]
+    changes: tuple[PlaylistEditChange, ...]
     playlist: tuple[SequenceItem, ...]
 
 
@@ -43,6 +53,50 @@ def _resolve_command(
     return resolve_playlist_edit_references(session, playlist, [command])
 
 
+def diff_playlist_states(
+    before: tuple[SequenceItem, ...] | list[SequenceItem],
+    after: tuple[SequenceItem, ...] | list[SequenceItem],
+) -> tuple[PlaylistEditChange, ...]:
+    """Return deterministic membership and position changes between states."""
+    before_items = tuple(before)
+    after_items = tuple(after)
+    before_ids = tuple(item.track_id for item in before_items)
+    after_ids = tuple(item.track_id for item in after_items)
+
+    if len(before_ids) != len(set(before_ids)):
+        raise ValueError("duplicate track_id in before playlist")
+    if len(after_ids) != len(set(after_ids)):
+        raise ValueError("duplicate track_id in after playlist")
+
+    before_positions = {track_id: index for index, track_id in enumerate(before_ids)}
+    after_positions = {track_id: index for index, track_id in enumerate(after_ids)}
+    changes: list[PlaylistEditChange] = []
+
+    for track_id in before_ids:
+        before_position = before_positions[track_id]
+        after_position = after_positions.get(track_id)
+        if after_position != before_position:
+            changes.append(
+                PlaylistEditChange(
+                    track_id=track_id,
+                    from_position=before_position,
+                    to_position=after_position,
+                )
+            )
+
+    for track_id in after_ids:
+        if track_id not in before_positions:
+            changes.append(
+                PlaylistEditChange(
+                    track_id=track_id,
+                    from_position=None,
+                    to_position=after_positions[track_id],
+                )
+            )
+
+    return tuple(changes)
+
+
 def plan_playlist_edit_commands(
     session: Session,
     items: tuple[SequenceItem, ...] | list[SequenceItem],
@@ -53,11 +107,13 @@ def plan_playlist_edit_commands(
     steps: list[PlaylistEditPlanStep] = []
     for command in commands:
         edits = _resolve_command(session, result, command)
+        before = result
         result = apply_playlist_edits(result, edits)
         steps.append(
             PlaylistEditPlanStep(
                 command=command,
                 resolved_edits=tuple(edits),
+                changes=diff_playlist_states(before, result),
                 playlist=result,
             )
         )
@@ -91,6 +147,20 @@ def describe_playlist_edit(edit: PlaylistEdit) -> str:
     if isinstance(edit, TrimPlaylist):
         return f"trim to {edit.limit}"
     raise TypeError(f"unsupported playlist edit: {type(edit).__name__}")
+
+
+def describe_playlist_edit_change(change: PlaylistEditChange) -> str:
+    """Return a stable human-readable description of one playlist-state change."""
+    if change.from_position is None:
+        if change.to_position is None:
+            raise ValueError("playlist change must have at least one position")
+        return f"add {change.track_id} at position {change.to_position + 1}"
+    if change.to_position is None:
+        return f"remove {change.track_id} from position {change.from_position + 1}"
+    return (
+        f"move {change.track_id} from position {change.from_position + 1} "
+        f"to position {change.to_position + 1}"
+    )
 
 
 def describe_playlist_command(command: PlaylistEditCommand) -> str:

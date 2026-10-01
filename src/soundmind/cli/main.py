@@ -18,6 +18,7 @@ from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
     describe_playlist_command,
     describe_playlist_edit,
+    describe_playlist_edit_change,
     plan_playlist_edit_commands,
 )
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
@@ -541,6 +542,12 @@ def main(argv=None):
                         print(f"   → {describe_playlist_edit(edit)}")
                 else:
                     print("   → no matching tracks")
+                if step.changes:
+                    print("   changes:")
+                    for change in step.changes:
+                        print(f"      - {describe_playlist_edit_change(change)}")
+                else:
+                    print("   changes: none")
             print("Playlist preview:")
             for index, item in enumerate(plan[-1].playlist, start=1) if plan else enumerate(result.playlist, start=1):
                 print(f"{index}. {item.track_id}")

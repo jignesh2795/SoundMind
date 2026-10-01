@@ -1,5 +1,9 @@
 from soundmind.playlist_edit_parser import parse_playlist_edits
-from soundmind.playlist_edit_workflow import apply_playlist_edit_commands
+from soundmind.playlist_edit_workflow import (
+    PlaylistEditChange,
+    apply_playlist_edit_commands,
+    diff_playlist_states,
+)
 from soundmind.sequence import SequenceItem
 
 
@@ -70,3 +74,20 @@ def test_structural_and_filter_commands_compose_in_order() -> None:
         commands,
     )
     assert [item.track_id for item in result] == ["a", "c"]
+
+
+def test_diff_reports_removal_and_position_changes() -> None:
+    before = (item("a"), item("b"), item("c"))
+    after = (item("c"), item("a"))
+
+    assert diff_playlist_states(before, after) == (
+        PlaylistEditChange("a", 0, 1),
+        PlaylistEditChange("b", 1, None),
+        PlaylistEditChange("c", 2, 0),
+    )
+
+
+def test_diff_reports_no_changes_for_identical_state() -> None:
+    playlist = (item("a"), item("b"))
+
+    assert diff_playlist_states(playlist, playlist) == ()
