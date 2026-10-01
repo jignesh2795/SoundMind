@@ -1,3 +1,4 @@
+import pytest
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -1066,8 +1067,6 @@ def test_recommend_preview_requires_edits(monkeypatch) -> None:
         "soundmind.cli.main.create_session_factory",
         lambda path: lambda: FakeSession(),
     )
-
-    import pytest
 
     with pytest.raises(ValueError, match="requires at least one --edit"):
         main(["recommend", "cinematic BGM", "--context", "coding", "--preview-edits"])
