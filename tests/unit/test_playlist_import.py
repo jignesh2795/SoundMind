@@ -2,7 +2,6 @@ import pytest
 
 from soundmind.playlist_import import parse_playlist_json
 
-
 VALID = """{
   "version": 1,
   "name": "Focus Music",
