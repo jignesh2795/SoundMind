@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
-
-import pytest
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 from soundmind.cli.main import build_parser, main
 
