@@ -18,6 +18,8 @@ from soundmind.playlist_filter import (
     PlaylistMetadataFilter,
 )
 
+type PlaylistEditCommand = PlaylistEdit | PlaylistMetadataFilter
+
 _REMOVE_RE = re.compile(
     r"^(?:remove|delete|drop|skip)(?:\s+track)?\s+(?P<track>.+)$",
     re.IGNORECASE,
