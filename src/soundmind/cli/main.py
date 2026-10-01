@@ -237,7 +237,10 @@ def build_parser():
     rec.add_argument(
         "--preview-edits",
         action="store_true",
-        help="show the deterministic edit plan and resulting playlist without normal playlist output",
+        help=(
+            "show the deterministic edit plan and resulting playlist "
+            "without normal playlist output"
+        ),
     )
 
     return p
