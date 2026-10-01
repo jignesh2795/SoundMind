@@ -1499,3 +1499,76 @@ def test_playlist_edit_requires_an_edit_command(monkeypatch) -> None:
         match="requires at least one --edit command",
     ):
         main(["playlist", "edit", "Focus Music"])
+
+
+def test_playlist_delete_uses_repository_and_commits(monkeypatch, capsys) -> None:
+    saved = SimpleNamespace(
+        name="Focus Music",
+        items=(SimpleNamespace(track_id="a"),),
+    )
+    captured = {"get": None, "delete": None, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            captured["get"] = name
+            return saved
+
+        def delete(self, name):
+            captured["delete"] = name
+            return True
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "delete", "focus music"]) == 0
+    assert captured["get"] == "focus music"
+    assert captured["delete"] == "Focus Music"
+    assert captured["commit"] is True
+    assert capsys.readouterr().out == "Deleted playlist: Focus Music\n"
+
+
+def test_playlist_delete_requires_existing_playlist(monkeypatch) -> None:
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="playlist not found"):
+        main(["playlist", "delete", "Missing"])
+
+
+def test_playlist_delete_parser_captures_name() -> None:
+    args = build_parser().parse_args(["playlist", "delete", "Focus Music"])
+    assert args.playlist_command == "delete"
+    assert args.name == "Focus Music"
