@@ -1572,3 +1572,73 @@ def test_playlist_delete_parser_captures_name() -> None:
     args = build_parser().parse_args(["playlist", "delete", "Focus Music"])
     assert args.playlist_command == "delete"
     assert args.name == "Focus Music"
+
+
+def test_playlist_rename_uses_repository_and_commits(monkeypatch, capsys) -> None:
+    renamed = SimpleNamespace(name="Deep Focus")
+    captured = {"old": None, "new": None, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def rename(self, old_name, new_name):
+            captured["old"] = old_name
+            captured["new"] = new_name
+            return renamed
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "rename", "Focus", "Deep Focus"]) == 0
+    assert captured["old"] == "Focus"
+    assert captured["new"] == "Deep Focus"
+    assert captured["commit"] is True
+    assert capsys.readouterr().out == "Renamed playlist: Focus -> Deep Focus\n"
+
+
+def test_playlist_rename_requires_existing_source(monkeypatch) -> None:
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def rename(self, old_name, new_name):
+            return None
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="playlist not found"):
+        main(["playlist", "rename", "Missing", "New"])
+
+
+def test_playlist_rename_parser_captures_names() -> None:
+    args = build_parser().parse_args(
+        ["playlist", "rename", "Focus Music", "Deep Focus"]
+    )
+    assert args.playlist_command == "rename"
+    assert args.old_name == "Focus Music"
+    assert args.new_name == "Deep Focus"
