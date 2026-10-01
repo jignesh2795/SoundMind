@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M14.3 — Persisted Playlist Editing CLI (in validation).
+M14.3 — Persisted Playlist Editing CLI (completed).
 
 The current pipeline now supports:
 
