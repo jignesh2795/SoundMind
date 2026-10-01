@@ -1642,3 +1642,104 @@ def test_playlist_rename_parser_captures_names() -> None:
     assert args.playlist_command == "rename"
     assert args.old_name == "Focus Music"
     assert args.new_name == "Deep Focus"
+
+
+def test_playlist_export_writes_deterministic_json_snapshot(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    output = tmp_path / "focus.json"
+    created = datetime(2026, 10, 1, 10, 0, tzinfo=UTC)
+    updated = datetime(2026, 10, 1, 11, 0, tzinfo=UTC)
+    saved = SimpleNamespace(
+        name="Focus Music",
+        created_at=created,
+        updated_at=updated,
+        items=(
+            SimpleNamespace(track_id="a", sequence_score=0.9, base_score=0.8),
+            SimpleNamespace(track_id="b", sequence_score=0.7, base_score=0.6),
+        ),
+    )
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            captured["name"] = name
+            return saved
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "export", "focus music", str(output)]) == 0
+    assert captured["name"] == "focus music"
+    assert output.read_text(encoding="utf-8") == (
+        "{\n"
+        '  "version": 1,\n'
+        '  "name": "Focus Music",\n'
+        '  "created_at": "2026-10-01T10:00:00+00:00",\n'
+        '  "updated_at": "2026-10-01T11:00:00+00:00",\n'
+        '  "items": [\n'
+        '    {\n'
+        '      "position": 1,\n'
+        '      "track_id": "a",\n'
+        '      "sequence_score": 0.9,\n'
+        '      "base_score": 0.8\n'
+        '    },\n'
+        '    {\n'
+        '      "position": 2,\n'
+        '      "track_id": "b",\n'
+        '      "sequence_score": 0.7,\n'
+        '      "base_score": 0.6\n'
+        '    }\n'
+        '  ]\n'
+        "}\n"
+    )
+    assert capsys.readouterr().out == (
+        f"Exported playlist: Focus Music -> {output}\n"
+    )
+
+
+def test_playlist_export_requires_existing_playlist(monkeypatch, tmp_path) -> None:
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="playlist not found"):
+        main(["playlist", "export", "Missing", str(tmp_path / "missing.json")])
+
+
+def test_playlist_export_parser_captures_name_and_output(tmp_path) -> None:
+    args = build_parser().parse_args(
+        ["playlist", "export", "Focus Music", str(tmp_path / "focus.json")]
+    )
+    assert args.playlist_command == "export"
+    assert args.name == "Focus Music"
+    assert args.output == tmp_path / "focus.json"

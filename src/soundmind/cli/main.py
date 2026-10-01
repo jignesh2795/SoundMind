@@ -21,6 +21,7 @@ from soundmind.playlist_edit_workflow import (
     describe_playlist_edit_change,
     plan_playlist_edit_commands,
 )
+from soundmind.playlist_export import saved_playlist_to_json
 from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
@@ -162,6 +163,11 @@ def build_parser():
     pls_rename.add_argument("old_name")
     pls_rename.add_argument("new_name")
     pls_rename.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_export = pls.add_parser("export")
+    pls_export.add_argument("name")
+    pls_export.add_argument("output", type=Path)
+    pls_export.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     ple = pls.add_parser("edit")
     ple.add_argument("name")
@@ -507,6 +513,15 @@ def main(argv=None):
                 print(f"Renamed playlist: {a.old_name} -> {renamed.name}")
                 return 0
             playlist = repository.get(a.name)
+            if a.playlist_command == "export":
+                if playlist is None:
+                    raise ValueError(f"playlist not found: {a.name!r}")
+                a.output.write_text(
+                    saved_playlist_to_json(playlist),
+                    encoding="utf-8",
+                )
+                print(f"Exported playlist: {playlist.name} -> {a.output}")
+                return 0
             if playlist is None:
                 raise ValueError(f"playlist not found: {a.name!r}")
             if a.playlist_command == "show":

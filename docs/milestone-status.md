@@ -50,8 +50,17 @@ This document is the project-level implementation ledger. It records completed m
 | M14.3 | Persisted playlist editing CLI | Complete |
 | M14.4 | Named playlist deletion | Complete |
 | M14.5 | Named playlist rename | Complete |
+| M15.1 | Named playlist JSON export | In validation |
 
 ## Current milestone
+
+### M15.1 — Named Playlist JSON Export (in validation)
+
+M15.1 adds a deterministic local JSON export for persisted named playlists. The export contains the playlist identity, UTC timestamps, ordered track IDs, and preserved sequence/base scores, without mutating the database.
+
+Contract: [M15.1 named playlist JSON export](m15-1-named-playlist-json-export-contract.md)
+
+Validation is pending; M14.5 is the latest validated gate at 326 tests.
 
 ### M14.5 — Named Playlist Rename (completed)
 
@@ -529,6 +538,7 @@ M14.2: Ruff clean, 311 tests passed
 M14.3: Ruff clean, 315 tests passed
 M14.4: Ruff clean, 320 tests passed
 M14.5: Ruff clean, 326 tests passed
+M15.1: validation pending
 ```
 
 ## Documentation rule
