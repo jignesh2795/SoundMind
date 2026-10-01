@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.6 — Deterministic Playlist Filters (in validation).
+M13.6 — Deterministic Playlist Filters (complete).
 
 The current pipeline now supports:
 
