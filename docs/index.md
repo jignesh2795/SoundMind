@@ -49,6 +49,7 @@
 - [M13.1 deterministic playlist editing](m13-1-playlist-editing-contract.md)
 - [M13.2 deterministic playlist edit parser](m13-2-playlist-edit-parser-contract.md)
 - [M13.3 CLI playlist editing](m13-3-cli-playlist-editing-contract.md)
+- [M13.4 relative playlist moves](m13-4-relative-playlist-moves-contract.md)
 
 ## Documentation rule
 

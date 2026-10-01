@@ -5,6 +5,8 @@ from collections.abc import Sequence
 
 from soundmind.playlist_editing import (
     MoveTrack,
+    MoveTrackAfter,
+    MoveTrackBefore,
     PlaylistEdit,
     RemoveTrack,
     SwapTracks,
@@ -13,6 +15,11 @@ from soundmind.playlist_editing import (
 
 _REMOVE_RE = re.compile(
     r"^(?:remove|delete|drop|skip)(?:\s+track)?\s+(?P<track>.+)$",
+    re.IGNORECASE,
+)
+_MOVE_RELATIVE_RE = re.compile(
+    r"^move(?:\s+track)?\s+(?P<track>.+?)\s+(?P<relation>before|after)\s+"
+    r"(?:track\s+)?(?P<target>.+)$",
     re.IGNORECASE,
 )
 _MOVE_RE = re.compile(
@@ -64,6 +71,15 @@ def parse_playlist_edit(text: str) -> PlaylistEdit:
 
     if match := _REMOVE_RE.fullmatch(command):
         return RemoveTrack(_track_id(match.group("track")))
+
+    if match := _MOVE_RELATIVE_RE.fullmatch(command):
+        track_id = _track_id(match.group("track"))
+        target_track_id = _track_id(match.group("target"))
+        if track_id == target_track_id:
+            raise ValueError("relative move requires two distinct track IDs")
+        if match.group("relation").casefold() == "before":
+            return MoveTrackBefore(track_id, target_track_id)
+        return MoveTrackAfter(track_id, target_track_id)
 
     if match := _MOVE_RE.fullmatch(command):
         human_position = _positive_integer(match.group("position"), name="position")

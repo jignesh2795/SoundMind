@@ -2,6 +2,8 @@ import pytest
 
 from soundmind.playlist_editing import (
     MoveTrack,
+    MoveTrackAfter,
+    MoveTrackBefore,
     RemoveTrack,
     SwapTracks,
     TrimPlaylist,
@@ -33,6 +35,16 @@ def test_remove_track_preserves_remaining_items() -> None:
 def test_move_track_uses_zero_based_absolute_position() -> None:
     result = apply_playlist_edits(playlist(), [MoveTrack("d", 1)])
     assert [x.track_id for x in result] == ["a", "d", "b", "c"]
+
+
+def test_move_track_before_target() -> None:
+    result = apply_playlist_edits(playlist(), [MoveTrackBefore("d", "b")])
+    assert [x.track_id for x in result] == ["a", "d", "b", "c"]
+
+
+def test_move_track_after_target() -> None:
+    result = apply_playlist_edits(playlist(), [MoveTrackAfter("a", "c")])
+    assert [x.track_id for x in result] == ["b", "c", "a", "d"]
 
 
 def test_swap_tracks_exchanges_positions() -> None:
@@ -70,6 +82,10 @@ def test_duplicate_input_ids_are_rejected() -> None:
         (RemoveTrack("missing"), "not found"),
         (MoveTrack("missing", 0), "not found"),
         (MoveTrack("a", -1), "position"),
+        (MoveTrackBefore("a", "missing"), "not found"),
+        (MoveTrackAfter("a", "missing"), "not found"),
+        (MoveTrackBefore("a", "a"), "distinct"),
+        (MoveTrackAfter("a", "a"), "distinct"),
         (SwapTracks("a", "missing"), "not found"),
         (SwapTracks("a", "a"), "distinct"),
         (TrimPlaylist(0), "limit"),

@@ -3,6 +3,8 @@ import pytest
 from soundmind.playlist_edit_parser import parse_playlist_edit, parse_playlist_edits
 from soundmind.playlist_editing import (
     MoveTrack,
+    MoveTrackAfter,
+    MoveTrackBefore,
     RemoveTrack,
     SwapTracks,
     TrimPlaylist,
@@ -49,6 +51,18 @@ def test_parse_swap_commands(text: str, expected) -> None:
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
+        ("move a before b", MoveTrackBefore("a", "b")),
+        ("move track a after track b", MoveTrackAfter("a", "b")),
+        ("move 'hero-01' before 'hero-02'", MoveTrackBefore("hero-01", "hero-02")),
+    ],
+)
+def test_parse_relative_move_commands(text: str, expected) -> None:
+    assert parse_playlist_edit(text) == expected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
         ("trim to 5", TrimPlaylist(5)),
         ("trim playlist to 3", TrimPlaylist(3)),
         ("limit playlist to 4", TrimPlaylist(4)),
@@ -87,6 +101,8 @@ def test_parse_multiple_commands_preserves_order() -> None:
         "play something else",
         "move a to 0",
         "move a to -1",
+        "move a before a",
+        "move a after a",
         "swap a with a",
         "trim to 0",
     ],
