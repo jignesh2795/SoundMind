@@ -41,17 +41,24 @@ This document is the project-level implementation ledger. It records completed m
 | M13.2 | Deterministic natural-language playlist edit parser | Complete |
 | M13.3 | CLI playlist editing workflow after recommendation sequencing | Complete |
 | M13.4 | Relative before/after playlist moves | Complete |
-| M13.5 | Deterministic catalog track-reference resolution | In validation |
+| M13.5 | Deterministic catalog track-reference resolution | Complete |
 
 ## Current milestone
 
-### M13.5 — Catalog Track Reference Resolution (in validation)
+### M13.5 — Catalog Track Reference Resolution (completed)
 
 M13.5 resolves exact title and filename references used by playlist edits against the current generated playlist. Exact track IDs remain the primary reference form; ambiguous metadata references are rejected.
 
 Contract: [M13.5 catalog track-reference resolution](m13-5-catalog-track-reference-resolution-contract.md)
 
-Validation is pending; the M13.4 baseline remains the latest validated gate.
+Validation:
+
+```
+Ruff: All checks passed!
+pytest: 280 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M13.4 — Relative Playlist Moves (completed)
 
@@ -371,6 +378,7 @@ M13.1: Ruff clean, 234 tests passed
 M13.2: Ruff clean, 259 tests passed
 M13.3: Ruff clean, 261 tests passed
 M13.4: Ruff clean, 272 tests passed
+M13.5: Ruff clean, 280 tests passed
 ```
 
 ## Documentation rule
