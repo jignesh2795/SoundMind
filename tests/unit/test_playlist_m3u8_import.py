@@ -20,7 +20,10 @@ def test_parse_m3u8_resolves_catalog_uris_in_order() -> None:
         },
     )
 
-    assert [(item.track_id, item.sequence_score, item.base_score) for item in imported.items] == [
+    assert [
+        (item.track_id, item.sequence_score, item.base_score)
+        for item in imported.items
+    ] == [
         ("track-a", 0.0, 0.0),
         ("track-b", 0.0, 0.0),
     ]
