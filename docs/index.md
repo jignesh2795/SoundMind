@@ -55,6 +55,7 @@
 - [M13.7 deterministic playlist edit preview](m13-7-playlist-edit-preview-contract.md)
 - [M13.8 deterministic playlist edit diff](m13-8-playlist-edit-diff-contract.md)
 - [M14.1 named playlist storage](m14-1-named-playlist-storage-contract.md)
+- [M14.2 named playlist CLI](m14-2-named-playlist-cli-contract.md)
 
 ## Documentation rule
 
