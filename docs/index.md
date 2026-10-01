@@ -59,6 +59,7 @@
 - [M14.3 persisted playlist editing](m14-3-persisted-playlist-editing-contract.md)
 - [M14.4 named playlist deletion](m14-4-named-playlist-deletion-contract.md)
 - [M14.5 named playlist rename](m14-5-named-playlist-rename-contract.md)
+- [M15.1 named playlist JSON export](m15-1-named-playlist-json-export-contract.md)
 
 ## Documentation rule
 
