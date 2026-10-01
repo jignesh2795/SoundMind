@@ -2790,3 +2790,92 @@ def test_playlist_audit_parser_captures_name() -> None:
 
     assert args.playlist_command == "audit"
     assert args.name == "Focus"
+
+
+def test_playlist_repair_plan_reports_actions_without_mutation(
+    monkeypatch, capsys
+) -> None:
+    captured = {"commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(
+                name="Focus",
+                items=(
+                    SimpleNamespace(track_id="track-a"),
+                    SimpleNamespace(track_id="track-b"),
+                    SimpleNamespace(track_id="track-c"),
+                ),
+            )
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(track_id="track-a", status="active"),
+                SimpleNamespace(track_id="track-b", status="missing"),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "repair-plan", "Focus"]) == 0
+    assert captured["commit"] is False
+    assert capsys.readouterr().out == (
+        """Playlist: Focus
+1. track-a\tactive\tkeep
+2. track-b\tinactive\tremove
+3. track-c\tmissing\tremove
+Plan: 1 keep, 2 remove
+"""
+    )
+
+
+def test_playlist_repair_plan_requires_existing_playlist(monkeypatch) -> None:
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="playlist not found"):
+        main(["playlist", "repair-plan", "Missing"])
+
+
+def test_playlist_repair_plan_parser_captures_name() -> None:
+    args = build_parser().parse_args(["playlist", "repair-plan", "Focus"])
+
+    assert args.playlist_command == "repair-plan"
+    assert args.name == "Focus"
