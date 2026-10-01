@@ -43,8 +43,17 @@ This document is the project-level implementation ledger. It records completed m
 | M13.4 | Relative before/after playlist moves | Complete |
 | M13.5 | Deterministic catalog track-reference resolution | Complete |
 | M13.6 | Deterministic playlist metadata filters | Complete |
+| M13.7 | Deterministic playlist edit preview | In validation |
 
 ## Current milestone
+
+### M13.7 — Deterministic Playlist Edit Preview (in validation)
+
+M13.7 adds a preview surface for the existing deterministic playlist-edit workflow. The CLI records parsed commands, resolved structural edits, and the resulting playlist without changing normal ranked output.
+
+Contract: [M13.7 deterministic playlist edit preview](m13-7-playlist-edit-preview-contract.md)
+
+Validation is pending; the M13.6 baseline remains the latest validated gate.
 
 ### M13.6 — Deterministic Playlist Metadata Filters (completed)
 
