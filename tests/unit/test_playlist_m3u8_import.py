@@ -32,7 +32,10 @@ def test_parse_m3u8_resolves_catalog_uris_in_order() -> None:
 @pytest.mark.parametrize(
     ("text", "message"),
     [
-        ("#EXTINF:12,Missing header\nfile:///music/a.mp3\n", "must start with #EXTM3U"),
+        (
+            "#EXTINF:12,Missing header\nfile:///music/a.mp3\n",
+            "must start with #EXTM3U",
+        ),
         (
             "#EXTM3U\n#EXTINF:bad,Track\nfile:///music/a.mp3\n",
             "duration must be numeric",
@@ -78,4 +81,4 @@ def test_parse_m3u8_ignores_non_extinf_comments() -> None:
 
 
 def test_parse_m3u8_handles_empty_playlist() -> None:
-    assert parse_m3u8("#EXTM3U\n", {}) .items == ()
+    assert parse_m3u8("#EXTM3U\n", {}).items == ()
