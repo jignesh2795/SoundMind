@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M14.2 — Named Playlist CLI (in validation).
+M14.2 — Named Playlist CLI (completed).
 
 The current pipeline now supports:
 
