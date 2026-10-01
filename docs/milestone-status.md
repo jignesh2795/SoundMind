@@ -41,8 +41,17 @@ This document is the project-level implementation ledger. It records completed m
 | M13.2 | Deterministic natural-language playlist edit parser | Complete |
 | M13.3 | CLI playlist editing workflow after recommendation sequencing | Complete |
 | M13.4 | Relative before/after playlist moves | Complete |
+| M13.5 | Deterministic catalog track-reference resolution | In validation |
 
 ## Current milestone
+
+### M13.5 — Catalog Track Reference Resolution (in validation)
+
+M13.5 resolves exact title and filename references used by playlist edits against the current generated playlist. Exact track IDs remain the primary reference form; ambiguous metadata references are rejected.
+
+Contract: [M13.5 catalog track-reference resolution](m13-5-catalog-track-reference-resolution-contract.md)
+
+Validation is pending; the M13.4 baseline remains the latest validated gate.
 
 ### M13.4 — Relative Playlist Moves (completed)
 

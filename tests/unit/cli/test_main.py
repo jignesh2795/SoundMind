@@ -81,6 +81,9 @@ def test_recommend_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
             )
 
     class FakeSession:
+        def scalars(self, statement):
+            return ()
+
         def __enter__(self):
             return self
 
@@ -808,6 +811,9 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
             )
 
     class FakeSession:
+        def scalars(self, statement):
+            return ()
+
         def __enter__(self):
             return self
 
@@ -847,3 +853,64 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
     assert "2. a" in playlist
     assert "3. c" in playlist
     assert "4. b" not in playlist
+
+
+def test_recommend_resolves_exact_catalog_title_before_edit(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(
+                    SimpleNamespace(track_id="track-a", score=0.9),
+                    SimpleNamespace(track_id="track-b", score=0.8),
+                ),
+                playlist=(
+                    SimpleNamespace(track_id="track-a"),
+                    SimpleNamespace(track_id="track-b"),
+                ),
+            )
+
+    class FakeSession:
+        def scalars(self, statement):
+            return (
+                SimpleNamespace(
+                    track_id="track-a",
+                    title="Hero Theme",
+                    file_name="hero-theme.mp3",
+                ),
+                SimpleNamespace(
+                    track_id="track-b",
+                    title="Night Drive",
+                    file_name="night-drive.mp3",
+                ),
+            )
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "remove hero theme",
+        ]
+    ) == 0
+
+    playlist = capsys.readouterr().out.split("Playlist:", 1)[1]
+    assert "1. track-b" in playlist
+    assert "track-a" not in playlist
