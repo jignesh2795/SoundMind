@@ -91,10 +91,7 @@ def test_recommend_dispatches_to_catalog_service(monkeypatch, capsys) -> None:
         def __exit__(self, exc_type, exc, tb):
             return False
 
-    monkeypatch.setattr(
-        "soundmind.cli.main.CatalogContextRecommendationService",
-        FakeService,
-    )
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
     monkeypatch.setattr(
         "soundmind.cli.main.create_session_factory",
         lambda path: lambda: FakeSession(),
