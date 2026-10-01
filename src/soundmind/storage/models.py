@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Float, Integer, String, Text
+from sqlalchemy import BigInteger, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from soundmind.storage.database import Base
@@ -48,3 +48,25 @@ class ScanStateRow(Base):
     file_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
     modified_at_ns: Mapped[int] = mapped_column(BigInteger, nullable=False)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+
+class PlaylistRow(Base):
+    __tablename__ = "playlists"
+    playlist_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    name_key: Mapped[str] = mapped_column(Text, nullable=False, unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PlaylistItemRow(Base):
+    __tablename__ = "playlist_items"
+    playlist_id: Mapped[int] = mapped_column(
+        ForeignKey("playlists.playlist_id"),
+        primary_key=True,
+    )
+    position: Mapped[int] = mapped_column(Integer, primary_key=True)
+    track_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    sequence_score: Mapped[float] = mapped_column(Float, nullable=False)
+    base_score: Mapped[float] = mapped_column(Float, nullable=False)
