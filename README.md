@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M14.4 — Named Playlist Deletion (in validation).
+M14.4 — Named Playlist Deletion (completed).
 
 The current pipeline now supports:
 
