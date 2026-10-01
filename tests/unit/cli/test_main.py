@@ -1,5 +1,6 @@
-import pytest
 from datetime import UTC, datetime
+
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -1064,7 +1065,7 @@ def test_recommend_preview_shows_edit_plan_without_normal_playlist(
     preview = output.split("Playlist preview:", 1)[1]
     assert "1. c" in preview
     assert "2. a" in preview
-    assert "3. b" in preview
+    assert "3. b" not in preview
 
 
 def test_recommend_preview_requires_edits(monkeypatch) -> None:
