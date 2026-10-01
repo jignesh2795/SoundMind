@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M15.2 — Named Playlist JSON Import (completed).
+M17.1 — Deterministic Playlist Integrity Audit (completed).
 
 The current pipeline now supports:
 
