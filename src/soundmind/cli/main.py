@@ -22,6 +22,7 @@ from soundmind.playlist_edit_workflow import (
     plan_playlist_edit_commands,
 )
 from soundmind.playlist_export import saved_playlist_to_json
+from soundmind.playlist_import import load_playlist_json
 from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
@@ -168,6 +169,12 @@ def build_parser():
     pls_export.add_argument("name")
     pls_export.add_argument("output", type=Path)
     pls_export.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_import = pls.add_parser("import")
+    pls_import.add_argument("input", type=Path)
+    pls_import.add_argument("--name")
+    pls_import.add_argument("--replace-existing", action="store_true")
+    pls_import.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     ple = pls.add_parser("edit")
     ple.add_argument("name")
@@ -511,6 +518,18 @@ def main(argv=None):
                     raise ValueError(f"playlist not found: {a.old_name!r}")
                 session.commit()
                 print(f"Renamed playlist: {a.old_name} -> {renamed.name}")
+                return 0
+            if a.playlist_command == "import":
+                imported = load_playlist_json(a.input)
+                name = a.name or imported.name
+                existing = repository.get(name)
+                if existing is not None and not a.replace_existing:
+                    raise ValueError(
+                        f"playlist already exists: {name!r}; use --replace-existing"
+                    )
+                saved = repository.save(name, imported.items)
+                session.commit()
+                print(f"Imported playlist: {saved.name} <- {a.input}")
                 return 0
             playlist = repository.get(a.name)
             if a.playlist_command == "export":
