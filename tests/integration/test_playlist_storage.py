@@ -110,3 +110,25 @@ def test_invalid_playlist_name_and_duplicate_track_are_rejected(tmp_path) -> Non
                 "Duplicate",
                 (item("a", 1.0, 1.0), item("a", 0.5, 0.4)),
             )
+
+def test_delete_removes_named_playlist_and_items(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+    now = datetime(2026, 10, 1, 13, 0, tzinfo=UTC)
+
+    with session_factory() as session:
+        repository = PlaylistRepository(session)
+        repository.save("Focus", (item("a", 0.9, 0.8), item("b", 0.7, 0.6)), now=now)
+        assert repository.delete(" focus ") is True
+        assert repository.get("FOCUS") is None
+        session.commit()
+
+    with session_factory() as session:
+        repository = PlaylistRepository(session)
+        assert repository.list() == ()
+
+
+def test_delete_missing_playlist_returns_false(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        assert PlaylistRepository(session).delete("Missing") is False
