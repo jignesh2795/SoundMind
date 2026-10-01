@@ -55,17 +55,17 @@ This document is the project-level implementation ledger. It records completed m
 | M15.3 | Named playlist JSON import preview | Complete |
 | M16.1 | Deterministic M3U8 playlist export | Complete |
 | M16.2 | Deterministic M3U8 playlist import | Complete |
-| M16.3 | M3U8 playlist import preview | In validation |
+| M16.3 | M3U8 playlist import preview | Complete |
 
 ## Current milestone
 
-### M16.3 — M3U8 Playlist Import Preview (in validation)
+### M16.3 — M3U8 Playlist Import Preview (completed)
 
 M16.3 adds a read-only preview mode to M16.2 M3U8 import. It parses and resolves the input, checks the destination playlist, and reports whether a real import would create, replace, or be blocked without saving or committing.
 
 Contract: [M16.3 M3U8 playlist import preview](m16-3-m3u8-import-preview-contract.md)
 
-Validation is pending; M16.2 is the latest validated gate at 366 tests.
+Validated gate: Ruff clean, 370 tests passed, diff check clean, working tree clean. Implementation merge: `5c8ce8d4425f182ea1077bebe6473947ea0ea92b`.
 
 ### M16.2 — Deterministic M3U8 Playlist Import (completed)
 
@@ -599,6 +599,7 @@ M15.2: Ruff clean, 340 tests passed
 M15.3: Ruff clean, 344 tests passed
 M16.1: Ruff clean, 352 tests passed
 M16.2: Ruff clean, 366 tests passed
+M16.3: Ruff clean, 370 tests passed
 ```
 
 ## Documentation rule
