@@ -124,6 +124,7 @@ def apply_playlist_edits(
 
         if isinstance(edit, MoveTrackAfter):
             index = _require_track(result, edit.track_id)
+            target_index = _require_track(result, edit.target_track_id)
             if edit.track_id == edit.target_track_id:
                 raise ValueError("relative move requires two distinct track IDs")
             item = result.pop(index)
