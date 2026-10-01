@@ -129,6 +129,10 @@ Replace an existing named playlist explicitly:
 
     soundmind playlist import exports/deep-focus.json --replace-existing
 
+Preview an import without writing the playlist:
+
+    soundmind playlist import exports/deep-focus.json --preview
+
 Use the persisted semantic index for the hybrid candidate pool:
 
     soundmind recommend "hero entry" \
