@@ -14,7 +14,6 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.playlist_edit_parser import parse_playlist_edits
-from soundmind.playlist_storage import PlaylistRepository
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
     describe_playlist_command,
@@ -22,6 +21,7 @@ from soundmind.playlist_edit_workflow import (
     describe_playlist_edit_change,
     plan_playlist_edit_commands,
 )
+from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
