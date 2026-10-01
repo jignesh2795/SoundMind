@@ -154,6 +154,21 @@ def build_parser():
     pls_show.add_argument("name")
     pls_show.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
+    ple = pls.add_parser("edit")
+    ple.add_argument("name")
+    ple.add_argument(
+        "--edit",
+        action="append",
+        default=[],
+        help="apply a deterministic playlist edit command; repeatable",
+    )
+    ple.add_argument(
+        "--preview-edits",
+        action="store_true",
+        help="show the deterministic edit plan without saving changes",
+    )
+    ple.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     si = s.add_parser("semantic-index")
     sis = si.add_subparsers(dest="semantic_index_command", required=True)
     sir = sis.add_parser("rebuild")
@@ -478,7 +493,41 @@ def main(argv=None):
             playlist = repository.get(a.name)
             if playlist is None:
                 raise ValueError(f"playlist not found: {a.name!r}")
-            _print_saved_playlist(playlist.name, playlist.items)
+            if a.playlist_command == "show":
+                _print_saved_playlist(playlist.name, playlist.items)
+                return 0
+            if not a.edit:
+                raise ValueError("playlist edit requires at least one --edit command")
+            commands = parse_playlist_edits(a.edit)
+            if a.preview_edits:
+                plan = plan_playlist_edit_commands(session, playlist.items, commands)
+                print(f"Playlist: {playlist.name}")
+                print("Edit preview:")
+                for index, step in enumerate(plan, start=1):
+                    print(f"{index}. command: {describe_playlist_command(step.command)}")
+                    if step.resolved_edits:
+                        for edit in step.resolved_edits:
+                            print(f"   → {describe_playlist_edit(edit)}")
+                    else:
+                        print("   → no matching tracks")
+                    if step.changes:
+                        print("   changes:")
+                        for change in step.changes:
+                            print(f"      - {describe_playlist_edit_change(change)}")
+                    else:
+                        print("   changes: none")
+                print("Playlist preview:")
+                for index, item in enumerate(plan[-1].playlist, start=1):
+                    print(f"{index}. {item.track_id}")
+                return 0
+            edited_playlist = apply_playlist_edit_commands(
+                session,
+                playlist.items,
+                commands,
+            )
+            repository.save(playlist.name, edited_playlist)
+            session.commit()
+            _print_saved_playlist(playlist.name, edited_playlist)
             return 0
 
     if a.command == "semantic-index":
