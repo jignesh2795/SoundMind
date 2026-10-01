@@ -2178,20 +2178,16 @@ def test_playlist_m3u8_export_writes_catalog_file_uris(
 
     assert main(["playlist", "m3u8", "Focus", str(output)]) == 0
     assert output.read_text(encoding="utf-8") == (
-        "#EXTM3U
-"
-        "#EXTINF:12,Hero — Composer
-"
-        "file:///music/a.mp3
-"
-        "#EXTINF:-1,Night
-"
-        "file:///music/b.mp3
-"
+        """#EXTM3U
+#EXTINF:12,Hero — Composer
+file:///music/a.mp3
+#EXTINF:-1,Night
+file:///music/b.mp3
+"""
     )
     assert capsys.readouterr().out == (
-        f"Exported M3U8 playlist: Focus -> {output}
-"
+        f"""Exported M3U8 playlist: Focus -> {output}
+"""
     )
 
 
