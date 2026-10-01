@@ -282,7 +282,13 @@ def _print_hybrid_search(results, *, explain=False) -> None:
             print(f"   semantic-contribution: {result.semantic_contribution:.6f}")
 
 
-def _print_recommendation(result, *, explain=False, playlist=None) -> None:
+def _print_recommendation(
+    result,
+    *,
+    explain=False,
+    playlist=None,
+    print_playlist=True,
+) -> None:
     print(f"Intent: {result.intent.raw_text}")
     print("Ranked:")
     for index, candidate in enumerate(result.ranked, start=1):
@@ -297,10 +303,11 @@ def _print_recommendation(result, *, explain=False, playlist=None) -> None:
                     f"weight={contribution.weight:.6f} "
                     f"contribution={contribution.contribution:.6f}"
                 )
-    print("Playlist:")
-    selected_playlist = result.playlist if playlist is None else playlist
-    for index, item in enumerate(selected_playlist, start=1):
-        print(f"{index}. {item.track_id}")
+    if print_playlist:
+        print("Playlist:")
+        selected_playlist = result.playlist if playlist is None else playlist
+        for index, item in enumerate(selected_playlist, start=1):
+            print(f"{index}. {item.track_id}")
 
 
 def _recommend_service(a, session):
@@ -515,7 +522,12 @@ def main(argv=None):
                 if a.preview_edits:
                     raise ValueError("--preview-edits requires at least one --edit command")
                 edited_playlist = None
-        _print_recommendation(result, explain=a.explain, playlist=edited_playlist)
+        _print_recommendation(
+            result,
+            explain=a.explain,
+            playlist=edited_playlist,
+            print_playlist=not a.preview_edits,
+        )
         if a.preview_edits:
             print("Edit preview:")
             for index, step in enumerate(plan, start=1):
