@@ -56,8 +56,17 @@ This document is the project-level implementation ledger. It records completed m
 | M16.1 | Deterministic M3U8 playlist export | Complete |
 | M16.2 | Deterministic M3U8 playlist import | Complete |
 | M16.3 | M3U8 playlist import preview | Complete |
+| M17.1 | Deterministic playlist integrity audit | In validation |
 
 ## Current milestone
+
+### M17.1 — Deterministic Playlist Integrity Audit (in validation)
+
+M17.1 adds a read-only diagnostic for persisted named playlists against current catalog state. Each playlist track is classified as active, inactive, or missing in original playlist order, with deterministic summary counts.
+
+Contract: [M17.1 deterministic playlist integrity audit](m17-1-playlist-integrity-audit-contract.md)
+
+Validation is pending; M16.3 is the latest validated gate at 370 tests.
 
 ### M16.3 — M3U8 Playlist Import Preview (completed)
 

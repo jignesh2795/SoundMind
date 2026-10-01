@@ -15,6 +15,7 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
     apply_playlist_edit_commands,
@@ -186,6 +187,10 @@ def build_parser():
     pls_m3u8_import.add_argument("--replace-existing", action="store_true")
     pls_m3u8_import.add_argument("--preview", action="store_true")
     pls_m3u8_import.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_audit = pls.add_parser("audit")
+    pls_audit.add_argument("name")
+    pls_audit.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     pls_import = pls.add_parser("import")
     pls_import.add_argument("input", type=Path)
@@ -529,6 +534,26 @@ def main(argv=None):
             repository = PlaylistRepository(session)
             if a.playlist_command == "list":
                 _print_playlist_list(repository.list())
+                return 0
+            if a.playlist_command == "audit":
+                playlist = repository.get(a.name)
+                if playlist is None:
+                    raise ValueError(f"playlist not found: {a.name!r}")
+                rows = session.scalars(select(TrackRow)).all()
+                status_by_id = {
+                    row.track_id: row.status
+                    for row in rows
+                }
+                report = audit_playlist(playlist.items, status_by_id)
+                print(f"Playlist: {playlist.name}")
+                for index, entry in enumerate(report.entries, start=1):
+                    print(f"{index}. {entry.track_id}\t{entry.status}")
+                print(
+                    "Summary: "
+                    f"{report.active_count} active, "
+                    f"{report.inactive_count} inactive, "
+                    f"{report.missing_count} missing"
+                )
                 return 0
             if a.playlist_command == "rename":
                 renamed = repository.rename(a.old_name, a.new_name)
