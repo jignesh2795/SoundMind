@@ -158,6 +158,11 @@ def build_parser():
     pls_delete.add_argument("name")
     pls_delete.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
+    pls_rename = pls.add_parser("rename")
+    pls_rename.add_argument("old_name")
+    pls_rename.add_argument("new_name")
+    pls_rename.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     ple = pls.add_parser("edit")
     ple.add_argument("name")
     ple.add_argument(
@@ -493,6 +498,13 @@ def main(argv=None):
             repository = PlaylistRepository(session)
             if a.playlist_command == "list":
                 _print_playlist_list(repository.list())
+                return 0
+            if a.playlist_command == "rename":
+                renamed = repository.rename(a.old_name, a.new_name)
+                if renamed is None:
+                    raise ValueError(f"playlist not found: {a.old_name!r}")
+                session.commit()
+                print(f"Renamed playlist: {a.old_name} -> {renamed.name}")
                 return 0
             playlist = repository.get(a.name)
             if playlist is None:

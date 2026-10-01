@@ -139,6 +139,41 @@ class PlaylistRepository:
         return True
 
 
+    def rename(
+        self,
+        old_name: str,
+        new_name: str,
+        *,
+        now: datetime | None = None,
+    ) -> SavedPlaylist | None:
+        """Rename a named playlist without changing its items or committing."""
+        _, old_key = _normalize_name(old_name)
+        display_name, new_key = _normalize_name(new_name)
+
+        playlist = self._session.scalar(
+            select(PlaylistRow).where(PlaylistRow.name_key == old_key)
+        )
+        if playlist is None:
+            return None
+
+        if new_key != old_key:
+            existing = self._session.scalar(
+                select(PlaylistRow).where(PlaylistRow.name_key == new_key)
+            )
+            if existing is not None:
+                raise ValueError(f"playlist name already exists: {new_name!r}")
+
+        playlist.name = display_name
+        playlist.name_key = new_key
+        playlist.updated_at = now or datetime.now(UTC)
+        self._session.flush()
+
+        renamed = self.get(display_name)
+        if renamed is None:
+            raise RuntimeError("renamed playlist could not be reloaded")
+        return renamed
+
+
     def get(self, name: str) -> SavedPlaylist | None:
         """Return one named playlist or None when it does not exist."""
         _, name_key = _normalize_name(name)
