@@ -1,6 +1,6 @@
 import pytest
-from soundmind.playlist_m3u8_import import parse_m3u8
 
+from soundmind.playlist_m3u8_import import parse_m3u8
 
 VALID = """#EXTM3U
 #EXTINF:12,Hero — Composer
