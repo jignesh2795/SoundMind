@@ -1095,3 +1095,54 @@ def test_recommend_preview_requires_edits(monkeypatch) -> None:
 
     with pytest.raises(ValueError, match="requires at least one --edit"):
         main(["recommend", "cinematic BGM", "--context", "coding", "--preview-edits"])
+
+
+def test_recommend_preview_shows_deterministic_edit_diff(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(
+                    SimpleNamespace(track_id="a"),
+                    SimpleNamespace(track_id="b"),
+                    SimpleNamespace(track_id="c"),
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "move c to 1",
+            "--preview-edits",
+        ]
+    ) == 0
+
+    output = capsys.readouterr().out
+    assert "changes:" in output
+    assert "move a from position 1 to position 2" in output
+    assert "move b from position 2 to position 3" in output
+    assert "move c from position 3 to position 1" in output
