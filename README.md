@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.4 — Relative Playlist Moves (in validation).
+M13.4 — Relative Playlist Moves (complete).
 
 The current pipeline now supports:
 
