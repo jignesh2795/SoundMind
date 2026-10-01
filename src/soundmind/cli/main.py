@@ -154,6 +154,10 @@ def build_parser():
     pls_show.add_argument("name")
     pls_show.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
+    pls_delete = pls.add_parser("delete")
+    pls_delete.add_argument("name")
+    pls_delete.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     ple = pls.add_parser("edit")
     ple.add_argument("name")
     ple.add_argument(
@@ -495,6 +499,12 @@ def main(argv=None):
                 raise ValueError(f"playlist not found: {a.name!r}")
             if a.playlist_command == "show":
                 _print_saved_playlist(playlist.name, playlist.items)
+                return 0
+            if a.playlist_command == "delete":
+                deleted_name = playlist.name
+                repository.delete(playlist.name)
+                session.commit()
+                print(f"Deleted playlist: {deleted_name}")
                 return 0
             if not a.edit:
                 raise ValueError("playlist edit requires at least one --edit command")

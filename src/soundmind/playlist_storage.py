@@ -121,6 +121,24 @@ class PlaylistRepository:
             raise RuntimeError("saved playlist could not be reloaded")
         return saved
 
+    def delete(self, name: str) -> bool:
+        """Delete a named playlist snapshot without committing."""
+        _, name_key = _normalize_name(name)
+        playlist = self._session.scalar(
+            select(PlaylistRow).where(PlaylistRow.name_key == name_key)
+        )
+        if playlist is None:
+            return False
+        self._session.execute(
+            delete(PlaylistItemRow).where(
+                PlaylistItemRow.playlist_id == playlist.playlist_id
+            )
+        )
+        self._session.delete(playlist)
+        self._session.flush()
+        return True
+
+
     def get(self, name: str) -> SavedPlaylist | None:
         """Return one named playlist or None when it does not exist."""
         _, name_key = _normalize_name(name)
