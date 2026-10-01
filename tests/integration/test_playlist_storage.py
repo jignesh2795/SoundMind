@@ -21,7 +21,7 @@ def test_save_and_load_preserves_order_and_scores(tmp_path) -> None:
     items = (item("a", 0.9, 0.8), item("b", 0.7, 0.6))
 
     with session_factory() as session:
-        saved = PlaylistRepository(session).save("  Focus  Music ", items, now=created)
+        PlaylistRepository(session).save("  Focus  Music ", items, now=created)
         session.commit()
 
     with session_factory() as session:
