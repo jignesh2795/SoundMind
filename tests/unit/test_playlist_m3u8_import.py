@@ -1,5 +1,4 @@
 import pytest
-
 from soundmind.playlist_m3u8_import import parse_m3u8
 
 
@@ -49,7 +48,7 @@ def test_parse_m3u8_resolves_catalog_uris_in_order() -> None:
             "source not found in catalog",
         ),
         (
-            "#EXTM3U\n#EXTINF:12,Track\nfile:///music/a.mp3\nfile:///music/a.mp3\n",
+            "#EXTM3U\n#EXTINF:12,Track\nfile:///music/a.mp3\n#EXTINF:12,Track\nfile:///music/a.mp3\n",
             "duplicate M3U8 source URI",
         ),
         (
