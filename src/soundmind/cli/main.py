@@ -574,6 +574,7 @@ def main(argv=None):
                     a.save_playlist,
                     edited_playlist if edited_playlist is not None else result.playlist,
                 )
+                session.commit()
         _print_recommendation(
             result,
             explain=a.explain,
