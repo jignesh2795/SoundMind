@@ -1933,3 +1933,189 @@ def test_playlist_import_parser_captures_options(tmp_path) -> None:
     assert args.input == source
     assert args.name == "Focus"
     assert args.replace_existing is True
+
+
+def test_playlist_import_preview_reports_create_without_mutation(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T11:00:00+00:00",
+  "items": [
+    {
+      "position": 1,
+      "track_id": "a",
+      "sequence_score": 0.9,
+      "base_score": 0.8
+    }
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    captured = {"save": False, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+        def save(self, name, items):
+            captured["save"] = True
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "import", str(source), "--preview"]) == 0
+    assert captured == {"save": False, "commit": False}
+    assert capsys.readouterr().out == (
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 1
+Action: create new playlist
+"""
+    )
+
+
+def test_playlist_import_preview_reports_blocked_existing(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T10:00:00+00:00",
+  "items": []
+}
+""",
+        encoding="utf-8",
+    )
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            raise AssertionError("preview must not save")
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            raise AssertionError("preview must not commit")
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(["playlist", "import", str(source), "--preview"]) == 0
+    assert capsys.readouterr().out == (
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 0
+Action: blocked; playlist already exists (use --replace-existing)
+"""
+    )
+
+
+def test_playlist_import_preview_reports_replace_with_explicit_flag(
+    monkeypatch, tmp_path, capsys
+) -> None:
+    source = tmp_path / "source.json"
+    source.write_text(
+        """{
+  "version": 1,
+  "name": "Focus",
+  "created_at": "2026-10-01T10:00:00+00:00",
+  "updated_at": "2026-10-01T11:00:00+00:00",
+  "items": []
+}
+""",
+        encoding="utf-8",
+    )
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name="Focus", items=())
+
+        def save(self, name, items):
+            raise AssertionError("preview must not save")
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            raise AssertionError("preview must not commit")
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "import",
+                str(source),
+                "--replace-existing",
+                "--preview",
+            ]
+        )
+        == 0
+    )
+    assert capsys.readouterr().out == (
+        f"""Import preview: {source}
+Playlist: Focus
+Tracks: 0
+Action: replace existing playlist
+"""
+    )
+
+
+def test_playlist_import_parser_captures_preview_flag(tmp_path) -> None:
+    source = tmp_path / "source.json"
+    args = build_parser().parse_args(
+        ["playlist", "import", str(source), "--preview"]
+    )
+    assert args.playlist_command == "import"
+    assert args.input == source
+    assert args.preview is True

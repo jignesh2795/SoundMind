@@ -129,6 +129,10 @@ Replace an existing named playlist explicitly:
 
     soundmind playlist import exports/deep-focus.json --replace-existing
 
+Preview an import without writing the playlist:
+
+    soundmind playlist import exports/deep-focus.json --preview
+
 Use the persisted semantic index for the hybrid candidate pool:
 
     soundmind recommend "hero entry" \
@@ -244,6 +248,7 @@ Validation uses Ruff and pytest.
 - M14.5: named playlist rename
 - M15.1: named playlist JSON export
 - M15.2: named playlist JSON import
+- M15.3: named playlist JSON import preview
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
