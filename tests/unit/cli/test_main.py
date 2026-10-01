@@ -786,6 +786,7 @@ def test_recommend_parser_captures_repeatable_edit_commands() -> None:
     )
 
     assert args.edit == ["remove a", "move d to 1"]
+    assert args.preview_edits is False
 
 
 def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkeypatch, capsys) -> None:
@@ -973,3 +974,100 @@ def test_recommend_applies_metadata_filter_after_sequencing(monkeypatch, capsys)
     assert "1. b" in playlist
     assert "a" not in playlist
     assert "c" not in playlist
+
+
+
+def test_recommend_preview_shows_edit_plan_without_normal_playlist(monkeypatch, capsys) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(
+                    SimpleNamespace(track_id="a", score=0.9),
+                    SimpleNamespace(track_id="b", score=0.8),
+                    SimpleNamespace(track_id="c", score=0.7),
+                ),
+                playlist=(
+                    SimpleNamespace(track_id="a"),
+                    SimpleNamespace(track_id="b"),
+                    SimpleNamespace(track_id="c"),
+                ),
+            )
+
+    class FakeSession:
+        def scalars(self, statement):
+            return ()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert main(
+        [
+            "recommend",
+            "cinematic BGM",
+            "--context",
+            "coding",
+            "--edit",
+            "remove b",
+            "--edit",
+            "move c to 1",
+            "--preview-edits",
+        ]
+    ) == 0
+
+    output = capsys.readouterr().out
+    assert "Ranked:" in output
+    assert "Playlist:" not in output
+    assert "Edit preview:" in output
+    assert "1. command: remove b" in output
+    assert "   → remove b" in output
+    assert "2. command: move c to position 1" in output
+    assert "   → move c to position 1" in output
+    assert "Playlist preview:" in output
+    preview = output.split("Playlist preview:", 1)[1]
+    assert "1. c" in preview
+    assert "2. a" in preview
+    assert "3. b" in preview
+
+
+def test_recommend_preview_requires_edits(monkeypatch) -> None:
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    import pytest
+
+    with pytest.raises(ValueError, match="requires at least one --edit"):
+        main(["recommend", "cinematic BGM", "--context", "coding", "--preview-edits"])
