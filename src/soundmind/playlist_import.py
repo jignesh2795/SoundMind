@@ -30,13 +30,13 @@ def _require_mapping(value: Any, *, field: str) -> dict[str, Any]:
 
 def _require_string(value: Any, *, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field} must be a non-empty string")  # noqa: TRY004
+        raise ValueError(f"{field} must be a non-empty string")
     return value
 
 
 def _require_number(value: Any, *, field: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ValueError(f"{field} must be a number")
+        raise ValueError(f"{field} must be a number")  # noqa: TRY004
     numeric = float(value)
     if not math.isfinite(numeric):
         raise ValueError(f"{field} must be finite")
