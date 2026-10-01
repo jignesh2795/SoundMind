@@ -243,7 +243,10 @@ def test_recommend_without_seed_does_not_construct_learned_service(monkeypatch) 
             return False
 
     monkeypatch.setattr("soundmind.cli.main.LearnedEmbeddingService", ExplodingLearnedService)
-    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
     monkeypatch.setattr(
         "soundmind.cli.main.create_session_factory",
         lambda path: lambda: FakeSession(),
@@ -293,7 +296,10 @@ def test_recommend_explain_prints_signal_contributions(monkeypatch, capsys) -> N
         def __exit__(self, exc_type, exc, tb):
             return False
 
-    monkeypatch.setattr("soundmind.cli.main.CatalogContextRecommendationService", FakeService)
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
     monkeypatch.setattr(
         "soundmind.cli.main.create_session_factory",
         lambda path: lambda: FakeSession(),
@@ -857,7 +863,9 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
     assert "4. b" not in playlist
 
 
-def test_recommend_resolves_exact_catalog_title_before_edit(monkeypatch, capsys) -> None:
+def test_recommend_resolves_exact_catalog_title_before_edit(
+    monkeypatch, capsys
+) -> None:
     class FakeService:
         def __init__(self, session) -> None:
             pass
@@ -919,7 +927,9 @@ def test_recommend_resolves_exact_catalog_title_before_edit(monkeypatch, capsys)
 
 
 
-def test_recommend_applies_metadata_filter_after_sequencing(monkeypatch, capsys) -> None:
+def test_recommend_applies_metadata_filter_after_sequencing(
+    monkeypatch, capsys
+) -> None:
     class FakeService:
         def __init__(self, session) -> None:
             pass
@@ -942,9 +952,24 @@ def test_recommend_applies_metadata_filter_after_sequencing(monkeypatch, capsys)
     class FakeSession:
         def scalars(self, statement):
             return (
-                SimpleNamespace(track_id="a", title="Hero", file_name="hero.mp3", artist="A"),
-                SimpleNamespace(track_id="b", title="Night", file_name="night.mp3", artist="B"),
-                SimpleNamespace(track_id="c", title="Outro", file_name="outro.mp3", artist="A"),
+                SimpleNamespace(
+                    track_id="a",
+                    title="Hero",
+                    file_name="hero.mp3",
+                    artist="A",
+                ),
+                SimpleNamespace(
+                    track_id="b",
+                    title="Night",
+                    file_name="night.mp3",
+                    artist="B",
+                ),
+                SimpleNamespace(
+                    track_id="c",
+                    title="Outro",
+                    file_name="outro.mp3",
+                    artist="A",
+                ),
             )
 
         def __enter__(self):
@@ -978,7 +1003,9 @@ def test_recommend_applies_metadata_filter_after_sequencing(monkeypatch, capsys)
 
 
 
-def test_recommend_preview_shows_edit_plan_without_normal_playlist(monkeypatch, capsys) -> None:
+def test_recommend_preview_shows_edit_plan_without_normal_playlist(
+    monkeypatch, capsys
+) -> None:
     class FakeService:
         def __init__(self, session) -> None:
             pass
