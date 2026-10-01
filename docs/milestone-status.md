@@ -55,7 +55,7 @@ This document is the project-level implementation ledger. It records completed m
 | M15.3 | Named playlist JSON import preview | Complete |
 | M16.1 | Deterministic M3U8 playlist export | Complete |
 | M16.2 | Deterministic M3U8 playlist import | Complete |
-| M16.3 | M3U8 playlist import preview | Complete |
+| M16.3 | M3U8 playlist import preview | Complete |\n| M17.1 | Deterministic playlist integrity audit | Complete |
 | M17.1 | Deterministic playlist integrity audit | In validation |
 
 ## Current milestone
@@ -68,7 +68,7 @@ Contract: [M17.1 deterministic playlist integrity audit](m17-1-playlist-integrit
 
 Validation is pending; M16.3 is the latest validated gate at 370 tests.
 
-### M16.3 — M3U8 Playlist Import Preview (completed)
+### M17.1 — Deterministic Playlist Integrity Audit (completed)\n\nM17.1 adds a read-only local audit for persisted named playlists. It classifies each stored track reference as active, inactive, or missing against current catalog status, preserves playlist order, and reports deterministic summary counts without mutating playlist or catalog state.\n\nContract: [M17.1 deterministic playlist integrity audit](m17-1-playlist-integrity-audit-contract.md)\n\nValidated gate: Ruff clean, 375 tests passed, diff check clean, working tree clean. Implementation merge: `a471be74826794e0fd238b778ebf3a56cdc7b68a`.\n\n### M16.3 — M3U8 Playlist Import Preview (completed)
 
 M16.3 adds a read-only preview mode to M16.2 M3U8 import. It parses and resolves the input, checks the destination playlist, and reports whether a real import would create, replace, or be blocked without saving or committing.
 
@@ -608,7 +608,7 @@ M15.2: Ruff clean, 340 tests passed
 M15.3: Ruff clean, 344 tests passed
 M16.1: Ruff clean, 352 tests passed
 M16.2: Ruff clean, 366 tests passed
-M16.3: Ruff clean, 370 tests passed
+M16.3: Ruff clean, 370 tests passed\nM17.1: Ruff clean, 375 tests passed
 ```
 
 ## Documentation rule
