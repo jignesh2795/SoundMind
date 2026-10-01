@@ -61,6 +61,7 @@
 - [M14.5 named playlist rename](m14-5-named-playlist-rename-contract.md)
 - [M15.1 named playlist JSON export](m15-1-named-playlist-json-export-contract.md)
 - [M15.2 named playlist JSON import](m15-2-named-playlist-json-import-contract.md)
+- [M15.3 named playlist JSON import preview](m15-3-named-playlist-json-import-preview-contract.md)
 
 ## Documentation rule
 
