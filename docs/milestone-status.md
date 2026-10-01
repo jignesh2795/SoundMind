@@ -47,11 +47,11 @@ This document is the project-level implementation ledger. It records completed m
 | M13.8 | Deterministic playlist edit diff | Complete |
 | M14.1 | Named playlist storage primitives | Complete |
 | M14.2 | Named playlist CLI | Complete |
-| M14.3 | Persisted playlist editing CLI | In validation |
+| M14.3 | Persisted playlist editing CLI | Complete |
 
 ## Current milestone
 
-### M14.3 — Persisted Playlist Editing CLI (in validation)
+### M14.3 — Persisted Playlist Editing CLI (completed)
 
 M14.3 extends the named playlist CLI with deterministic editing of an already-saved playlist. The command loads the persisted snapshot, applies the existing M13 parser/resolution/editing workflow in caller order, and either previews the resulting state or replaces the same named snapshot.
 
@@ -59,7 +59,16 @@ M14.3 does not re-rank or re-sequence saved items, does not regenerate recommend
 
 Contract: [M14.3 persisted playlist editing](m14-3-persisted-playlist-editing-contract.md)
 
-Validation is pending; M14.2 is the latest validated gate at 311 tests.
+Implementation merge: `2d8d46a6a2355e0b66a1793360278be95d9aa3c9`
+
+Validation:
+
+```text
+Ruff: All checks passed!
+pytest: 315 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
 
 ### M14.2 — Named Playlist CLI (completed)
 
@@ -477,7 +486,7 @@ M13.7: Ruff clean, 298 tests passed
 M13.8: Ruff clean, 301 tests passed
 M14.1: Ruff clean, 307 tests passed
 M14.2: Ruff clean, 311 tests passed
-M14.3: validation pending
+M14.3: Ruff clean, 315 tests passed
 ```
 
 ## Documentation rule
