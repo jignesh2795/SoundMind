@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.5 — Catalog Track Reference Resolution (in validation).
+M13.5 — Catalog Track Reference Resolution (complete).
 
 The current pipeline now supports:
 
