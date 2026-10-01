@@ -60,4 +60,13 @@ git diff --check: clean
 working tree: clean
 ```
 
-The exact test count must be recorded only after the local gate is reported.
+Validated gate at merged implementation head `4237af2e707e2a9c626c3f2463a8538fa2b1be49`:
+
+```text
+Ruff: All checks passed!
+pytest: 326 passed, 0 failed
+git diff --check: clean
+working tree: clean
+```
+
+The implementation was merged to `main` as merge commit `78707100e55564c4e3c9594c366837e5641551ef`.
