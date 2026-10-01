@@ -1323,3 +1323,179 @@ def test_playlist_list_and_show_use_repository(monkeypatch, capsys) -> None:
     assert main(["playlist", "show", "focus music"]) == 0
     assert captured[-1] == "focus music"
     assert capsys.readouterr().out == "Playlist: Focus Music\n1. a\n2. b\n"
+
+def test_playlist_edit_parser_captures_repeatable_commands() -> None:
+    args = build_parser().parse_args(
+        [
+            "playlist",
+            "edit",
+            "Focus Music",
+            "--edit",
+            "remove b",
+            "--edit",
+            "move c to 1",
+            "--preview-edits",
+        ]
+    )
+
+    assert args.name == "Focus Music"
+    assert args.edit == ["remove b", "move c to 1"]
+    assert args.preview_edits is True
+
+
+def test_playlist_edit_updates_saved_snapshot_and_commits(monkeypatch, capsys) -> None:
+    saved = SimpleNamespace(
+        name="Focus Music",
+        items=(
+            SimpleNamespace(track_id="a"),
+            SimpleNamespace(track_id="b"),
+            SimpleNamespace(track_id="c"),
+        ),
+    )
+    captured = {}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            captured["get"] = name
+            return saved
+
+        def save(self, name, items):
+            captured["save"] = (name, tuple(items))
+            return SimpleNamespace(name=name)
+
+    class FakeSession:
+        def scalars(self, statement):
+            return ()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["committed"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "edit",
+                "focus music",
+                "--edit",
+                "move c to 1",
+                "--edit",
+                "remove b",
+            ]
+        )
+        == 0
+    )
+
+    assert captured["get"] == "focus music"
+    name, items = captured["save"]
+    assert name == "Focus Music"
+    assert [item.track_id for item in items] == ["c", "a"]
+    assert captured["committed"] is True
+    assert capsys.readouterr().out == "Playlist: Focus Music\n1. c\n2. a\n"
+
+
+def test_playlist_edit_preview_does_not_persist(monkeypatch, capsys) -> None:
+    saved = SimpleNamespace(
+        name="Focus Music",
+        items=(
+            SimpleNamespace(track_id="a"),
+            SimpleNamespace(track_id="b"),
+            SimpleNamespace(track_id="c"),
+        ),
+    )
+    captured = {"save": False, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return saved
+
+        def save(self, name, items):
+            captured["save"] = True
+
+    class FakeSession:
+        def scalars(self, statement):
+            return ()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "playlist",
+                "edit",
+                "Focus Music",
+                "--edit",
+                "remove b",
+                "--preview-edits",
+            ]
+        )
+        == 0
+    )
+
+    output = capsys.readouterr().out
+    assert "Playlist: Focus Music" in output
+    assert "Edit preview:" in output
+    assert "1. command: remove b" in output
+    assert "Playlist preview:" in output
+    assert "1. a" in output
+    assert "2. c" in output
+    assert captured["save"] is False
+    assert captured["commit"] is False
+
+
+def test_playlist_edit_requires_an_edit_command(monkeypatch) -> None:
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return SimpleNamespace(name=name, items=())
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="requires at least one --edit command",
+    ):
+        main(["playlist", "edit", "Focus Music"])
