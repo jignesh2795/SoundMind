@@ -21,6 +21,22 @@ class MoveTrack:
 
 
 @dataclass(frozen=True)
+class MoveTrackBefore:
+    """Move one existing track immediately before another track."""
+
+    track_id: str
+    target_track_id: str
+
+
+@dataclass(frozen=True)
+class MoveTrackAfter:
+    """Move one existing track immediately after another track."""
+
+    track_id: str
+    target_track_id: str
+
+
+@dataclass(frozen=True)
 class SwapTracks:
     """Swap the positions of two existing tracks."""
 
@@ -35,7 +51,14 @@ class TrimPlaylist:
     limit: int
 
 
-type PlaylistEdit = RemoveTrack | MoveTrack | SwapTracks | TrimPlaylist
+type PlaylistEdit = (
+    RemoveTrack
+    | MoveTrack
+    | MoveTrackBefore
+    | MoveTrackAfter
+    | SwapTracks
+    | TrimPlaylist
+)
 
 
 def _validate_items(items: tuple[SequenceItem, ...]) -> None:
@@ -87,6 +110,25 @@ def apply_playlist_edits(
                 raise ValueError("position must be a valid playlist index")
             item = result.pop(index)
             result.insert(edit.position, item)
+            continue
+
+        if isinstance(edit, MoveTrackBefore):
+            index = _require_track(result, edit.track_id)
+            target_index = _require_track(result, edit.target_track_id)
+            if edit.track_id == edit.target_track_id:
+                raise ValueError("relative move requires two distinct track IDs")
+            item = result.pop(index)
+            target_index = _index_by_track_id(result)[edit.target_track_id]
+            result.insert(target_index, item)
+            continue
+
+        if isinstance(edit, MoveTrackAfter):
+            index = _require_track(result, edit.track_id)
+            if edit.track_id == edit.target_track_id:
+                raise ValueError("relative move requires two distinct track IDs")
+            item = result.pop(index)
+            target_index = _index_by_track_id(result)[edit.target_track_id]
+            result.insert(target_index + 1, item)
             continue
 
         if isinstance(edit, SwapTracks):
