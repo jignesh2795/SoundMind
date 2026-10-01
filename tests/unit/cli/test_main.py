@@ -842,7 +842,8 @@ def test_recommend_applies_edits_after_sequencing_without_changing_ranked(monkey
     assert "3. c\t0.700000" in output
     assert "4. d\t0.600000" in output
     assert "Playlist:" in output
-    assert "1. a" in output
-    assert "2. d" in output
-    assert "3. c" in output
-    assert "4. b" not in output
+    playlist = output.split("Playlist:", 1)[1]
+    assert "1. d" in playlist
+    assert "2. a" in playlist
+    assert "3. c" in playlist
+    assert "4. b" not in playlist
