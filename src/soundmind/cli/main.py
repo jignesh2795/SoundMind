@@ -14,7 +14,11 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.playlist_edit_parser import parse_playlist_edits
-from soundmind.playlist_edit_workflow import apply_playlist_edit_commands
+from soundmind.playlist_edit_workflow import (
+    apply_playlist_edit_commands,
+    describe_playlist_edit,
+    plan_playlist_edit_commands,
+)
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
@@ -228,6 +232,11 @@ def build_parser():
         action="append",
         default=[],
         help="apply a deterministic playlist edit command after sequencing; repeatable",
+    )
+    rec.add_argument(
+        "--preview-edits",
+        action="store_true",
+        help="show the deterministic edit plan and resulting playlist without normal playlist output",
     )
 
     return p
@@ -487,14 +496,38 @@ def main(argv=None):
             result = service.recommend(request, **recommend_kwargs)
             if a.edit:
                 commands = parse_playlist_edits(a.edit)
-                edited_playlist = apply_playlist_edit_commands(
-                    session,
-                    result.playlist,
-                    commands,
-                )
+                if a.preview_edits:
+                    plan = plan_playlist_edit_commands(
+                        session,
+                        result.playlist,
+                        commands,
+                    )
+                    edited_playlist = None
+                else:
+                    plan = ()
+                    edited_playlist = apply_playlist_edit_commands(
+                        session,
+                        result.playlist,
+                        commands,
+                    )
             else:
+                plan = ()
+                if a.preview_edits:
+                    raise ValueError("--preview-edits requires at least one --edit command")
                 edited_playlist = None
         _print_recommendation(result, explain=a.explain, playlist=edited_playlist)
+        if a.preview_edits:
+            print("Edit preview:")
+            for index, step in enumerate(plan, start=1):
+                print(f"{index}. command: {step.command}")
+                if step.resolved_edits:
+                    for edit in step.resolved_edits:
+                        print(f"   → {describe_playlist_edit(edit)}")
+                else:
+                    print("   → no matching tracks")
+            print("Playlist preview:")
+            for index, item in enumerate(plan[-1].playlist, start=1) if plan else enumerate(result.playlist, start=1):
+                print(f"{index}. {item.track_id}")
         return 0
 
     return 1
