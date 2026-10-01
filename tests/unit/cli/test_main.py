@@ -1231,6 +1231,7 @@ def test_recommend_saves_final_edited_playlist(monkeypatch, capsys) -> None:
     ) == 0
 
     assert captured["name"] == "Focus Music"
+    assert captured["committed"] is True
     assert [item.track_id for item in captured["items"]] == ["b"]
     assert "Saved playlist: Focus Music" in capsys.readouterr().out
 
