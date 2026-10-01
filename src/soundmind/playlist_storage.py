@@ -37,6 +37,12 @@ def _validate_items(items: tuple[SequenceItem, ...]) -> None:
         seen.add(item.track_id)
 
 
+def _as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
 def _to_saved_playlist(
     playlist: PlaylistRow,
     rows: list[PlaylistItemRow],
@@ -52,8 +58,8 @@ def _to_saved_playlist(
     return SavedPlaylist(
         name=playlist.name,
         items=items,
-        created_at=playlist.created_at,
-        updated_at=playlist.updated_at,
+        created_at=_as_utc(playlist.created_at),
+        updated_at=_as_utc(playlist.updated_at),
     )
 
 
