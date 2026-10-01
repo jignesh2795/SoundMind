@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M13.6 — Deterministic Playlist Filters (complete).
+M13.7 — Deterministic Playlist Edit Preview (in validation).
 
 The current pipeline now supports:
 
@@ -28,6 +28,7 @@ The current pipeline now supports:
 - CLI playlist editing: repeatable post-sequencing `--edit` commands on recommendations
 - catalog-aware editing: exact title and filename references can resolve to tracks already present in the generated playlist
 - playlist filters: deterministic exact artist, album, and genre remove/keep-only commands
+- edit preview: deterministic command-by-command playlist edit planning and resulting-playlist preview
 
 M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval; M12.3 persists semantic document vectors as derived data with freshness checks; M12.4 fuses lexical and semantic scores into one deterministic union; M12.5 connects those retrieval candidates to the existing recommendation flow; M12.6 makes embedding profiles explicit; M12.7 adds opt-in deterministic music-domain query expansion to lexical retrieval; M12.8 exposes configurable lexical/semantic fusion weights through recommendation candidate generation; M12.9 makes retrieval evidence inspectable without changing ranking. Retrieval remains separate from recommendation ranking: M12 retrieval does not change M1 ranking weights.
 
@@ -74,7 +75,8 @@ Edit a generated playlist after sequencing with repeatable commands:
         --context coding \
         --edit "remove Hero Theme" \
         --edit "move hero-theme.mp3 after Chorus Theme" \
-        --edit "remove all tracks by Composer A"
+        --edit "remove all tracks by Composer A" \
+        --preview-edits
 
 Use the persisted semantic index for the hybrid candidate pool:
 
@@ -182,6 +184,7 @@ Validation uses Ruff and pytest.
 - M13.4: relative before/after playlist moves
 - M13.5: deterministic catalog track-reference resolution
 - M13.6: deterministic playlist metadata filters
+- M13.7: deterministic playlist edit preview
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
