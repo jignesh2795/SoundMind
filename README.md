@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M14.1 — Named Playlist Storage Primitives (in validation).
+M14.1 — Named Playlist Storage Primitives (completed).
 
 The current pipeline now supports:
 
