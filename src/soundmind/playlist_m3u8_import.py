@@ -15,7 +15,10 @@ class ParsedM3U8Playlist:
     items: tuple[SequenceItem, ...]
 
 
-def parse_m3u8(text: str, tracks_by_source_uri: dict[str, str]) -> ParsedM3U8Playlist:
+def parse_m3u8(
+    text: str,
+    tracks_by_source_uri: dict[str, str],
+) -> ParsedM3U8Playlist:
     """Parse a simple UTF-8 M3U8 document using exact local source-URI matching."""
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     if not lines or lines[0] != "#EXTM3U":
@@ -24,6 +27,7 @@ def parse_m3u8(text: str, tracks_by_source_uri: dict[str, str]) -> ParsedM3U8Pla
     items: list[SequenceItem] = []
     pending_extinf = False
     seen: set[str] = set()
+    seen_track_ids: set[str] = set()
 
     for line in lines[1:]:
         if line.startswith("#"):
@@ -50,7 +54,10 @@ def parse_m3u8(text: str, tracks_by_source_uri: dict[str, str]) -> ParsedM3U8Pla
         track_id = tracks_by_source_uri.get(line)
         if track_id is None:
             raise ValueError(f"M3U8 source not found in catalog: {line!r}")
+        if track_id in seen_track_ids:
+            raise ValueError(f"duplicate catalog track ID: {track_id!r}")
         seen.add(line)
+        seen_track_ids.add(track_id)
         items.append(
             SequenceItem(
                 track_id=track_id,
