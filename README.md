@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M14.1 — Named Playlist Storage Primitives (completed).
+M14.2 — Named Playlist CLI (in validation).
 
 The current pipeline now supports:
 
@@ -31,6 +31,7 @@ The current pipeline now supports:
 - edit preview: deterministic command-by-command playlist edit planning and resulting-playlist preview
 - edit diff: deterministic membership and position changes for each previewed edit command
 - playlist storage: durable local named playlist snapshots preserving order and sequence/base scores
+- playlist CLI: save final recommendation playlists and list/show named snapshots
 
 M11 established the application-facing recommendation and CLI boundaries. M12 adds a separate catalog retrieval layer. M12.1 is the model-free lexical baseline; M12.2 adds explicit local semantic retrieval; M12.3 persists semantic document vectors as derived data with freshness checks; M12.4 fuses lexical and semantic scores into one deterministic union; M12.5 connects those retrieval candidates to the existing recommendation flow; M12.6 makes embedding profiles explicit; M12.7 adds opt-in deterministic music-domain query expansion to lexical retrieval; M12.8 exposes configurable lexical/semantic fusion weights through recommendation candidate generation; M12.9 makes retrieval evidence inspectable without changing ranking. Retrieval remains separate from recommendation ranking: M12 retrieval does not change M1 ranking weights.
 
@@ -79,6 +80,18 @@ Edit a generated playlist after sequencing with repeatable commands:
         --edit "move hero-theme.mp3 after Chorus Theme" \
         --edit "remove all tracks by Composer A" \
         --preview-edits
+
+Save a generated or edited playlist by name:
+
+    soundmind recommend "cinematic BGM" \
+        --context coding \
+        --edit "remove Hero Theme" \
+        --save-playlist "Focus Music"
+
+List and inspect saved playlists:
+
+    soundmind playlist list
+    soundmind playlist show "Focus Music"
 
 Use the persisted semantic index for the hybrid candidate pool:
 
@@ -189,6 +202,7 @@ Validation uses Ruff and pytest.
 - M13.7: deterministic playlist edit preview
 - M13.8: deterministic playlist edit diff
 - M14.1: named playlist storage primitives
+- M14.2: named playlist CLI
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
