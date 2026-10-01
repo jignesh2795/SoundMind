@@ -54,8 +54,17 @@ This document is the project-level implementation ledger. It records completed m
 | M15.2 | Named playlist JSON import | Complete |
 | M15.3 | Named playlist JSON import preview | Complete |
 | M16.1 | Deterministic M3U8 playlist export | Complete |
+| M16.2 | Deterministic M3U8 playlist import | In validation |
 
 ## Current milestone
+
+### M16.2 — Deterministic M3U8 Playlist Import (in validation)
+
+M16.2 adds deterministic local import of simple M3U8 playlists by resolving active catalog `file://` source URIs to track IDs. Because M3U8 does not carry SoundMind ranking/sequencing evidence, imported items receive zeroed scores.
+
+Contract: [M16.2 deterministic M3U8 playlist import](m16-2-m3u8-playlist-import-contract.md)
+
+Validation is pending; M16.1 is the latest validated gate at 352 tests.
 
 ### M16.1 — Deterministic M3U8 Playlist Export (completed)
 

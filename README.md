@@ -137,6 +137,10 @@ Export a saved playlist as a player-oriented M3U8 file:
 
     soundmind playlist m3u8 "Focus Music" exports/focus.m3u8
 
+Import a local M3U8 playlist into a named snapshot:
+
+    soundmind playlist m3u8-import exports/focus.m3u8 --name "Focus Music"
+
 Use the persisted semantic index for the hybrid candidate pool:
 
     soundmind recommend "hero entry" \
@@ -254,6 +258,7 @@ Validation uses Ruff and pytest.
 - M15.2: named playlist JSON import
 - M15.3: named playlist JSON import preview
 - M16.1: deterministic M3U8 playlist export
+- M16.2: deterministic M3U8 playlist import
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
