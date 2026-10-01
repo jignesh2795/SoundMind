@@ -2230,9 +2230,7 @@ def test_playlist_m3u8_export_rejects_missing_catalog_track(
         lambda path: lambda: FakeSession(),
     )
 
-    with __import__("pytest").raises(
-        ValueError, match="track not found in catalog"
-    ):
+    with pytest.raises(ValueError, match="track not found in catalog"):
         main(["playlist", "m3u8", "Focus", str(output)])
     assert not output.exists()
 
