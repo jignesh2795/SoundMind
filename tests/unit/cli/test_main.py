@@ -2720,6 +2720,9 @@ def test_playlist_audit_reports_track_health_without_mutation(
                 ),
             )
 
+        def save(self, name, items):
+            raise AssertionError("read-only command must not save")
+
     class FakeScalarResult:
         def all(self):
             return (

@@ -182,3 +182,77 @@ def test_recommend_hybrid_indexed_dispatches_to_persisted_path(monkeypatch, caps
     assert captured["kwargs"]["lexical_weight"] == 0.25
     assert captured["kwargs"]["semantic_weight"] == 0.75
     assert capsys.readouterr().out == "Intent: hero entry\nRanked:\nPlaylist:\n"
+
+
+def test_recommend_expand_query_is_forwarded_to_service(monkeypatch) -> None:
+    captured = {}
+
+    class FakeProvider:
+        def __init__(
+            self,
+            model_name,
+            *,
+            query_prefix="query: ",
+            document_prefix="passage: ",
+        ) -> None:
+            pass
+
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr("soundmind.cli.main.FastEmbedTextProvider", FakeProvider)
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "recommend",
+                "hero bgm",
+                "--context",
+                "coding",
+                "--retrieval",
+                "hybrid",
+                "--expand-query",
+            ]
+        )
+        == 0
+    )
+    assert captured["kwargs"]["expand_query"] is True
+
+    assert (
+        main(
+            [
+                "recommend",
+                "hero bgm",
+                "--context",
+                "coding",
+                "--retrieval",
+                "hybrid",
+            ]
+        )
+        == 0
+    )
+    assert captured["kwargs"]["expand_query"] is False

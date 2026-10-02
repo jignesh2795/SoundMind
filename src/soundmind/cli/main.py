@@ -759,6 +759,7 @@ def main(argv=None):
                         "text_index_path": a.text_index,
                         "text_query_prefix": a.text_query_prefix,
                         "text_document_prefix": a.text_document_prefix,
+                        "expand_query": a.expand_query,
                         "lexical_weight": a.lexical_weight,
                         "semantic_weight": a.semantic_weight,
                     }
