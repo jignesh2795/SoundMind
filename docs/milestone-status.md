@@ -60,17 +60,18 @@ This document is the project-level implementation ledger. It records completed m
 | M17.2 | Deterministic playlist repair plan | Complete |
 | M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | Complete |
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
+| M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
 
 
 ## Current milestone
 
-### M17.5 — CLI Coverage Hardening (in validation)
+### M17.5 — CLI Coverage Hardening (completed)
 
 M17.5 closes the CLI coverage gap for three core local command surfaces that are currently under-tested: directory scanning, EffNet model fetching, and the learned-index command group. The slice focuses on deterministic command wiring, boundary behavior, and safe test doubles for filesystem/network/ML dependencies without changing production behavior.
 
 Contract: [M17.5 CLI coverage hardening](m17-5-cli-coverage-hardening-contract.md)
 
-Validation is pending; M17.4 is the latest validated gate at 399 tests.
+Validated gate: Ruff clean, 416 tests passed, diff check clean, working tree clean. Implementation merge: `6e2edb9170444e98dec4a4271e00a06f9994fa82`.
 
 ### M17.4 — Playlist Import Negative-Path Hardening (completed)
 
@@ -649,6 +650,7 @@ M17.1: Ruff clean, 375 tests passed
 M17.2: Ruff clean, 382 tests passed
 M17.3: Ruff clean, 385 tests passed
 M17.4: Ruff clean, 399 tests passed
+M17.5: Ruff clean, 416 tests passed
 ```
 
 ## Documentation rule

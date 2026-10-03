@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.5 — CLI Coverage Hardening (in validation).
+M17.5 — CLI Coverage Hardening (completed).
 
 The current pipeline now supports:
 
