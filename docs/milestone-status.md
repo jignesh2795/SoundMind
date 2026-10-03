@@ -64,6 +64,14 @@ This document is the project-level implementation ledger. It records completed m
 
 ## Current milestone
 
+### M17.5 — CLI Coverage Hardening (in validation)
+
+M17.5 closes the CLI coverage gap for three core local command surfaces that are currently under-tested: directory scanning, EffNet model fetching, and the learned-index command group. The slice focuses on deterministic command wiring, boundary behavior, and safe test doubles for filesystem/network/ML dependencies without changing production behavior.
+
+Contract: [M17.5 CLI coverage hardening](m17-5-cli-coverage-hardening-contract.md)
+
+Validation is pending; M17.4 is the latest validated gate at 399 tests.
+
 ### M17.4 — Playlist Import Negative-Path Hardening (completed)
 
 M17.4 closes identified M15.2/M16.2 validation gaps without changing production behavior. It adds targeted JSON schema and finite-score negative cases, verifies import timestamps are not copied into destination rows, and covers the remaining M3U8 parser rejection paths.
