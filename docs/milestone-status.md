@@ -59,7 +59,7 @@ This document is the project-level implementation ledger. It records completed m
 | M17.1 | Deterministic playlist integrity audit | Complete |
 | M17.2 | Deterministic playlist repair plan | Complete |
 | M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | Complete |
-| M17.4 | Playlist JSON/M3U8 import negative-path hardening | In validation |
+| M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
 
 
 ## Current milestone
