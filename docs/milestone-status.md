@@ -58,19 +58,19 @@ This document is the project-level implementation ledger. It records completed m
 | M16.3 | M3U8 playlist import preview | Complete |
 | M17.1 | Deterministic playlist integrity audit | Complete |
 | M17.2 | Deterministic playlist repair plan | Complete |
-| M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | In validation |
+| M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | Complete |
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | In validation |
 
 
 ## Current milestone
 
-### M17.4 — Playlist Import Negative-Path Hardening (in validation)
+### M17.4 — Playlist Import Negative-Path Hardening (completed)
 
 M17.4 closes identified M15.2/M16.2 validation gaps without changing production behavior. It adds targeted JSON schema and finite-score negative cases, verifies import timestamps are not copied into destination rows, and covers the remaining M3U8 parser rejection paths.
 
 Contract: [M17.4 playlist import negative-path hardening](m17-4-playlist-import-negative-path-hardening-contract.md)
 
-Validation is pending; M17.3 is the latest validated gate at 385 tests.
+Validated gate: Ruff clean, 399 tests passed, diff check clean, working tree clean. Implementation merge: `ffb0adef9aefb94055b6fdca11daf82bf4aff02e`.
 
 ### M17.3 — Active-Catalog Filter Test Hardening (completed)
 
@@ -640,6 +640,7 @@ M16.3: Ruff clean, 370 tests passed
 M17.1: Ruff clean, 375 tests passed
 M17.2: Ruff clean, 382 tests passed
 M17.3: Ruff clean, 385 tests passed
+M17.4: Ruff clean, 399 tests passed
 ```
 
 ## Documentation rule
