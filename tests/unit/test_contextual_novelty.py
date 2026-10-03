@@ -133,3 +133,14 @@ def test_contextual_novelty_requires_timezone_aware_times() -> None:
             context="coding",
             now=datetime(2026, 9, 29, 12, 0),  # noqa: DTZ001
         )
+
+
+def test_naive_event_time_is_rejected() -> None:
+    naive = ListeningEvent(
+        "a",
+        ListeningEventType.PLAY,
+        datetime(2026, 9, 29, 12, 0),  # noqa: DTZ001
+        context="coding",
+    )
+    with pytest.raises(ValueError, match="timezone-aware"):
+        ContextualNoveltyScorer().score_events([naive], context="coding", now=NOW)

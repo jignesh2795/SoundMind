@@ -84,3 +84,50 @@ def test_language_and_region_can_coexist():
     assert intent.languages == ("malayalam",)
     assert intent.regions == ("south_india",)
     assert intent.music_types == ("soundtrack",)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"energy": -0.1},
+        {"energy": 1.1},
+        {"confidence": -0.1},
+        {"confidence": 1.1},
+        {"confidence": float("nan")},
+        {"vocal_preference": "loud"},
+        {"novelty": "weird"},
+    ],
+)
+def test_intent_rejects_invalid_constructor_values(kwargs):
+    with pytest.raises(ValueError):
+        MusicIntent(raw_text="hero bgm", **kwargs)
+
+
+def test_parser_normalizes_separators_and_whitespace():
+    assert parse_intent("hero_bgm").music_types == ("bgm",)
+    assert parse_intent("hero-bgm").music_types == ("bgm",)
+    assert parse_intent("south-indian").regions == ("south_india",)
+    intent = parse_intent("Tamil   chase\nBGM")
+    assert intent.languages == ("tamil",)
+    assert intent.scenes == ("chase",)
+    assert intent.music_types == ("bgm",)
+
+
+def test_dimensions_are_deduplicated_and_sorted():
+    intent = parse_intent("Telugu Tamil Tamil soundtrack BGM bgm no vocals without vocals")
+    assert intent.languages == ("tamil", "telugu")
+    assert intent.music_types == ("bgm", "soundtrack")
+    assert intent.negative_terms == ("vocals",)
+
+
+@pytest.mark.parametrize("text", ["no vocals", "less vocals", "without vocals"])
+def test_negative_vocal_variants_resolve_to_instrumental(text):
+    intent = parse_intent(f"dark BGM {text}")
+    assert intent.vocal_preference == "instrumental"
+    assert intent.negative_terms == ("vocals",)
+
+
+@pytest.mark.parametrize("text", ["", None])
+def test_empty_and_none_input_is_rejected(text):
+    with pytest.raises(ValueError, match="text must be non-empty"):
+        parse_intent(text)

@@ -1,10 +1,14 @@
+import copy
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
 from soundmind.catalog_recommendation import CatalogContextRecommendationService
 from soundmind.catalog_search import CatalogTextSearchService
-from soundmind.flow import EndToEndRequest
+from soundmind.flow import EndToEndRequest, EndToEndResult
+from soundmind.intent import parse_intent
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
 from soundmind.preferences.repository import ListeningEventRepository
 from soundmind.recommendation.fusion import FusionWeights
@@ -326,3 +330,201 @@ def test_hybrid_retrieval_requires_text_provider(tmp_path) -> None:
                 retrieval_mode="hybrid",
                 retrieval_limit=1,
             )
+
+
+def test_recommend_rejects_invalid_retrieval_mode(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        request = EndToEndRequest(text="cinematic BGM", candidates=[], limit=2)
+
+        with pytest.raises(ValueError, match="choose from"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="bogus",
+            )
+
+
+@pytest.mark.parametrize("limit", [0, -1, True, False, "25", 2.5])
+def test_recommend_rejects_invalid_retrieval_limit(tmp_path, limit) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("a"))
+        session.commit()
+        request = EndToEndRequest(text="cinematic", candidates=[], limit=2)
+
+        with pytest.raises(ValueError, match="retrieval_limit must be a positive integer"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="lexical",
+                retrieval_limit=limit,
+            )
+
+
+def test_retrieval_limit_defaults_to_fifty_or_request_limit() -> None:
+    service = CatalogContextRecommendationService.__new__(CatalogContextRecommendationService)
+
+    small = EndToEndRequest(text="cinematic", candidates=[], limit=3)
+    large = EndToEndRequest(text="cinematic", candidates=[], limit=100)
+
+    assert service._retrieval_limit(small, None) == 50
+    assert service._retrieval_limit(large, None) == 100
+    assert service._retrieval_limit(small, 7) == 7
+
+
+def test_semantic_retrieval_requires_provider(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("a"))
+        session.commit()
+        request = EndToEndRequest(text="cinematic", candidates=[], limit=1)
+
+        with pytest.raises(ValueError, match="text embedding provider"):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode="semantic",
+                retrieval_limit=1,
+            )
+
+
+@pytest.mark.parametrize(
+    ("mode", "kwargs", "message"),
+    [
+        ("semantic-indexed", {"text_model": ""}, "text model name is required"),
+        ("semantic-indexed", {"text_index_path": None}, "text index path is required"),
+        ("hybrid-indexed", {"text_model": ""}, "text model name is required"),
+        ("hybrid-indexed", {"text_index_path": None}, "text index path is required"),
+    ],
+)
+def test_indexed_retrieval_requires_model_and_index(tmp_path, mode, kwargs, message) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("a"))
+        session.commit()
+        request = EndToEndRequest(text="cinematic", candidates=[], limit=1)
+        options = {
+            "text_provider": object(),
+            "text_model": "model-v1",
+            "text_index_path": Path("index"),
+        }
+        options.update(kwargs)
+
+        with pytest.raises(ValueError, match=message):
+            CatalogContextRecommendationService(session).recommend(
+                request,
+                context="coding",
+                now=NOW,
+                retrieval_mode=mode,
+                retrieval_limit=1,
+                **options,
+            )
+
+
+def test_event_limit_is_forwarded_to_repository(monkeypatch, tmp_path) -> None:
+    captured = []
+
+    class FakeEvents:
+        def __init__(self, session) -> None:
+            pass
+
+        def list_recent(self, limit=1000):
+            captured.append(limit)
+            return []
+
+    monkeypatch.setattr("soundmind.catalog_recommendation.ListeningEventRepository", FakeEvents)
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("a"))
+        session.commit()
+        request = EndToEndRequest(text="cinematic", candidates=[], limit=1)
+        service = CatalogContextRecommendationService(session)
+        service.recommend(request, context="coding", now=NOW, event_limit=5)
+        service.recommend(request, context="coding", now=NOW)
+
+    assert captured == [5, 1000]
+
+
+def test_explicit_seed_overrides_request_seed(tmp_path) -> None:
+    captured = []
+
+    class FakeFlow:
+        def run(self, request, *, events, context, now, seed_track_id):
+            captured.append(seed_track_id)
+            return EndToEndResult(intent=parse_intent("dark BGM"), ranked=(), playlist=())
+
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add_all([track("a"), track("b")])
+        session.commit()
+        service = CatalogContextRecommendationService(session, flow=FakeFlow())
+
+        explicit = EndToEndRequest(text="dark BGM", candidates=[], limit=2, seed_track_id="a")
+        service.recommend(explicit, context="coding", now=NOW, seed_track_id="b")
+        fallback = EndToEndRequest(text="dark BGM", candidates=[], limit=2, seed_track_id="a")
+        service.recommend(fallback, context="coding", now=NOW)
+
+    assert captured == ["b", "a"]
+
+
+def test_recommend_does_not_mutate_request_or_catalog(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    def snapshot(session):
+        return [
+            (row.track_id, row.status, row.title, row.genre)
+            for row in session.scalars(select(TrackRow)).all()
+        ]
+
+    with session_factory() as session:
+        session.add_all([track("a"), track("b")])
+        session.commit()
+        ListeningEventRepository(session).add(
+            ListeningEvent("a", ListeningEventType.LIKE, NOW, context="coding")
+        )
+
+        request = EndToEndRequest(text="cinematic BGM", candidates=[], limit=2)
+        before_request = copy.deepcopy(request)
+        before_rows = snapshot(session)
+        before_events = [
+            (event.track_id, event.event_type, event.context)
+            for event in ListeningEventRepository(session).list_recent()
+        ]
+
+        CatalogContextRecommendationService(session).recommend(request, context="coding", now=NOW)
+        session.expire_all()
+
+        assert request == before_request
+        assert snapshot(session) == before_rows
+        assert [
+            (event.track_id, event.event_type, event.context)
+            for event in ListeningEventRepository(session).list_recent()
+        ] == before_events
+
+
+def test_lexical_retrieval_needs_no_provider(tmp_path) -> None:
+    session_factory = create_session_factory(tmp_path / "soundmind.db")
+
+    with session_factory() as session:
+        session.add(track("hero", title="Hero Entry"))
+        session.commit()
+        request = EndToEndRequest(text="hero entry", candidates=[], limit=2)
+
+        result = CatalogContextRecommendationService(session).recommend(
+            request,
+            context="coding",
+            now=NOW,
+            retrieval_mode="lexical",
+        )
+
+    assert [item.track_id for item in result.ranked] == ["hero"]
