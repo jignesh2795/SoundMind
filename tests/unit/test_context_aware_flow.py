@@ -227,3 +227,41 @@ def test_context_aware_flow_carries_contextual_novelty_into_discovery_sequence()
 
     assert [item.track_id for item in result.ranked] == ["new", "seen"]
     assert [item.track_id for item in result.playlist] == ["new", "seen"]
+
+
+def test_empty_candidates_compose_to_empty_result() -> None:
+    request = EndToEndRequest(
+        text="dark BGM",
+        candidates=[],
+        mode=SequenceMode.SMOOTH,
+        limit=2,
+    )
+
+    result = ContextAwareMusicFlow().run(request, events=[], context="coding", now=NOW)
+
+    assert result.ranked == ()
+    assert result.playlist == ()
+
+
+def test_flow_rejects_empty_context() -> None:
+    request = EndToEndRequest(
+        text="dark BGM",
+        candidates=[candidate("a")],
+        mode=SequenceMode.SMOOTH,
+        limit=2,
+    )
+
+    with pytest.raises(ValueError, match="context must be non-empty"):
+        ContextAwareMusicFlow().run(request, events=[], context="   ", now=NOW)
+
+
+def test_flow_rejects_duplicate_track_ids() -> None:
+    request = EndToEndRequest(
+        text="   ",
+        candidates=[candidate("a"), candidate("a")],
+        mode=SequenceMode.SMOOTH,
+        limit=2,
+    )
+
+    with pytest.raises(ValueError, match="duplicate track_id"):
+        ContextAwareMusicFlow().run(request, events=[], context="coding", now=NOW)

@@ -1,5 +1,8 @@
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 from soundmind.cli.main import build_parser, main
 
@@ -256,3 +259,173 @@ def test_recommend_expand_query_is_forwarded_to_service(monkeypatch) -> None:
         == 0
     )
     assert captured["kwargs"]["expand_query"] is False
+
+
+def test_recommend_parser_captures_prefix_options() -> None:
+    args = build_parser().parse_args(
+        [
+            "recommend",
+            "hero bgm",
+            "--context",
+            "coding",
+            "--text-query-prefix",
+            "query: ",
+            "--text-document-prefix",
+            "passage: ",
+            "--expand-query",
+        ]
+    )
+
+    assert args.text_query_prefix == "query: "
+    assert args.text_document_prefix == "passage: "
+    assert args.expand_query is True
+
+
+def test_recommend_forwards_prefix_options(monkeypatch) -> None:
+    captured = {}
+
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "recommend",
+                "hero bgm",
+                "--context",
+                "coding",
+                "--retrieval",
+                "lexical",
+                "--text-query-prefix",
+                "query: ",
+                "--text-document-prefix",
+                "passage: ",
+            ]
+        )
+        == 0
+    )
+
+    assert captured["kwargs"]["text_query_prefix"] == "query: "
+    assert captured["kwargs"]["text_document_prefix"] == "passage: "
+
+
+def test_recommend_lexical_dispatches_without_provider(monkeypatch, capsys) -> None:
+    captured = {}
+
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    assert (
+        main(
+            [
+                "recommend",
+                "hero bgm",
+                "--context",
+                "coding",
+                "--retrieval",
+                "lexical",
+            ]
+        )
+        == 0
+    )
+
+    assert captured["kwargs"]["retrieval_mode"] == "lexical"
+    assert captured["kwargs"]["text_provider"] is None
+    assert capsys.readouterr().out == "Intent: hero bgm\nRanked:\nPlaylist:\n"
+
+
+def test_recommend_defaults_now_to_current_utc(monkeypatch) -> None:
+    captured = {}
+
+    class FakeService:
+        def __init__(self, session) -> None:
+            pass
+
+        def recommend(self, request, **kwargs):
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(
+                intent=SimpleNamespace(raw_text=request.text),
+                ranked=(),
+                playlist=(),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    monkeypatch.setattr(
+        "soundmind.cli.main.CatalogContextRecommendationService",
+        FakeService,
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    before = datetime.now(UTC)
+    assert main(["recommend", "hero bgm", "--context", "coding"]) == 0
+    after = datetime.now(UTC)
+
+    now = captured["kwargs"]["now"]
+    assert now.tzinfo is not None
+    assert before <= now <= after
+
+
+def test_recommend_parser_rejects_invalid_retrieval_choice() -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["recommend", "hero bgm", "--context", "coding", "--retrieval", "bogus"])
+
+    assert exc_info.value.code == 2

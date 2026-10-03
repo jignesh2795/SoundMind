@@ -134,3 +134,137 @@ def test_input_candidate_is_not_mutated():
     IntentRetrievalEngine().enrich(intent, item)
 
     assert item.base_signals == base
+
+
+def test_missing_candidate_energy_scores_partial():
+    intent = MusicIntent(raw_text="high energy", energy=0.8, confidence=0.2)
+    item = candidate("a")
+
+    assert item.energy is None
+    assert IntentRetrievalEngine().score(intent, item).energy_score == pytest.approx(0.5)
+
+
+def test_negative_vocal_terms_score_by_candidate_preference():
+    intent = MusicIntent(
+        raw_text="dark BGM",
+        vocal_preference="instrumental",
+        negative_terms=("vocals",),
+        confidence=0.5,
+    )
+    engine = IntentRetrievalEngine()
+
+    assert engine.score(
+        intent, candidate("a", vocal_preference="vocal")
+    ).vocal_score == pytest.approx(0.0)
+    assert engine.score(
+        intent, candidate("b", vocal_preference="instrumental")
+    ).vocal_score == pytest.approx(1.0)
+    assert engine.score(intent, candidate("c")).vocal_score == pytest.approx(0.5)
+
+
+def test_negative_vocal_terms_take_precedence_over_stated_preference():
+    intent = MusicIntent(
+        raw_text="dark BGM",
+        vocal_preference="vocal",
+        negative_terms=("vocals",),
+        confidence=0.5,
+    )
+
+    assert IntentRetrievalEngine().score(
+        intent, candidate("a", vocal_preference="vocal")
+    ).vocal_score == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"track_id": ""},
+        {"track_id": "a", "energy": 1.5},
+        {"track_id": "a", "novelty_score": -0.1},
+        {"track_id": "a", "vocal_preference": "loud"},
+    ],
+)
+def test_candidate_validation_rejects_invalid_values(kwargs):
+    with pytest.raises(ValueError):
+        IntentCandidate(**kwargs)
+
+
+def test_enrich_many_matches_individual_enrich():
+    intent = parse_intent("dark BGM")
+    items = [
+        candidate("a", moods=("dark",)),
+        candidate("b", music_types=("bgm",)),
+    ]
+    engine = IntentRetrievalEngine()
+
+    assert engine.enrich_many(intent, items) == [engine.enrich(intent, item) for item in items]
+
+
+def test_any_vocal_preference_preserves_signals():
+    intent = parse_intent("dark BGM")
+    base = CandidateSignals(
+        "a",
+        metadata_score=0.9,
+        dsp_score=0.6,
+        learned_score=0.7,
+        preference_score=0.3,
+        novelty_score=0.4,
+        diversity_score=0.2,
+    )
+    item = candidate("a", moods=("dark",), music_types=("bgm",), base_signals=base)
+
+    signals = IntentRetrievalEngine().enrich(intent, item)
+
+    assert "vocal_preference" not in IntentRetrievalEngine().score(intent, item).matched_dimensions
+    assert "novelty" not in IntentRetrievalEngine().score(intent, item).matched_dimensions
+    assert signals.learned_score == pytest.approx(0.7)
+    assert signals.preference_score == pytest.approx(0.3)
+    assert signals.diversity_score == pytest.approx(0.2)
+    assert signals.dsp_score == pytest.approx(0.6)
+    assert signals.novelty_score == pytest.approx(0.4)
+
+
+def test_any_novelty_preserves_base_novelty_score():
+    intent = MusicIntent(raw_text="high energy", energy=0.8, confidence=0.2)
+    item = candidate("a", energy=0.6, base_signals=CandidateSignals("a", novelty_score=0.4))
+
+    match = IntentRetrievalEngine().score(intent, item)
+    signals = IntentRetrievalEngine().enrich(intent, item)
+
+    assert "novelty" not in match.matched_dimensions
+    assert signals.novelty_score == pytest.approx(0.4)
+    assert signals.dsp_score == pytest.approx(0.8)
+
+
+def test_enrich_preserves_diversity_and_unrequested_dimensions():
+    intent = MusicIntent(raw_text="dark", moods=("dark",), confidence=0.5)
+    base = CandidateSignals(
+        "a",
+        dsp_score=0.6,
+        learned_score=0.7,
+        preference_score=0.3,
+        novelty_score=0.4,
+        diversity_score=0.25,
+    )
+    item = candidate("a", moods=("dark",), base_signals=base)
+
+    signals = IntentRetrievalEngine().enrich(intent, item)
+
+    assert signals.metadata_score == pytest.approx(1.0)
+    assert signals.dsp_score == pytest.approx(0.6)
+    assert signals.learned_score == pytest.approx(0.7)
+    assert signals.preference_score == pytest.approx(0.3)
+    assert signals.novelty_score == pytest.approx(0.4)
+    assert signals.diversity_score == pytest.approx(0.25)
+
+
+def test_score_and_rank_are_repeatable():
+    intent = parse_intent("dark BGM")
+    items = [
+        candidate("b", moods=("dark",)),
+        candidate("a", moods=("dark",)),
+    ]
+    engine = IntentRetrievalEngine()
+
+    assert engine.score(intent, items[0]) == engine.score(intent, items[0])
+    assert engine.rank(intent, items, limit=2) == engine.rank(intent, items, limit=2)
