@@ -59,17 +59,26 @@ This document is the project-level implementation ledger. It records completed m
 | M17.1 | Deterministic playlist integrity audit | Complete |
 | M17.2 | Deterministic playlist repair plan | Complete |
 | M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | In validation |
+| M17.4 | Playlist JSON/M3U8 import negative-path hardening | In validation |
 
 
 ## Current milestone
 
-### M17.3 — Active-Catalog Filter Test Hardening (in validation)
+### M17.4 — Playlist Import Negative-Path Hardening (in validation)
+
+M17.4 closes identified M15.2/M16.2 validation gaps without changing production behavior. It adds targeted JSON schema and finite-score negative cases, verifies import timestamps are not copied into destination rows, and covers the remaining M3U8 parser rejection paths.
+
+Contract: [M17.4 playlist import negative-path hardening](m17-4-playlist-import-negative-path-hardening-contract.md)
+
+Validation is pending; M17.3 is the latest validated gate at 385 tests.
+
+### M17.3 — Active-Catalog Filter Test Hardening (completed)
 
 M17.3 hardens regression protection for active-catalog filtering in playlist reference resolution, metadata filtering, and M3U8 import. The affected test fakes are statement-aware where the production path uses SQL filtering, while the M3U8 CLI path explicitly exercises active and inactive catalog rows.
 
 Contract: [M17.3 active-catalog filter test hardening](m17-3-active-catalog-filter-test-hardening-contract.md)
 
-Validation is pending; M17.2 is the latest validated gate at 382 tests.
+Validated gate: Ruff clean, 385 tests passed, diff check clean, working tree clean. Implementation merge: `64d96aad7748431cabc995eadc79f8746535d92d`.
 
 ### M17.2 — Deterministic Playlist Repair Plan (completed)
 
@@ -630,6 +639,7 @@ M16.2: Ruff clean, 366 tests passed
 M16.3: Ruff clean, 370 tests passed
 M17.1: Ruff clean, 375 tests passed
 M17.2: Ruff clean, 382 tests passed
+M17.3: Ruff clean, 385 tests passed
 ```
 
 ## Documentation rule
