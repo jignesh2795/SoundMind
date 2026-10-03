@@ -2814,6 +2814,9 @@ def test_playlist_repair_plan_reports_actions_without_mutation(
                 ),
             )
 
+        def save(self, name, items):
+            raise AssertionError("read-only command must not save")
+
     class FakeScalarResult:
         def all(self):
             return (
