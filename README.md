@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.4 — Playlist Import Negative-Path Hardening (in validation).
+M17.4 — Playlist Import Negative-Path Hardening (completed).
 
 The current pipeline now supports:
 
