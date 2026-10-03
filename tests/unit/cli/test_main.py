@@ -2325,6 +2325,76 @@ file:///music/b.mp3
     )
 
 
+def test_playlist_m3u8_import_rejects_inactive_catalog_track(
+    monkeypatch, tmp_path
+) -> None:
+    source = tmp_path / "inactive.m3u8"
+    source.write_text(
+        """#EXTM3U
+#EXTINF:1,Inactive
+file:///music/inactive.mp3
+""",
+        encoding="utf-8",
+    )
+    captured = {"save": False, "commit": False}
+
+    class FakeRepository:
+        def __init__(self, session) -> None:
+            pass
+
+        def get(self, name):
+            return None
+
+        def save(self, name, items):
+            captured["save"] = True
+
+    class FakeScalarResult:
+        def all(self):
+            return (
+                SimpleNamespace(
+                    track_id="active-track",
+                    source_uri="file:///music/active.mp3",
+                    status="active",
+                ),
+                SimpleNamespace(
+                    track_id="inactive-track",
+                    source_uri="file:///music/inactive.mp3",
+                    status="inactive",
+                ),
+            )
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def scalars(self, statement):
+            return FakeScalarResult()
+
+        def commit(self):
+            captured["commit"] = True
+
+    monkeypatch.setattr("soundmind.cli.main.PlaylistRepository", FakeRepository)
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: lambda: FakeSession(),
+    )
+
+    with pytest.raises(ValueError, match="source not found in catalog"):
+        main(
+            [
+                "playlist",
+                "m3u8-import",
+                str(source),
+                "--name",
+                "Inactive",
+            ]
+        )
+
+    assert captured == {"save": False, "commit": False}
+
 def test_playlist_m3u8_import_requires_replace_for_existing(
     monkeypatch, tmp_path
 ) -> None:

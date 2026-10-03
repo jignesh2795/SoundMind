@@ -21,7 +21,10 @@ class FakeSession:
         self.rows = rows
 
     def scalars(self, statement):
-        return self.rows
+        rendered = str(statement.compile(compile_kwargs={"literal_binds": True}))
+        if "tracks.status = 'active'" not in rendered:
+            return self.rows
+        return tuple(row for row in self.rows if row.status == "active")
 
 
 def playlist() -> tuple[SequenceItem, ...]:
@@ -37,6 +40,7 @@ def rows() -> tuple[object, ...]:
                 "track_id": "track-a",
                 "title": "Hero Theme",
                 "file_name": "hero-theme.mp3",
+                "status": "active",
             },
         )(),
         type(
@@ -46,6 +50,7 @@ def rows() -> tuple[object, ...]:
                 "track_id": "track-b",
                 "title": "Night Drive",
                 "file_name": "night-drive.mp3",
+                "status": "active",
             },
         )(),
         type(
@@ -55,6 +60,7 @@ def rows() -> tuple[object, ...]:
                 "track_id": "track-c",
                 "title": "Hero Theme",
                 "file_name": "hero-theme-live.mp3",
+                "status": "active",
             },
         )(),
     )
@@ -133,3 +139,35 @@ def test_resolution_does_not_change_input_edits() -> None:
     )
     assert edits == [RemoveTrack("Hero Theme")]
     assert result == (RemoveTrack("track-a"),)
+
+def test_resolution_ignores_inactive_catalog_rows() -> None:
+    session = FakeSession(
+        (
+            type(
+                "Row",
+                (),
+                {
+                    "track_id": "track-a",
+                    "title": "Hero Theme",
+                    "file_name": "hero-theme.mp3",
+                    "status": "active",
+                },
+            )(),
+            type(
+                "Row",
+                (),
+                {
+                    "track_id": "stale-track",
+                    "title": "Hero Theme",
+                    "file_name": "hero-theme-stale.mp3",
+                    "status": "inactive",
+                },
+            )(),
+        )
+    )
+
+    assert resolve_playlist_edit_references(
+        session,
+        (item("track-a"), item("stale-track")),
+        [RemoveTrack("Hero Theme")],
+    ) == (RemoveTrack("track-a"),)

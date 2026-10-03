@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.2 — Deterministic Playlist Repair Plan (in validation).
+M17.3 — Active-Catalog Filter Test Hardening (in validation).
 
 The current pipeline now supports:
 
@@ -274,6 +274,7 @@ Validation uses Ruff and pytest.
 - M16.3: M3U8 playlist import preview
 - M17.1: deterministic playlist integrity audit
 - M17.2: deterministic playlist repair plan
+- M17.3: active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
