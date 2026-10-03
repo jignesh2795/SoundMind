@@ -19,10 +19,20 @@ class FakeSession:
         self.rows = rows
 
     def scalars(self, statement):
-        return self.rows
+        rendered = str(statement.compile(compile_kwargs={"literal_binds": True}))
+        if "tracks.status = 'active'" not in rendered:
+            return self.rows
+        return tuple(row for row in self.rows if row.status == "active")
 
 
-def row(track_id: str, *, artist=None, album=None, genre=None):
+def row(
+    track_id: str,
+    *,
+    artist=None,
+    album=None,
+    genre=None,
+    status="active",
+):
     return type(
         "Row",
         (),
@@ -31,6 +41,7 @@ def row(track_id: str, *, artist=None, album=None, genre=None):
             "artist": artist,
             "album": album,
             "genre": genre,
+            "status": status,
         },
     )()
 
@@ -158,3 +169,23 @@ def test_empty_playlist_requires_no_catalog_query() -> None:
 def test_invalid_filter_values_are_rejected(edit, message: str) -> None:
     with pytest.raises(ValueError, match=message):
         playlist_filter_to_edits(FakeSession(()), (item("a"),), edit)
+
+def test_remove_filter_ignores_inactive_catalog_rows() -> None:
+    session = FakeSession(
+        (
+            row("active", artist="Composer A", status="active"),
+            row("inactive", artist="Composer A", status="inactive"),
+        )
+    )
+
+    result = playlist_filter_to_edits(
+        session,
+        (item("active"), item("inactive")),
+        PlaylistMetadataFilter(
+            PlaylistFilterAction.REMOVE,
+            PlaylistFilterField.ARTIST,
+            "Composer A",
+        ),
+    )
+
+    assert result == (RemoveTrack("active"),)

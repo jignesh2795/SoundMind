@@ -57,18 +57,27 @@ This document is the project-level implementation ledger. It records completed m
 | M16.2 | Deterministic M3U8 playlist import | Complete |
 | M16.3 | M3U8 playlist import preview | Complete |
 | M17.1 | Deterministic playlist integrity audit | Complete |
-| M17.2 | Deterministic playlist repair plan | In validation |
+| M17.2 | Deterministic playlist repair plan | Complete |
+| M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | In validation |
 
 
 ## Current milestone
 
-### M17.2 — Deterministic Playlist Repair Plan (in validation)
+### M17.3 — Active-Catalog Filter Test Hardening (in validation)
+
+M17.3 hardens regression protection for active-catalog filtering in playlist reference resolution, metadata filtering, and M3U8 import. The affected test fakes are statement-aware where the production path uses SQL filtering, while the M3U8 CLI path explicitly exercises active and inactive catalog rows.
+
+Contract: [M17.3 active-catalog filter test hardening](m17-3-active-catalog-filter-test-hardening-contract.md)
+
+Validation is pending; M17.2 is the latest validated gate at 382 tests.
+
+### M17.2 — Deterministic Playlist Repair Plan (completed)
 
 M17.2 adds a read-only repair plan for persisted named playlists with stale catalog references. Active entries are planned for retention; inactive and missing entries are planned for removal. The plan preserves playlist order and never mutates playlist or catalog state.
 
 Contract: [M17.2 deterministic playlist repair plan](m17-2-playlist-repair-plan-contract.md)
 
-Validation is pending; M17.1 is the latest validated gate at 375 tests.
+Validated gate: Ruff clean, 382 tests passed, diff check clean, working tree clean. Implementation merge: `cfd84989ea998f3b6422f99c845ebd86598d7fec`.
 
 ### M17.1 — Deterministic Playlist Integrity Audit (completed)
 
@@ -620,6 +629,7 @@ M16.1: Ruff clean, 352 tests passed
 M16.2: Ruff clean, 366 tests passed
 M16.3: Ruff clean, 370 tests passed
 M17.1: Ruff clean, 375 tests passed
+M17.2: Ruff clean, 382 tests passed
 ```
 
 ## Documentation rule
