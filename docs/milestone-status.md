@@ -61,9 +61,18 @@ This document is the project-level implementation ledger. It records completed m
 | M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | Complete |
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
 | M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
+| M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | In validation |
 
 
 ## Current milestone
+
+### M17.6 — Historical Validation Branch Hardening (in validation)
+
+M17.6 closes remaining validation-branch gaps in historical M2/M3/M4/M6/M10/M11 layers. The slice is test-focused and targets documented rejection, empty/fallback, determinism, immutability, and application-boundary behavior without changing product contracts.
+
+Contract: [M17.6 historical validation branch hardening](m17-6-historical-validation-branches-contract.md)
+
+Validation is pending; M17.5 is the latest validated gate at 416 tests.
 
 ### M17.5 — CLI Coverage Hardening (completed)
 
@@ -651,6 +660,7 @@ M17.2: Ruff clean, 382 tests passed
 M17.3: Ruff clean, 385 tests passed
 M17.4: Ruff clean, 399 tests passed
 M17.5: Ruff clean, 416 tests passed
+M17.6: validation in progress
 ```
 
 ## Documentation rule
