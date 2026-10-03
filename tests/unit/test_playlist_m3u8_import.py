@@ -81,3 +81,33 @@ def test_parse_m3u8_ignores_non_extinf_comments() -> None:
 
 def test_parse_m3u8_handles_empty_playlist() -> None:
     assert parse_m3u8("#EXTM3U\n", {}).items == ()
+
+
+def test_parse_m3u8_rejects_consecutive_extinf() -> None:
+    text = "#EXTM3U\n#EXTINF:1,A\n#EXTINF:2,B\nfile:///music/a.mp3\n"
+    with pytest.raises(ValueError, match="consecutive #EXTINF"):
+        parse_m3u8(text, {"file:///music/a.mp3": "track-a"})
+
+
+def test_parse_m3u8_rejects_extinf_without_label() -> None:
+    text = "#EXTM3U\n#EXTINF:1\nfile:///music/a.mp3\n"
+    with pytest.raises(ValueError, match="#EXTINF entry must contain a label"):
+        parse_m3u8(text, {"file:///music/a.mp3": "track-a"})
+
+
+def test_parse_m3u8_rejects_duplicate_catalog_track_id() -> None:
+    text = (
+        "#EXTM3U\n"
+        "#EXTINF:1,A\n"
+        "file:///music/a.mp3\n"
+        "#EXTINF:1,B\n"
+        "file:///music/b.mp3\n"
+    )
+    with pytest.raises(ValueError, match="duplicate catalog track ID"):
+        parse_m3u8(
+            text,
+            {
+                "file:///music/a.mp3": "track-a",
+                "file:///music/b.mp3": "track-a",
+            },
+        )
