@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.4 — Playlist Import Negative-Path Hardening (completed).
+M17.5 — CLI Coverage Hardening (in validation).
 
 The current pipeline now supports:
 
@@ -276,6 +276,7 @@ Validation uses Ruff and pytest.
 - M17.2: deterministic playlist repair plan
 - M17.3: active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import
 - M17.4: playlist JSON/M3U8 import negative-path hardening
+- M17.5: CLI coverage hardening for core local command surfaces
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.

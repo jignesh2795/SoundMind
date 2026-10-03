@@ -69,6 +69,7 @@
 - [M17.2 deterministic playlist repair plan](m17-2-playlist-repair-plan-contract.md)
 - [M17.3 active-catalog filter test hardening](m17-3-active-catalog-filter-test-hardening-contract.md)
 - [M17.4 playlist import negative-path hardening](m17-4-playlist-import-negative-path-hardening-contract.md)
+- [M17.5 CLI coverage hardening](m17-5-cli-coverage-hardening-contract.md)
 
 ## Documentation rule
 
