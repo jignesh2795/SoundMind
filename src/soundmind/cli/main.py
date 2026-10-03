@@ -28,6 +28,7 @@ from soundmind.playlist_export import saved_playlist_to_json
 from soundmind.playlist_import import load_playlist_json
 from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
 from soundmind.playlist_m3u8_import import load_m3u8
+from soundmind.playlist_repair import plan_playlist_repair
 from soundmind.playlist_storage import PlaylistRepository
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
@@ -191,6 +192,10 @@ def build_parser():
     pls_audit = pls.add_parser("audit")
     pls_audit.add_argument("name")
     pls_audit.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    pls_repair = pls.add_parser("repair-plan")
+    pls_repair.add_argument("name")
+    pls_repair.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
     pls_import = pls.add_parser("import")
     pls_import.add_argument("input", type=Path)
@@ -553,6 +558,28 @@ def main(argv=None):
                     f"{report.active_count} active, "
                     f"{report.inactive_count} inactive, "
                     f"{report.missing_count} missing"
+                )
+                return 0
+            if a.playlist_command == "repair-plan":
+                playlist = repository.get(a.name)
+                if playlist is None:
+                    raise ValueError(f"playlist not found: {a.name!r}")
+                rows = session.scalars(select(TrackRow)).all()
+                status_by_id = {
+                    row.track_id: row.status
+                    for row in rows
+                }
+                plan = plan_playlist_repair(playlist.items, status_by_id)
+                print(f"Playlist: {playlist.name}")
+                for index, entry in enumerate(plan.entries, start=1):
+                    print(
+                        f"{index}. {entry.track_id}\t"
+                        f"{entry.status}\t{entry.action}"
+                    )
+                print(
+                    "Plan: "
+                    f"{plan.keep_count} keep, "
+                    f"{plan.remove_count} remove"
                 )
                 return 0
             if a.playlist_command == "rename":
