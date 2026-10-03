@@ -61,6 +61,7 @@ This document is the project-level implementation ledger. It records completed m
 | M17.3 | Active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import | Complete |
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
 | M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
+| M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | Complete |
 | M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | In validation |
 
 
@@ -73,6 +74,14 @@ M17.6 closes remaining validation-branch gaps in historical M2/M3/M4/M6/M10/M11 
 Contract: [M17.6 historical validation branch hardening](m17-6-historical-validation-branches-contract.md)
 
 Validation is pending; M17.5 is the latest validated gate at 416 tests.
+
+### M17.6 — Historical Validation Branch Hardening (completed)
+
+M17.6 closes the remaining historical validation-branch gaps identified across M2/M3/M4/M6/M10/M11. The slice is test-only: existing documented validation, fallback, determinism, immutability, catalog, contextual, and application-boundary contracts received targeted regression protection without production behavior changes.
+
+Contract: [M17.6 historical validation branch hardening](m17-6-historical-validation-branches-contract.md)
+
+Validated gate: Ruff clean, 516 tests passed, diff check clean, working tree clean. Implementation merge: `4a4838ccac13d0184cb9060b614c3b26e7de2cf9`.
 
 ### M17.5 — CLI Coverage Hardening (completed)
 
@@ -660,6 +669,7 @@ M17.2: Ruff clean, 382 tests passed
 M17.3: Ruff clean, 385 tests passed
 M17.4: Ruff clean, 399 tests passed
 M17.5: Ruff clean, 416 tests passed
+M17.6: Ruff clean, 516 tests passed
 M17.6: validation in progress
 ```
 
