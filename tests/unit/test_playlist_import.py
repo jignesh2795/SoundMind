@@ -126,6 +126,7 @@ def test_parse_playlist_json_rejects_non_numeric_scores() -> None:
     with pytest.raises(ValueError, match="base_score must be a number"):
         parse_playlist_json(_document(items=[{**item, "base_score": True}]))
 
+
 def test_parse_playlist_json_rejects_non_finite_scores() -> None:
     item = {
         "position": 1,

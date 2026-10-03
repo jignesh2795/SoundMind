@@ -96,13 +96,7 @@ def test_parse_m3u8_rejects_extinf_without_label() -> None:
 
 
 def test_parse_m3u8_rejects_duplicate_catalog_track_id() -> None:
-    text = (
-        "#EXTM3U\n"
-        "#EXTINF:1,A\n"
-        "file:///music/a.mp3\n"
-        "#EXTINF:1,B\n"
-        "file:///music/b.mp3\n"
-    )
+    text = "#EXTM3U\n#EXTINF:1,A\nfile:///music/a.mp3\n#EXTINF:1,B\nfile:///music/b.mp3\n"
     with pytest.raises(ValueError, match="duplicate catalog track ID"):
         parse_m3u8(
             text,
