@@ -10,7 +10,6 @@ from soundmind.preferences.scorer import PreferenceScorer
 from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
 
-
 NOW = datetime(2026, 10, 25, 7, 0, tzinfo=UTC)
 
 
