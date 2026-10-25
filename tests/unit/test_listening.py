@@ -43,6 +43,7 @@ def test_record_accepts_existing_inactive_track_and_normalizes_timestamp() -> No
     assert event.track_id == "inactive-track"
     assert event.event_type is ListeningEventType.LIKE
     assert event.occurred_at == datetime(2026, 10, 25, 6, 30, tzinfo=UTC)
+    assert event.occurred_at.tzinfo is UTC
     assert event.context == "  Coding  "
     assert event.seconds_played == 12.5
     assert len(session.rows) == 1
