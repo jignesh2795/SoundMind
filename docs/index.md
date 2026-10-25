@@ -2,7 +2,7 @@
 
 ## Project guides
 
-- [Quick Start](quick-start.md) — installation, validation, scanning, search, semantic retrieval, and recommendation.
+- [Quick Start](quick-start.md) — installation, validation, scanning, search, listening feedback, semantic retrieval, and recommendation.
 - [Architecture](architecture.md) — source-of-truth boundaries, retrieval layers, recommendation flow, and derived-index lifecycle.
 - [Contributing](../CONTRIBUTING.md) — development workflow, design rules, and pull-request expectations.
 - [Milestone Status](milestone-status.md) — current implementation ledger and validation state.
@@ -31,6 +31,7 @@
 - [M11 CLI recommendation](m11-cli-recommendation-contract.md)
 - [M11 seeded learned recommendation](m11-seeded-learned-recommendation-contract.md)
 - [M11 CLI explanations](m11-cli-explanations-contract.md)
+- [M18.1 listening feedback capture](m18-1-listening-feedback-capture-contract.md)
 
 ### Retrieval
 

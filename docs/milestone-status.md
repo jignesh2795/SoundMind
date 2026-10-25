@@ -62,9 +62,18 @@ This document is the project-level implementation ledger. It records completed m
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
 | M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
 | M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | Complete |
+| M18.1 | Local listening feedback capture and inspection CLI | In validation |
 
 
 ## Current milestone
+
+### M18.1 — Listening Feedback Capture (in validation)
+
+M18.1 adds a local CLI write/read path for listening events, activating the existing SQLite listening-history and preference-scoring infrastructure without changing its weights or ranking behavior.
+
+Contract: [M18.1 listening feedback capture](m18-1-listening-feedback-capture-contract.md)
+
+Validation is pending on the implementation candidate SHA. The previous validated baseline is M17.6: Ruff clean, 516 tests passed. Do not record M18.1 as complete until the exact-SHA local Ruff/pytest/diff gate passes.
 
 ### M17.6 — Historical Validation Branch Hardening (completed)
 

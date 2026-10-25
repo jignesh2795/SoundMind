@@ -170,6 +170,24 @@ For reproducible recommendation experiments, provide an explicit reference time:
 
 Use --explain to print the existing ranking contribution details.
 
+## 11. Capture listening feedback
+
+Record feedback for any track already present in the SQLite catalog:
+
+    uv run soundmind event add <track-id> like --context coding
+    uv run soundmind event add <track-id> skip --context workout --seconds-played 8.5
+
+The supported event types are `play`, `complete`, `skip`, `like`, `dislike`, and `replay`. Supply a timezone-aware time when recording a known past event:
+
+    uv run soundmind event add <track-id> complete --at 2026-10-25T12:00:00+05:30
+
+Inspect recent history:
+
+    uv run soundmind event list
+    uv run soundmind event list --limit 50
+
+An event can be recorded for an existing inactive track to preserve historical listening, but the track must exist in the catalog. Timestamps are stored and displayed in UTC. The default database is `data/database/soundmind.db`; both commands accept `--db PATH`.
+
 ## Data directories
 
 Runtime artifacts are intentionally ignored by Git:

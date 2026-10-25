@@ -15,6 +15,7 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
+from soundmind.listening import list_listening_events, record_listening_event
 from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
@@ -30,6 +31,7 @@ from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
 from soundmind.playlist_m3u8_import import load_m3u8
 from soundmind.playlist_repair import plan_playlist_repair
 from soundmind.playlist_storage import PlaylistRepository
+from soundmind.preferences.models import ListeningEventType
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
@@ -232,6 +234,21 @@ def build_parser():
         default=Path("data/index/text_vectors"),
     )
 
+    ev = s.add_parser("event")
+    evs = ev.add_subparsers(dest="event_command", required=True)
+
+    eva = evs.add_parser("add")
+    eva.add_argument("track_id")
+    eva.add_argument("event_type", choices=[event_type.value for event_type in ListeningEventType])
+    eva.add_argument("--at", type=_parse_now)
+    eva.add_argument("--context")
+    eva.add_argument("--seconds-played", type=float)
+    eva.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    evl = evs.add_parser("list")
+    evl.add_argument("--limit", type=int, default=20)
+    evl.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     rec = s.add_parser("recommend")
     rec.add_argument("text")
     rec.add_argument("--context", required=True)
@@ -368,6 +385,22 @@ def _print_hybrid_search(results, *, explain=False) -> None:
             print(f"   semantic-contribution: {result.semantic_contribution:.6f}")
 
 
+def _format_listening_event(event) -> str:
+    occurred_at = event.occurred_at
+    if occurred_at.tzinfo is None or occurred_at.utcoffset() is None:
+        raise ValueError("listening event timestamp must include a timezone")
+    context = event.context or ""
+    context = context.replace(chr(9), r"\t").replace(chr(13), r"\r").replace(chr(10), r"\n")
+    fields = (
+        occurred_at.astimezone(UTC).isoformat(),
+        event.event_type.value,
+        event.track_id,
+        context,
+        "" if event.seconds_played is None else str(event.seconds_played),
+    )
+    return "\t".join(fields)
+
+
 def _print_recommendation(
     result,
     *,
@@ -424,6 +457,29 @@ def _recommend_service(a, session):
 
 def main(argv=None):
     a = build_parser().parse_args(argv)
+
+    if a.command == "event":
+        sf = create_session_factory(a.db)
+        with sf() as session:
+            if a.event_command == "add":
+                event = record_listening_event(
+                    session,
+                    a.track_id,
+                    a.event_type,
+                    occurred_at=a.at,
+                    context=a.context,
+                    seconds_played=a.seconds_played,
+                )
+                print(f"Recorded: {_format_listening_event(event)}")
+                return 0
+
+            events = list_listening_events(session, limit=a.limit)
+            if not events:
+                print("No listening events.")
+                return 0
+            for event in events:
+                print(_format_listening_event(event))
+        return 0
 
     if a.command == "scan":
         sf = create_session_factory(a.db)
