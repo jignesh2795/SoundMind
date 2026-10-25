@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.6 — Historical Validation Branch Hardening (completed).
+M18.1 — Listening Feedback Capture (in validation).
 
 The current pipeline now supports:
 
@@ -20,6 +20,7 @@ The current pipeline now supports:
 - ranking: existing M1 fusion with contextual preference, novelty, and learned signals
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
+- listening feedback: local CLI capture and inspection of play, complete, skip, like, dislike, and replay events
 - CLI recommendations through the existing soundmind command
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
@@ -165,6 +166,24 @@ M12 retrieval controls the candidate pool; the existing M1 ranking still determi
 
 Search uses existing title, artist, album, album artist, composer, genre, and file-name metadata. Lexical results are deterministic and stable for the same catalog state and query. Semantic results are stable for the same model, embedding prompt configuration, catalog state, and query. Query/document prefixes are explicit provider configuration, so models that expect raw text rather than the BGE query/passage convention can be selected without changing the retrieval engine.
 
+## Listening feedback examples
+
+Record a listening event for a track already present in the local catalog:
+
+    soundmind event add <track-id> like --context coding
+    soundmind event add <track-id> skip --context workout --seconds-played 8.5
+
+Supply an explicit timezone-aware timestamp when importing a known listening moment:
+
+    soundmind event add <track-id> complete --at 2026-10-25T12:00:00+05:30
+
+Inspect the most recent events (default: 20), or choose a different limit:
+
+    soundmind event list
+    soundmind event list --limit 50
+
+Both commands accept `--db PATH`. Event timestamps are displayed in UTC. The event log is persisted in the existing SQLite database and feeds the existing preference and contextual-preference scoring paths.
+
 ## Architecture
 
 ```
@@ -277,6 +296,8 @@ Validation uses Ruff and pytest.
 - M17.3: active-catalog filter test hardening for playlist resolution, metadata filtering, and M3U8 import
 - M17.4: playlist JSON/M3U8 import negative-path hardening
 - M17.5: CLI coverage hardening for core local command surfaces
+- M17.6: historical validation branch hardening
+- M18.1: local listening feedback capture and inspection
 - later: multilingual catalog evidence, stems and advanced creation
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
