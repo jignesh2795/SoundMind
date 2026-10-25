@@ -51,7 +51,7 @@ def test_event_parser_defaults_and_captures_options() -> None:
             "track-a",
             "like",
             "--at",
-            "2026-10-25T12:00:00+05:30",
+            "2026-10-25T12:30:00+05:30",
             "--context",
             "coding",
             "--seconds-played",
