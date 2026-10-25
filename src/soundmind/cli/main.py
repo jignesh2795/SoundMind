@@ -15,8 +15,8 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
-from soundmind.listening import list_listening_events, record_listening_event
 from soundmind.preferences.models import ListeningEventType
+from soundmind.listening import list_listening_events, record_listening_event
 from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
