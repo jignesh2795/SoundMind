@@ -167,3 +167,19 @@ def test_event_list_empty_output_is_explicit(monkeypatch, capsys) -> None:
 
     assert main(["event", "list"]) == 0
     assert capsys.readouterr().out == "No listening events.\n"
+
+def test_event_list_escapes_context_delimiters(monkeypatch, capsys) -> None:
+    context = "line one\\tline two\\rline three\\nline four"
+    monkeypatch.setattr(
+        "soundmind.cli.main.create_session_factory",
+        lambda path: (lambda: FakeSession()),
+    )
+    monkeypatch.setattr(
+        "soundmind.cli.main.list_listening_events",
+        lambda session, *, limit: [event(context=context)],
+    )
+
+    assert main(["event", "list"]) == 0
+    output = capsys.readouterr().out
+    assert output.count("\\n") == 1
+    assert r"line one\\tline two\\rline three\\nline four" in output
