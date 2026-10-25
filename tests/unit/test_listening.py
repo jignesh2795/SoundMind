@@ -66,11 +66,12 @@ def test_record_rejects_naive_timestamp() -> None:
     session = FakeSession()
 
     with pytest.raises(ValueError, match="timezone"):
+        naive_time = datetime(2026, 10, 25, 12, 0)  # noqa: DTZ001 -- deliberately naive
         record_listening_event(
             session,
             "inactive-track",
             ListeningEventType.LIKE,
-            occurred_at=datetime(2026, 10, 25, 12, 0),  # noqa: DTZ001 -- deliberately naive to test rejection
+            occurred_at=naive_time,
         )
 
     assert session.rows == []
