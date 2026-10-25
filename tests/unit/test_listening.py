@@ -70,7 +70,7 @@ def test_record_rejects_naive_timestamp() -> None:
             session,
             "inactive-track",
             ListeningEventType.LIKE,
-            occurred_at=datetime(2026, 10, 25, 12, 0),
+            occurred_at=datetime(2026, 10, 25, 12, 0),  # noqa: DTZ001 -- deliberately naive to test rejection
         )
 
     assert session.rows == []
