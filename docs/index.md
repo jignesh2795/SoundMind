@@ -2,7 +2,7 @@
 
 ## Project guides
 
-- [Quick Start](quick-start.md) — installation, validation, scanning, search, semantic retrieval, and recommendation.
+- [Quick Start](quick-start.md) — installation, validation, scanning, search, listening feedback, semantic retrieval, and recommendation.
 - [Architecture](architecture.md) — source-of-truth boundaries, retrieval layers, recommendation flow, and derived-index lifecycle.
 - [Contributing](../CONTRIBUTING.md) — development workflow, design rules, and pull-request expectations.
 - [Milestone Status](milestone-status.md) — current implementation ledger and validation state.
