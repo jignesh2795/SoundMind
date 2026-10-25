@@ -62,18 +62,20 @@ This document is the project-level implementation ledger. It records completed m
 | M17.4 | Playlist JSON/M3U8 import negative-path hardening | Complete |
 | M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
 | M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | Complete |
-| M18.1 | Local listening feedback capture and inspection CLI | In validation |
+| M18.1 | Local listening feedback capture and inspection CLI | Complete |
 
 
 ## Current milestone
 
-### M18.1 — Listening Feedback Capture (in validation)
+### M18.1 — Listening Feedback Capture (completed)
 
 M18.1 adds a local CLI write/read path for listening events, activating the existing SQLite listening-history and preference-scoring infrastructure without changing its weights or ranking behavior.
 
 Contract: [M18.1 listening feedback capture](m18-1-listening-feedback-capture-contract.md)
 
-Validation is pending on the implementation candidate SHA. The previous validated baseline is M17.6: Ruff clean, 516 tests passed. Do not record M18.1 as complete until the exact-SHA local Ruff/pytest/diff gate passes.
+Validated candidate SHA: `b0dc9144bc009735c2a6d6b5cd4700f6aa50e814`.
+
+Gate passed: targeted Ruff clean, full Ruff clean, 22 focused tests passed, 538 tests passed in the full suite, diff check clean, and validation worktree clean. The original checkout was verified unchanged. Implementation merge commit: `fefddb65bc5ac638a05a58ce2f8552ebcbeb606f`.
 
 ### M17.6 — Historical Validation Branch Hardening (completed)
 
@@ -670,6 +672,7 @@ M17.3: Ruff clean, 385 tests passed
 M17.4: Ruff clean, 399 tests passed
 M17.5: Ruff clean, 416 tests passed
 M17.6: Ruff clean, 516 tests passed
+M18.1: Ruff clean, 538 tests passed, 22 focused tests passed, diff check clean
 ```
 
 ## Documentation rule
