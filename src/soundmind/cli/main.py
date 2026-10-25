@@ -399,6 +399,8 @@ def _format_listening_event(event) -> str:
         "" if event.seconds_played is None else str(event.seconds_played),
     )
     return "\t".join(fields)
+
+
 def _print_recommendation(
     result,
     *,
