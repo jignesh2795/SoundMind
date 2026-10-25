@@ -65,6 +65,7 @@ def test_event_parser_defaults_and_captures_options() -> None:
     assert args.track_id == "track-a"
     assert args.event_type == "like"
     assert args.at == NOW
+    assert args.at.tzinfo is UTC
     assert args.context == "coding"
     assert args.seconds_played == 42.5
     assert args.db == Path("library.db")
