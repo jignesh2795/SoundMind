@@ -94,4 +94,12 @@ git diff --check
 git status --short
 ```
 
-Validation status remains pending until those commands are run on the exact candidate SHA. The M17.6 baseline was Ruff clean with 516 tests passing.
+Exact-SHA validation passed on candidate `b0dc9144bc009735c2a6d6b5cd4700f6aa50e814`, based on `ebb2d13dfbce9fa2f0eabc731f537fe0cd96f4c8`:
+
+- Focused listening unit, CLI, and integration tests: 22 passed.
+- Full test suite: 538 passed, with 4 warnings.
+- Targeted Ruff and full `ruff check .`: all checks passed.
+- `git diff --check`: clean.
+- Validation worktree: clean before removal; original checkout branch, HEAD, and 75 modified paths unchanged.
+
+Implementation merge commit: `fefddb65bc5ac638a05a58ce2f8552ebcbeb606f`. The four warnings were the existing audioread/librosa deprecation and scanner-test UserWarning/FutureWarning messages.
