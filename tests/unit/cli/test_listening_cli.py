@@ -38,6 +38,12 @@ def test_event_parser_defaults_and_captures_options() -> None:
     assert args.limit == 20
     assert args.db == Path("data/database/soundmind.db")
 
+    add_defaults = parser.parse_args(["event", "add", "track-a", "like"])
+    assert add_defaults.db == Path("data/database/soundmind.db")
+    assert add_defaults.at is None
+    assert add_defaults.context is None
+    assert add_defaults.seconds_played is None
+
     args = parser.parse_args(
         [
             "event",
