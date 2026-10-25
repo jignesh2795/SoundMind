@@ -15,7 +15,6 @@ from soundmind.embeddings.effnet import fetch_effnet_model
 from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
-from soundmind.preferences.models import ListeningEventType
 from soundmind.listening import list_listening_events, record_listening_event
 from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
@@ -32,6 +31,7 @@ from soundmind.playlist_m3u8 import M3U8Track, saved_playlist_to_m3u8
 from soundmind.playlist_m3u8_import import load_m3u8
 from soundmind.playlist_repair import plan_playlist_repair
 from soundmind.playlist_storage import PlaylistRepository
+from soundmind.preferences.models import ListeningEventType
 from soundmind.recommendation.learned_retrieval import LearnedRetrievalEngine
 from soundmind.recommendation.semantic_text_retrieval import (
     DEFAULT_TEXT_DOCUMENT_PREFIX,
