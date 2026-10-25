@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M18.1 — Listening Feedback Capture (in validation).
+M18.1 — Listening Feedback Capture (complete).
 
 The current pipeline now supports:
 
