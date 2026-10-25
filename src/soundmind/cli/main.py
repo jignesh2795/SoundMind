@@ -389,16 +389,16 @@ def _format_listening_event(event) -> str:
     occurred_at = event.occurred_at
     if occurred_at.tzinfo is None or occurred_at.utcoffset() is None:
         raise ValueError("listening event timestamp must include a timezone")
+    context = event.context or ""
+    context = context.replace(chr(9), r"\t").replace(chr(13), r"\r").replace(chr(10), r"\n")
     fields = (
         occurred_at.astimezone(UTC).isoformat(),
         event.event_type.value,
         event.track_id,
-        event.context or "",
+        context,
         "" if event.seconds_played is None else str(event.seconds_played),
     )
-    return "\\t".join(fields)
-
-
+    return "\t".join(fields)
 def _print_recommendation(
     result,
     *,
