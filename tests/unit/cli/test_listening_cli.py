@@ -6,7 +6,6 @@ import pytest
 from soundmind.cli.main import build_parser, main
 from soundmind.preferences.models import ListeningEvent, ListeningEventType
 
-
 NOW = datetime(2026, 10, 25, 7, 0, tzinfo=UTC)
 
 
