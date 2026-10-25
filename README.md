@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M17.6 — Historical Validation Branch Hardening (in validation).
+M17.6 — Historical Validation Branch Hardening (completed).
 
 The current pipeline now supports:
 
