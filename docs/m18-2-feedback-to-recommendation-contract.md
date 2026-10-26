@@ -58,7 +58,7 @@ Record the exact candidate/base SHAs, focused and full test counts, Ruff result,
 Exact-SHA local validation completed in a separate, detached Windows worktree:
 
 - Base SHA: `ff9a2c7e8c63aa8079407d68dcdbee4ffbd32a9d`
-- Candidate SHA: `2fc7b9ee2d59b58fa23b69dcdbee4ffbd32a9d`
+- Candidate SHA: `2fc7b9ee2d59b58fa23b69a972377340b6d1989a`
 - `uv sync --extra dev`: passed.
 - Focused integration tests (`test_feedback_recommendation.py`, `test_listening_flow.py`, and `test_catalog_context_recommendation.py`): **29 passed**.
 - `uv run ruff check .`: passed.
