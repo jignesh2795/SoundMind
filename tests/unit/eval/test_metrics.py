@@ -5,6 +5,7 @@ import pytest
 from soundmind.evaluation import (
     build_frozen_pool,
     check_evaluability,
+    compute_catalog_fingerprint,
     dcg_at_10,
     evaluate_query,
     gain,
@@ -12,6 +13,20 @@ from soundmind.evaluation import (
     mrr_at_10,
     recall_at_10,
 )
+
+
+def test_catalog_fingerprint_is_order_independent_and_tracks_content_changes() -> None:
+    first = compute_catalog_fingerprint([("track-b", "hash-b"), ("track-a", "hash-a")])
+    reordered = compute_catalog_fingerprint([("track-a", "hash-a"), ("track-b", "hash-b")])
+    changed = compute_catalog_fingerprint([("track-a", "changed"), ("track-b", "hash-b")])
+    assert first.startswith("sha256:")
+    assert first == reordered
+    assert first != changed
+
+
+def test_catalog_fingerprint_rejects_duplicate_ids() -> None:
+    with pytest.raises(ValueError, match="duplicate track ID"):
+        compute_catalog_fingerprint([("track-a", "hash-a"), ("track-a", "hash-b")])
 
 
 def test_gain_uses_exponential_relevance_scale() -> None:

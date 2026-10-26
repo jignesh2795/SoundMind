@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from soundmind.evaluation import (
     REQUIRED_LIMITATIONS_BLOCK,
     build_frozen_pool,
+    compute_catalog_fingerprint,
     run_evaluation,
 )
 from soundmind.storage.database import Base
@@ -80,7 +81,11 @@ def test_eval_report_runs_read_only_and_contains_contract_fields(tmp_path: Path)
     judgment_doc = {
         "dataset": "m19-queries",
         "dataset_version": "1.0.0",
-        "catalog_fingerprint": "synthetic-fixture-not-a-real-catalog",
+        "catalog_fingerprint": compute_catalog_fingerprint([
+            ("synthetic-track-a", f"{1:064x}"),
+            ("synthetic-track-b", f"{2:064x}"),
+            ("synthetic-track-c", f"{3:064x}"),
+        ]),
         "judged_at": "2026-10-26T00:00:00Z",
         "pool_manifest": {"dataset_version": "1.0.0", "queries": {"q001": pool}},
         "judgments": [
@@ -126,6 +131,8 @@ def test_eval_report_runs_read_only_and_contains_contract_fields(tmp_path: Path)
     report_file = root / report_path
     report = json.loads(report_file.read_text(encoding="utf-8"))
     assert report["selected_mode_status"] == "available"
+    assert report["catalog_fingerprint_status"] == "matched"
+    assert report["reproducibility"] == {"status": "reproducible", "reason": None}
     assert report["queries"][0]["status"] == "evaluable"
     assert report["queries"][0]["pool_coverage"] == 1.0
     assert report["summary"]["nDCG@10"]["value"] is not None
@@ -133,5 +140,26 @@ def test_eval_report_runs_read_only_and_contains_contract_fields(tmp_path: Path)
     assert report["summary"]["MRR@10"]["value"] is not None
     assert report["limitations"] == REQUIRED_LIMITATIONS_BLOCK
     assert report["mode_availability"]["semantic"]["status"] in {"available", "unavailable"}
+    # A stale fingerprint remains explicitly visible in the report; metrics are not
+    # silently presented as reproducible against a different catalog revision.
+    judgment_doc["catalog_fingerprint"] = "sha256:stale-synthetic-fingerprint"
+    judgment_path.write_text(json.dumps(judgment_doc), encoding="utf-8")
+    stale_result = run_evaluation(
+        repo_root=root,
+        dataset_path=dataset_path,
+        judgments_path=Path("data/eval/judgments.local.json"),
+        retrieval="catalog",
+        limit=10,
+        output_path=report_path,
+        database_path=Path("data/database/soundmind.db"),
+    )
+    assert stale_result == 0
+    stale_report = json.loads(report_file.read_text(encoding="utf-8"))
+    assert stale_report["catalog_fingerprint_status"] == "mismatch"
+    assert stale_report["reproducibility"]["status"] == "non_reproducible"
+    assert stale_report["reproducibility"]["reason"] == (
+        "judgments fingerprint does not match the current catalog"
+    )
+
     after_hash = hashlib.sha256(database_path.read_bytes()).hexdigest()
     assert after_hash == before_hash

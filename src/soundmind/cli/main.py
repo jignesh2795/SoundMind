@@ -369,6 +369,11 @@ def build_parser():
     evrun.add_argument("--out", type=Path, default=Path("data/eval/reports/baseline-report.json"))
     evrun.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
+    evfingerprint = evs.add_parser(
+        "fingerprint", help="print the current catalog fingerprint for a judgment file"
+    )
+    evfingerprint.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     evcompare = evs.add_parser("compare", help="compare two local evaluation reports")
     evcompare.add_argument("--baseline", type=Path, required=True)
     evcompare.add_argument("--candidate", type=Path, required=True)
@@ -514,7 +519,14 @@ def main(argv=None):
     a = build_parser().parse_args(argv)
 
     if a.command == "eval":
-        from soundmind.evaluation import compare_reports, run_evaluation
+        from soundmind.evaluation import (
+            compare_reports,
+            print_catalog_fingerprint,
+            run_evaluation,
+        )
+
+        if a.eval_command == "fingerprint":
+            return print_catalog_fingerprint(database_path=a.db, repo_root=Path.cwd())
 
         if a.eval_command == "run":
             return run_evaluation(

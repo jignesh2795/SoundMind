@@ -186,7 +186,7 @@ Dataset versions use `MAJOR.MINOR.PATCH`:
 
 Metrics are never compared across MAJOR versions.
 
-`catalog_fingerprint` hashes the catalog identity used to produce judgments (track ids plus content hashes). If the local catalog changes materially, re-judge or bump MAJOR; a report referencing a stale fingerprint is marked non-reproducible rather than quietly reported.
+`catalog_fingerprint` hashes the catalog identity used to produce judgments: all track IDs and content hashes, sorted by track ID, encoded as compact UTF-8 JSON pairs and prefixed with `sha256:`. Generate the current value with `soundmind eval fingerprint --db data/database/soundmind.db`; that command is read-only and does not write a file. If the local catalog changes materially, re-judge or bump MAJOR; a report whose fingerprint differs from the current catalog is explicitly marked non-reproducible rather than quietly reported.
 
 **A `catalog_fingerprint` is provenance, not anonymity.** It ties a report to the catalog revision that produced it. It does not conceal track identity and must never be presented or relied upon as a privacy safeguard.
 

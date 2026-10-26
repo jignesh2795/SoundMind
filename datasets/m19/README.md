@@ -8,6 +8,8 @@ The versioned query set is queries-v1.json. Facets and notes are judging context
 
 ## Preparing local judgments
 
+Before recording the fingerprint in the local judgment file, run `uv run soundmind eval fingerprint --db data/database/soundmind.db`. Copy the printed `sha256:` value into `catalog_fingerprint`. This command reads catalog track IDs and content hashes through a read-only connection and does not write any file.
+
 1. Run the existing retrieval modes for the chosen generic queries and record each mode's ordered top-10 results.
 2. Build one frozen-pool manifest entry per query. The members must be the distinct union of those ordered lists. Record dataset version, modes compared, candidate limits, and each mode's ordered result list.
 3. Blind and shuffle the pooled candidates, then manually assign grades 0 through 3 per query and track. An absent grade means unjudged, not grade zero.

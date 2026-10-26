@@ -44,3 +44,9 @@ def test_eval_run_dispatches_to_evaluator(monkeypatch) -> None:
     assert result == 0
     assert captured["dataset_path"] == Path("queries.json")
     assert captured["retrieval"] == "catalog"
+
+def test_eval_fingerprint_parser() -> None:
+    args = build_parser().parse_args(["eval", "fingerprint", "--db", "library.db"])
+    assert args.command == "eval"
+    assert args.eval_command == "fingerprint"
+    assert args.db == Path("library.db")

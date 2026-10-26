@@ -78,6 +78,35 @@ class PrivacyGateError(EvaluationError):
     """Required local-only path cannot be proven ignored by Git."""
 
 
+def compute_catalog_fingerprint(records: Sequence[tuple[str, str]]) -> str:
+    """Hash stable sorted track-ID/content-hash pairs without exposing IDs in reports."""
+    normalized: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for record in records:
+        if (
+            not isinstance(record, Sequence)
+            or isinstance(record, (str, bytes))
+            or len(record) != 2
+        ):
+            raise EvaluationError("catalog identity records must be (track_id, content_hash) pairs")
+        track_id, content_hash = record
+        if (
+            not isinstance(track_id, str)
+            or not track_id.strip()
+            or not isinstance(content_hash, str)
+            or not content_hash.strip()
+        ):
+            raise EvaluationError("catalog identity records require non-empty string values")
+        if track_id in seen:
+            raise EvaluationError(f"duplicate track ID in catalog fingerprint input: {track_id}")
+        seen.add(track_id)
+        normalized.append((track_id, content_hash))
+    payload = json.dumps(
+        sorted(normalized), ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
 def gain(grade: int) -> int:
     if isinstance(grade, bool) or not isinstance(grade, int) or grade not in (0, 1, 2, 3):
         raise ValueError("grade must be an integer from 0 through 3")
@@ -300,8 +329,10 @@ def validate_judgments(
             limit, results = limits[mode], ordered[mode]
             if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
                 raise EvaluationError(f"invalid candidate limit for {mode}")
-            if not isinstance(results, list) or len(results) > 10:
-                raise EvaluationError(f"ordered results for {mode} must contain at most 10 IDs")
+            if not isinstance(results, list) or len(results) > min(10, limit):
+                raise EvaluationError(
+                    f"ordered results for {mode} must not exceed min(10, candidate limit)"
+                )
             if any(not isinstance(x, str) or not x.strip() for x in results):
                 raise EvaluationError(f"invalid result ID in {mode} provenance")
             if len(results) != len(set(results)):
@@ -356,7 +387,11 @@ def _repo_root(start: Path) -> Path:
 
 
 def _resolve_eval_path(root: Path, path: Path, label: str) -> Path:
-    eval_root = (root / "data" / "eval").resolve()
+    data_dir = root / "data"
+    eval_dir = data_dir / "eval"
+    if data_dir.is_symlink() or eval_dir.is_symlink():
+        raise PrivacyGateError("data and data/eval must not be symlinks for local-only evaluation")
+    eval_root = eval_dir.resolve()
     try:
         eval_root.relative_to(root.resolve())
     except ValueError as exc:
@@ -591,6 +626,32 @@ def _readonly_sessions(database_path: Path):
     return sessionmaker(engine, expire_on_commit=False), engine
 
 
+def print_catalog_fingerprint(
+    *, database_path: Path = DEFAULT_DATABASE, repo_root: Path | None = None
+) -> int:
+    """Print the current catalog fingerprint for manually prepared local judgments."""
+    engine = None
+    try:
+        root = _repo_root(repo_root or Path.cwd())
+        db_path = database_path if database_path.is_absolute() else root / database_path
+        sessions, engine = _readonly_sessions(db_path)
+        with sessions() as session:
+            records = [
+                (track_id, content_hash)
+                for track_id, content_hash in session.execute(
+                    select(TrackRow.track_id, TrackRow.content_hash).order_by(TrackRow.track_id)
+                )
+            ]
+        print(compute_catalog_fingerprint(records))
+        return 0
+    except (EvaluationError, PrivacyGateError, OSError, SQLAlchemyError, ValueError) as exc:
+        print(f"Could not compute catalog fingerprint: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        if engine is not None:
+            engine.dispose()
+
+
 def run_evaluation(
     *,
     dataset_path: Path = DEFAULT_DATASET,
@@ -625,6 +686,7 @@ def run_evaluation(
             if availability[retrieval]["status"] == "unavailable" else ""
         )
         active_size = 0
+        current_catalog_fingerprint: str | None = None
         rows_by_id: dict[str, TrackRow] = {}
         outputs: dict[str, list[str]] = {}
         engine = None
@@ -633,6 +695,15 @@ def run_evaluation(
                 db_path = database_path if database_path.is_absolute() else root / database_path
                 sessions, engine = _readonly_sessions(db_path)
                 with sessions() as session:
+                    identity_records = [
+                        (track_id, content_hash)
+                        for track_id, content_hash in session.execute(
+                            select(TrackRow.track_id, TrackRow.content_hash).order_by(
+                                TrackRow.track_id
+                            )
+                        )
+                    ]
+                    current_catalog_fingerprint = compute_catalog_fingerprint(identity_records)
                     rows = list(session.scalars(
                         select(TrackRow).where(TrackRow.status == "active").order_by(TrackRow.track_id)
                     ))
@@ -717,13 +788,34 @@ def run_evaluation(
         revision = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=True
         ).stdout.strip()
+        expected_catalog_fingerprint = judgment_doc["catalog_fingerprint"]
+        fingerprint_matches = (
+            current_catalog_fingerprint is not None
+            and current_catalog_fingerprint == expected_catalog_fingerprint
+        )
+        fingerprint_status = (
+            "matched" if fingerprint_matches
+            else "mismatch" if current_catalog_fingerprint is not None
+            else "not_checked"
+        )
         report = {
             "report_schema_version": 1,
             "dataset": query_doc["dataset"],
             "dataset_version": version,
             "query_dataset_sha256": hashlib.sha256(query_bytes).hexdigest(),
             "judgments_sha256": hashlib.sha256(judgment_bytes).hexdigest(),
-            "catalog_fingerprint": judgment_doc["catalog_fingerprint"],
+            "catalog_fingerprint": expected_catalog_fingerprint,
+            "current_catalog_fingerprint": current_catalog_fingerprint,
+            "catalog_fingerprint_status": fingerprint_status,
+            "reproducibility": {
+                "status": "reproducible" if fingerprint_matches else "non_reproducible",
+                "reason": (
+                    None if fingerprint_matches
+                    else "catalog fingerprint could not be checked"
+                    if current_catalog_fingerprint is None
+                    else "judgments fingerprint does not match the current catalog"
+                ),
+            },
             "code_revision": revision,
             "retrieval_configuration": config,
             "mode_availability": availability,
