@@ -1,0 +1,415 @@
+{
+  "dataset": "m19-queries",
+  "version": "1.0.0",
+  "queries": [
+    {
+      "id": "q001",
+      "text": "high energy cinematic instrumental for coding",
+      "facets": {
+        "genre": [
+          "cinematic"
+        ],
+        "energy": "high",
+        "vocals": "instrumental"
+      },
+      "notes": "driving, focused, cinematic texture"
+    },
+    {
+      "id": "q002",
+      "text": "calm ambient textures for reading",
+      "facets": {
+        "genre": [
+          "ambient"
+        ],
+        "mood": [
+          "calm"
+        ],
+        "energy": "low"
+      },
+      "notes": "soft sustained texture without abrupt changes"
+    },
+    {
+      "id": "q003",
+      "text": "upbeat funk groove for a workout",
+      "facets": {
+        "genre": [
+          "funk"
+        ],
+        "energy": "high"
+      },
+      "notes": "rhythmic bass and energetic groove"
+    },
+    {
+      "id": "q004",
+      "text": "warm jazz piano for an evening cafe",
+      "facets": {
+        "genre": [
+          "jazz"
+        ],
+        "instrumentation": [
+          "piano"
+        ],
+        "mood": [
+          "warm"
+        ]
+      },
+      "notes": "relaxed jazz-piano atmosphere"
+    },
+    {
+      "id": "q005",
+      "text": "dark electronic tension for a suspense scene",
+      "facets": {
+        "genre": [
+          "electronic"
+        ],
+        "mood": [
+          "dark"
+        ],
+        "scene": [
+          "suspense"
+        ]
+      },
+      "notes": "building tension without a cheerful resolution"
+    },
+    {
+      "id": "q006",
+      "text": "acoustic folk background for focused work",
+      "facets": {
+        "genre": [
+          "folk"
+        ],
+        "instrumentation": [
+          "acoustic guitar"
+        ],
+        "energy": "medium"
+      },
+      "notes": "steady acoustic accompaniment"
+    },
+    {
+      "id": "q007",
+      "text": "melodic synthwave for a night drive",
+      "facets": {
+        "genre": [
+          "synthwave"
+        ],
+        "mood": [
+          "nostalgic"
+        ],
+        "energy": "medium"
+      },
+      "notes": "retro synthesizers and forward motion"
+    },
+    {
+      "id": "q008",
+      "text": "heroic orchestral build for a trailer",
+      "facets": {
+        "genre": [
+          "orchestral"
+        ],
+        "mood": [
+          "heroic"
+        ],
+        "energy": "high"
+      },
+      "notes": "strings and percussion rising to a climax"
+    },
+    {
+      "id": "q009",
+      "text": "minimal reflective piano for a quiet scene",
+      "facets": {
+        "genre": [
+          "piano"
+        ],
+        "mood": [
+          "reflective"
+        ],
+        "energy": "low"
+      },
+      "notes": "sparse piano with room to breathe"
+    },
+    {
+      "id": "q010",
+      "text": "deep house instrumental groove",
+      "facets": {
+        "genre": [
+          "deep house"
+        ],
+        "vocals": "instrumental",
+        "energy": "medium"
+      },
+      "notes": "consistent dance pulse and restrained bass"
+    },
+    {
+      "id": "q011",
+      "text": "Indian classical instrumental for meditation",
+      "facets": {
+        "genre": [
+          "Indian classical"
+        ],
+        "mood": [
+          "meditative"
+        ],
+        "vocals": "instrumental"
+      },
+      "notes": "unhurried acoustic classical phrasing"
+    },
+    {
+      "id": "q012",
+      "text": "low distraction lo-fi hip hop for studying",
+      "facets": {
+        "genre": [
+          "lo-fi hip hop"
+        ],
+        "energy": "low"
+      },
+      "notes": "repetitive beat without attention-grabbing transitions"
+    },
+    {
+      "id": "q013",
+      "text": "bright indie pop for a daytime walk",
+      "facets": {
+        "genre": [
+          "indie pop"
+        ],
+        "mood": [
+          "bright"
+        ],
+        "energy": "medium"
+      },
+      "notes": "buoyant melody and light rhythm"
+    },
+    {
+      "id": "q014",
+      "text": "heavy rock riff for gym training",
+      "facets": {
+        "genre": [
+          "rock"
+        ],
+        "energy": "high"
+      },
+      "notes": "forceful rhythm and distorted guitar"
+    },
+    {
+      "id": "q015",
+      "text": "pulsing percussion for cinematic suspense",
+      "facets": {
+        "genre": [
+          "cinematic"
+        ],
+        "instrumentation": [
+          "percussion"
+        ],
+        "mood": [
+          "tense"
+        ]
+      },
+      "notes": "repeating pulse with unresolved tension"
+    },
+    {
+      "id": "q016",
+      "text": "soft acoustic guitar for relaxation",
+      "facets": {
+        "genre": [
+          "acoustic"
+        ],
+        "instrumentation": [
+          "guitar"
+        ],
+        "energy": "low"
+      },
+      "notes": "gentle acoustic timbre"
+    },
+    {
+      "id": "q017",
+      "text": "dramatic strings with a slow build",
+      "facets": {
+        "genre": [
+          "orchestral"
+        ],
+        "instrumentation": [
+          "strings"
+        ],
+        "energy": "rising"
+      },
+      "notes": "string-led crescendo"
+    },
+    {
+      "id": "q018",
+      "text": "retro eight bit game background music",
+      "facets": {
+        "genre": [
+          "chiptune"
+        ],
+        "mood": [
+          "playful"
+        ]
+      },
+      "notes": "synthetic game-like timbres and clear motif"
+    },
+    {
+      "id": "q019",
+      "text": "mellow bossa nova for a cafe",
+      "facets": {
+        "genre": [
+          "bossa nova"
+        ],
+        "mood": [
+          "mellow"
+        ],
+        "energy": "low"
+      },
+      "notes": "light syncopated guitar rhythm"
+    },
+    {
+      "id": "q020",
+      "text": "fast drum and bass for high energy movement",
+      "facets": {
+        "genre": [
+          "drum and bass"
+        ],
+        "energy": "high"
+      },
+      "notes": "fast breakbeats and driving bass"
+    },
+    {
+      "id": "q021",
+      "text": "soulful blues guitar",
+      "facets": {
+        "genre": [
+          "blues"
+        ],
+        "instrumentation": [
+          "guitar"
+        ],
+        "mood": [
+          "soulful"
+        ]
+      },
+      "notes": "expressive blues phrasing"
+    },
+    {
+      "id": "q022",
+      "text": "light classical strings for writing",
+      "facets": {
+        "genre": [
+          "classical"
+        ],
+        "instrumentation": [
+          "strings"
+        ],
+        "energy": "low"
+      },
+      "notes": "restrained acoustic string texture"
+    },
+    {
+      "id": "q023",
+      "text": "joyful brass swing",
+      "facets": {
+        "genre": [
+          "swing"
+        ],
+        "instrumentation": [
+          "brass"
+        ],
+        "mood": [
+          "joyful"
+        ]
+      },
+      "notes": "lively brass-led swing feel"
+    },
+    {
+      "id": "q024",
+      "text": "dark drone atmosphere for horror",
+      "facets": {
+        "genre": [
+          "drone"
+        ],
+        "mood": [
+          "dark"
+        ],
+        "scene": [
+          "horror"
+        ]
+      },
+      "notes": "slow evolving ominous texture"
+    },
+    {
+      "id": "q025",
+      "text": "tropical house for a summer afternoon",
+      "facets": {
+        "genre": [
+          "tropical house"
+        ],
+        "mood": [
+          "bright"
+        ],
+        "energy": "medium"
+      },
+      "notes": "light dance rhythm and warm timbres"
+    },
+    {
+      "id": "q026",
+      "text": "epic fantasy instrumental without vocals",
+      "facets": {
+        "genre": [
+          "fantasy soundtrack"
+        ],
+        "vocals": "instrumental",
+        "energy": "high"
+      },
+      "notes": "orchestral fantasy atmosphere without lyrics"
+    },
+    {
+      "id": "q027",
+      "text": "sparse electronic music for concentration",
+      "facets": {
+        "genre": [
+          "electronic"
+        ],
+        "energy": "low",
+        "mood": [
+          "focused"
+        ]
+      },
+      "notes": "minimal rhythmic detail"
+    },
+    {
+      "id": "q028",
+      "text": "hopeful piano for an ending scene",
+      "facets": {
+        "genre": [
+          "piano"
+        ],
+        "mood": [
+          "hopeful"
+        ]
+      },
+      "notes": "clear melodic resolution"
+    },
+    {
+      "id": "q029",
+      "text": "rhythmic percussion for dancing",
+      "facets": {
+        "genre": [
+          "percussion"
+        ],
+        "energy": "high"
+      },
+      "notes": "strong rhythmic pulse"
+    },
+    {
+      "id": "q030",
+      "text": "spacious ambient soundscape for winding down",
+      "facets": {
+        "genre": [
+          "ambient"
+        ],
+        "mood": [
+          "spacious"
+        ],
+        "energy": "low"
+      },
+      "notes": "slow textures and low rhythmic density"
+    }
+  ]
+}

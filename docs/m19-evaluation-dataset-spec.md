@@ -24,6 +24,8 @@ datasets/m19/
   judgments.example.json   worked example of the judgment file shape
 ```
 
+Operational walkthrough and query-set entry point: [datasets/m19/README.md](../datasets/m19/README.md).
+
 Tier 2 — local only, ignored by git:
 
 ```text
