@@ -3,7 +3,6 @@
 ## Project guides
 
 - [Product Roadmap](product-roadmap.md) — outcome-based priorities, audit findings, and acceptance criteria for recommendation quality and future music intelligence.
-
 - [Quick Start](quick-start.md) — installation, validation, scanning, search, listening feedback, semantic retrieval, and recommendation.
 - [Architecture](architecture.md) — source-of-truth boundaries, retrieval layers, recommendation flow, and derived-index lifecycle.
 - [Contributing](../CONTRIBUTING.md) — development workflow, design rules, and pull-request expectations.
