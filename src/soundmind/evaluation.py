@@ -864,6 +864,61 @@ def run_evaluation(
         return 1
 
 
+def _validate_comparable_reports(
+    baseline: Mapping[str, Any], candidate: Mapping[str, Any]
+) -> None:
+    """Reject reports whose metrics were not produced from the same evaluation basis."""
+    identity_fields = (
+        ("dataset", "datasets do not match"),
+        ("dataset_version", "dataset versions do not match"),
+        ("query_dataset_sha256", "query dataset content differs"),
+        ("judgments_sha256", "judgment data or frozen-pool definition differs"),
+        ("catalog_fingerprint", "judgment catalog fingerprints differ"),
+        ("current_catalog_fingerprint", "current catalog fingerprints differ"),
+    )
+    for field, message in identity_fields:
+        left, right = baseline.get(field), candidate.get(field)
+        if not isinstance(left, str) or not left or not isinstance(right, str) or not right:
+            raise EvaluationError(f"both reports must contain {field}")
+        if left != right:
+            raise EvaluationError(f"cannot compare reports: {message}")
+
+    for label, report in (("baseline", baseline), ("candidate", candidate)):
+        reproducibility = report.get("reproducibility")
+        if (
+            report.get("catalog_fingerprint_status") != "matched"
+            or not isinstance(reproducibility, dict)
+            or reproducibility.get("status") != "reproducible"
+        ):
+            raise EvaluationError(f"cannot compare reports: {label} is not reproducible")
+        if report.get("selected_mode_status") != "available":
+            raise EvaluationError(f"cannot compare reports: {label} retrieval mode is unavailable")
+
+    def query_statuses(report: Mapping[str, Any], label: str) -> dict[str, str]:
+        queries = report.get("queries")
+        if not isinstance(queries, list):
+            raise EvaluationError(f"{label} report is missing per-query results")
+        statuses: dict[str, str] = {}
+        for item in queries:
+            if not isinstance(item, dict):
+                raise EvaluationError(f"{label} report has an invalid per-query result")
+            query_id, status = item.get("query_id"), item.get("status")
+            if (
+                not isinstance(query_id, str)
+                or not query_id
+                or status not in {"evaluable", "not_evaluable", "unavailable"}
+                or query_id in statuses
+            ):
+                raise EvaluationError(f"{label} report has invalid or duplicate query status")
+            statuses[query_id] = status
+        return statuses
+
+    if query_statuses(baseline, "baseline") != query_statuses(candidate, "candidate"):
+        raise EvaluationError(
+            "cannot compare reports: evaluable query sets or per-query statuses differ"
+        )
+
+
 def compare_reports(
     *,
     baseline_path: Path,
@@ -879,10 +934,7 @@ def compare_reports(
         )
         baseline, _ = _read_json(baseline_file, "baseline report")
         candidate, _ = _read_json(candidate_file, "candidate report")
-        if baseline.get("dataset") != candidate.get("dataset"):
-            raise EvaluationError("baseline and candidate datasets do not match")
-        if baseline.get("dataset_version") != candidate.get("dataset_version"):
-            raise EvaluationError("cannot compare different dataset versions")
+        _validate_comparable_reports(baseline, candidate)
         metrics: dict[str, Any] = {}
         for metric in METRICS:
             left = baseline.get("summary", {}).get(metric, {}).get("value")
