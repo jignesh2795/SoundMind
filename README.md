@@ -182,7 +182,12 @@ Inspect the most recent events (default: 20), or choose a different limit:
     soundmind event list
     soundmind event list --limit 50
 
-Both commands accept `--db PATH`. Event timestamps are displayed in UTC. The event log is persisted in the existing SQLite database and feeds the existing preference and contextual-preference scoring paths.
+Summarize event-type and context counts over the most recent 1,000 events (or an explicit window):
+
+    soundmind event summary
+    soundmind event summary --limit 500
+
+The summary is read-only, normalizes context labels to match contextual preference scoring, and reports distinct tracks per context. It only describes the selected recent-event window. All three commands accept `--db PATH`. Event timestamps are displayed in UTC. The event log is persisted in the existing SQLite database and feeds the existing preference and contextual-preference scoring paths.
 
 ## Architecture
 
