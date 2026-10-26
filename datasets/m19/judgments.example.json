@@ -1,0 +1,57 @@
+{
+  "dataset": "m19-queries",
+  "dataset_version": "1.0.0",
+  "catalog_fingerprint": "sha256:synthetic-example-only-not-a-real-catalog",
+  "judged_at": "2026-10-26T00:00:00Z",
+  "pool_manifest": {
+    "dataset_version": "1.0.0",
+    "queries": {
+      "q001": {
+        "dataset_version": "1.0.0",
+        "modes_compared": [
+          "catalog",
+          "lexical"
+        ],
+        "candidate_limits": {
+          "catalog": 10,
+          "lexical": 10
+        },
+        "ordered_top10_by_mode": {
+          "catalog": [
+            "synthetic-track-a",
+            "synthetic-track-b"
+          ],
+          "lexical": [
+            "synthetic-track-b",
+            "synthetic-track-c"
+          ]
+        },
+        "members": [
+          "synthetic-track-a",
+          "synthetic-track-b",
+          "synthetic-track-c"
+        ]
+      }
+    }
+  },
+  "judgments": [
+    {
+      "query_id": "q001",
+      "track_id": "synthetic-track-a",
+      "grade": 3,
+      "reason": "Synthetic fixture: strong match"
+    },
+    {
+      "query_id": "q001",
+      "track_id": "synthetic-track-b",
+      "grade": 2,
+      "reason": "Synthetic fixture: relevant"
+    },
+    {
+      "query_id": "q001",
+      "track_id": "synthetic-track-c",
+      "grade": 0,
+      "reason": "Synthetic fixture: known mismatch"
+    }
+  ]
+}

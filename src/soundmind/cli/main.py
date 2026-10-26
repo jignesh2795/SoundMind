@@ -358,6 +358,26 @@ def build_parser():
         help="persist the final generated playlist under a local name",
     )
 
+    ev = s.add_parser("eval", help="run local recommendation quality evaluation")
+    evs = ev.add_subparsers(dest="eval_command", required=True)
+
+    evrun = evs.add_parser("run", help="evaluate a fixed query set against local judgments")
+    evrun.add_argument("--dataset", type=Path, default=Path("datasets/m19/queries-v1.json"))
+    evrun.add_argument("--judgments", type=Path, default=Path("data/eval/judgments.local.json"))
+    evrun.add_argument("--retrieval", choices=RETRIEVAL_MODES, default="catalog")
+    evrun.add_argument("--limit", type=int, default=10)
+    evrun.add_argument("--out", type=Path, default=Path("data/eval/reports/baseline-report.json"))
+    evrun.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    evfingerprint = evs.add_parser(
+        "fingerprint", help="print the current catalog fingerprint for a judgment file"
+    )
+    evfingerprint.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
+    evcompare = evs.add_parser("compare", help="compare two local evaluation reports")
+    evcompare.add_argument("--baseline", type=Path, required=True)
+    evcompare.add_argument("--candidate", type=Path, required=True)
+
     return p
 
 
@@ -497,6 +517,32 @@ def _recommend_service(a, session):
 
 def main(argv=None):
     a = build_parser().parse_args(argv)
+
+    if a.command == "eval":
+        from soundmind.evaluation import (
+            compare_reports,
+            print_catalog_fingerprint,
+            run_evaluation,
+        )
+
+        if a.eval_command == "fingerprint":
+            return print_catalog_fingerprint(database_path=a.db, repo_root=Path.cwd())
+
+        if a.eval_command == "run":
+            return run_evaluation(
+                dataset_path=a.dataset,
+                judgments_path=a.judgments,
+                retrieval=a.retrieval,
+                limit=a.limit,
+                output_path=a.out,
+                database_path=a.db,
+                repo_root=Path.cwd(),
+            )
+        return compare_reports(
+            baseline_path=a.baseline,
+            candidate_path=a.candidate,
+            repo_root=Path.cwd(),
+        )
 
     if a.command == "event":
         sf = create_session_factory(a.db)

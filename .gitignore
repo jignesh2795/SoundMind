@@ -6,3 +6,4 @@ __pycache__/
 data/database/
 data/index/
 data/models/
+data/eval/
