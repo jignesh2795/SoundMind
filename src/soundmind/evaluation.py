@@ -173,6 +173,10 @@ def build_frozen_pool(
         limit = candidate_limits[mode]
         if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
             raise EvaluationError(f"candidate limit for {mode} must be a positive integer")
+        if len(ids) > min(10, limit):
+            raise EvaluationError(
+                f"results for mode {mode!r} exceed min(10, candidate limit)"
+            )
         ordered[mode] = ids
         limits[mode] = limit
         for track_id in ids:

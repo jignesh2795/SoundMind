@@ -134,6 +134,15 @@ def test_all_unjudged_pool_fails_and_does_not_become_grade_zero() -> None:
     assert result["metrics"] == {"nDCG@10": None, "Recall@10": None, "MRR@10": None}
 
 
+def test_build_frozen_pool_rejects_results_above_candidate_limit() -> None:
+    with pytest.raises(ValueError, match="candidate limit"):
+        build_frozen_pool(
+            {"catalog": ["a", "b"]},
+            {"catalog": 1},
+            dataset_version="1.0.0",
+        )
+
+
 def test_frozen_pool_is_distinct_union_with_ordered_provenance() -> None:
     manifest = build_frozen_pool(
         {"catalog": ["a", "b"], "lexical": ["b", "c"]},
