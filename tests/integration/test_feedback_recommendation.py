@@ -70,13 +70,13 @@ def _recommend(db, context: str, capsys) -> tuple[tuple[str, ...], str]:
         == 0
     )
     output = capsys.readouterr().out
-    ranked_section = output.split("Ranked:\\n", maxsplit=1)[1].split(
-        "Playlist:\\n", maxsplit=1
+    ranked_section = output.split("Ranked:\n", maxsplit=1)[1].split(
+        "Playlist:\n", maxsplit=1
     )[0]
     order = tuple(
         match.group(1)
         for line in ranked_section.splitlines()
-        if (match := re.match(r"^\\d+\\. ([^\\t]+)\\t", line))
+        if (match := re.match(r"^\d+\. ([^\t]+)\t", line))
     )
     return order, output
 
