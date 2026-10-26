@@ -32,6 +32,7 @@
 - [M11 seeded learned recommendation](m11-seeded-learned-recommendation-contract.md)
 - [M11 CLI explanations](m11-cli-explanations-contract.md)
 - [M18.1 listening feedback capture](m18-1-listening-feedback-capture-contract.md)
+- [M18.2 feedback-to-recommendation end-to-end proof](m18-2-feedback-to-recommendation-contract.md)
 
 ### Retrieval
 
