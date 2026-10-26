@@ -64,4 +64,4 @@ def test_summary_output_data_is_deterministic_for_same_events() -> None:
         event("track-c", ListeningEventType.PLAY, context=None),
     ]
 
-    assert summarize_listening_events(events) == summarize_listening_events(events)
+    assert summarize_listening_events(events) == summarize_listening_events(reversed(events))
