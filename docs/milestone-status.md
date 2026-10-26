@@ -63,9 +63,20 @@ This document is the project-level implementation ledger. It records completed m
 | M17.5 | CLI coverage hardening for scan, model fetch-effnet, and learned-index | Complete |
 | M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | Complete |
 | M18.1 | Local listening feedback capture and inspection CLI | Complete |
+| M18.2 | End-to-end proof from captured listening feedback through SQLite into contextual recommendations | Complete |
 
 
 ## Current milestone
+
+### M18.2 — Feedback-to-Recommendation End-to-End Proof (completed)
+
+M18.2 proves through the public CLI that locally captured listening feedback is persisted to SQLite, read by catalog-backed recommendations, isolated by requested context, and reflected in the existing M1 preference signal. The change is test-only: no production recommendation logic or fusion weights were changed.
+
+Contract: [M18.2 feedback-to-recommendation end-to-end proof](m18-2-feedback-to-recommendation-contract.md)
+
+Validated candidate SHA: `2fc7b9ee2d59b58fa23b69a972377340b6d1989a`, based on `ff9a2c7e8c63aa8079407d68dcdbee4ffbd32a9d`.
+
+Gate passed on the exact candidate SHA: 29 focused integration tests passed; full suite 539 passed with 4 existing upstream deprecation warnings; Ruff clean; `git diff --check` clean; exactly the three intended files changed; validation worktree clean. The original checkout remained on `feat/m12-5-recommendation-retrieval` at `8185080929b87f25c962639574abafbf887cb455`, with all 75 pre-existing modified paths unchanged. Implementation merge commit: `1c63342f7cb209283003e322997a2418c8b79d51`.
 
 ### M18.1 — Listening Feedback Capture (completed)
 
