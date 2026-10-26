@@ -418,7 +418,8 @@ def _format_listening_event(event) -> str:
 
 
 def _print_event_summary(summary: ListeningEventSummary, *, limit: int) -> None:
-    print(f"Listening summary (most recent {limit} events)")
+    window_label = "event" if limit == 1 else "events"
+    print(f"Listening summary (most recent {limit} {window_label})")
     print(f"Events: {summary.total_events}")
     print(f"Distinct tracks: {summary.distinct_tracks}")
     print("By event type:")
