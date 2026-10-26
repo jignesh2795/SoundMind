@@ -64,9 +64,30 @@ This document is the project-level implementation ledger. It records completed m
 | M17.6 | Historical validation branch hardening for M2/M3/M4/M6/M10/M11 | Complete |
 | M18.1 | Local listening feedback capture and inspection CLI | Complete |
 | M18.2 | End-to-end proof from captured listening feedback through SQLite into contextual recommendations | Complete |
+| M18.3 | Read-only listening feedback summary CLI by event type and normalized context | Complete |
 
 
-## Current milestone
+## Next major product milestone (planned)
+
+### M19 — Recommendation Quality Evaluation Baseline
+
+The next major milestone is an outcome-oriented evaluation baseline, not another small CLI or playlist utility. It will establish a curated local query/relevance set, reproducible ranking metrics, a comparison across supported retrieval modes, and time-ordered evaluation for personalization. It must report coverage and missing evidence honestly, record configuration/provenance, and preserve the model-free local baseline. The [Product Roadmap](product-roadmap.md) defines scope and acceptance criteria.
+
+No recommendation-quality improvement is claimed before this evaluation exists and the baseline is measured.
+
+## Milestone details and validation records
+
+### M18.3 — Listening Feedback Summary CLI (completed)
+
+M18.3 adds `soundmind event summary [--limit N] [--db PATH]` to inspect the bounded recent-event window by event type and normalized context. It is read-only with respect to catalog/listening records and does not change preference scoring, recommendation weights, or sequencing.
+
+Contract: [M18.3 listening feedback summary CLI](m18-3-listening-feedback-summary-contract.md)
+
+Validated base SHA: `cacfce600f1cfe363e12c36ec00d4fe1937e80ad`  
+Validated candidate SHA: `f3d848075fd8aef51474c50683b3455d50e11ab2`  
+Implementation merge commit / PR #93 merge: `5b9ca7c3272ffb09a4f77fab3d58e1cafc52d36d`.
+
+Exact-SHA local validation reported PASS on a separate detached Windows worktree: `uv sync --extra dev` passed; the focused command using `tests/integration/test_listening_summary_integration.py` passed **12 tests**; `uv run ruff check .` passed; the full suite passed **545 tests across 55 test files**, with 4 pre-existing librosa/audioread deprecation warnings; `git diff --check base..HEAD` passed; and the candidate worktree was clean. The candidate diff contained exactly the nine intended files. The earlier candidate `371baecaa7349c0f53f8cc72a82b7d9173c93b02` had a pytest duplicate-module-name collection failure; the integration test was renamed, the collision was confirmed absent, and the corrected candidate's combined focused and full gates passed. The original checkout remained on `feat/m12-5-recommendation-retrieval` at `8185080929b87f25c962639574abafbf887cb455`, with the same 75 pre-existing modified paths and empty stash. All validation worktrees were preserved. No GitHub Actions/CI was used.
 
 ### M18.2 — Feedback-to-Recommendation End-to-End Proof (completed)
 
