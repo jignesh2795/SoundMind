@@ -71,7 +71,32 @@ This document is the project-level implementation ledger. It records completed m
 
 ### M19 — Recommendation Quality Evaluation Baseline
 
-The next major milestone is an outcome-oriented evaluation baseline, not another small CLI or playlist utility. It will establish a curated local query/relevance set, reproducible ranking metrics, a comparison across supported retrieval modes, and time-ordered evaluation for personalization. It must report coverage and missing evidence honestly, record configuration/provenance, and preserve the model-free local baseline. The [Product Roadmap](product-roadmap.md) defines scope and acceptance criteria.
+The next major milestone is an outcome-oriented evaluation baseline, not another small CLI or playlist utility. **Phase 1** establishes a curated local query/relevance set, reproducible ranking metrics (nDCG@10, pooled Recall@10, MRR@10), a complete-pool evaluability gate, and a comparison across supported retrieval modes: **a query contributes official metrics only when every track in its frozen pool is judged**. Time-ordered personalization evaluation moves to the later feedback-evaluation phase (M21), and playlist diagnostics stay deferred until separately specified and justified. It must report coverage and missing evidence honestly, record configuration/provenance, and preserve the model-free local baseline. The [Product Roadmap](product-roadmap.md) defines the outcome direction; the contract defines the binding Phase 1 scope.
+
+- Contract: [M19 recommendation quality evaluation baseline](m19-recommendation-quality-evaluation-contract.md)
+- Dataset specification: [M19 evaluation dataset specification](m19-evaluation-dataset-spec.md)
+
+**Phase 1 scope** (retrieval/ranking metrics and judgment coverage):
+
+- Evaluate supported retrieval modes: `catalog` (default), `lexical`, `semantic`, `hybrid`, `hybrid-indexed`
+- Compute nDCG@10, pooled Recall@10, and MRR@10 per query
+- Require a completely judged frozen pool per query before a query contributes official metrics
+- Report pool coverage, missing-evidence rates, and gate-failure reasons separately
+- Personalization evaluation moves to M21; playlist diagnostics remain deferred
+
+**Phase 1 acceptance** (after implementation):
+
+1. One documented local command reproduces a report for a fixed dataset and configuration, with identical metric values across runs
+2. nDCG@10, pooled Recall@10, and MRR@10 each have unit tests covering empty input, all-unjudged input, zero-relevant-pool input, pools under ten items, `IDCG@10 = 0`, and incomplete-pool gate failure
+3. The gate marks any query with an unjudged pooled track `not_evaluable`, naming the unjudged count, and emits `null` with a reason whenever no query is evaluable
+4. The report covers all supported retrieval modes and explicitly lists unavailable optional modes with reasons
+5. Unjudged tracks are never scored as irrelevant and are never removed to compress ranks, asserted by a dedicated test
+6. The pre-write privacy gate is documented and both the judgment path and an expected report path are verified ignored before the first write
+7. The dataset's limitations block — including small size, single judge, and pooled construction — appears verbatim in every report
+8. The full local Ruff + pytest gate passes on the exact candidate SHA
+9. No ranking or fusion weight changed in the candidate diff
+
+Both documents are design-only. No evaluator, dataset file, metric implementation, or baseline report exists in the repository tree at this revision, and no M19 validation result is claimed. Validation status may be recorded only after an implementation candidate passes its exact-SHA local gate.
 
 No recommendation-quality improvement is claimed before this evaluation exists and the baseline is measured.
 
