@@ -48,6 +48,11 @@
 - [M12.8 configurable hybrid retrieval weights](m12-8-configurable-hybrid-weights-contract.md)
 - [M12.9 deterministic retrieval evidence](m12-9-retrieval-evidence-contract.md)
 
+### Evaluation
+
+- [M19 recommendation quality evaluation baseline](m19-recommendation-quality-evaluation-contract.md) — Phase 1 measures retrieval ranking quality (nDCG@10, pooled Recall@10, MRR@10) against a completely judged frozen pool per query, plus judgment coverage; personalization moves to the later feedback-evaluation phase and playlist diagnostics stay deferred.
+- [M19 evaluation dataset specification](m19-evaluation-dataset-spec.md) — separate, independently versioned query and hand-judged relevance schema, frozen-pool definition, evidence and blindness rules, complete-pool gating, and privacy rules.
+
 ### Playlist editing
 
 - [M13.1 deterministic playlist editing](m13-1-playlist-editing-contract.md)

@@ -36,22 +36,25 @@ These are repository-audit findings, not claims that every current recommendatio
 
 Purpose: establish a small, inspectable, repeatable local process for measuring retrieval and recommendation behavior before changing ranking.
 
-Scope:
+Scope (Phase 1 — retrieval/ranking metrics and judgment coverage):
 
 - Create a curated evaluation set of music requests with track-level relevance judgments and clearly stated coverage limitations. Keep private libraries and private listening histories out of the public repository.
 - Build a local evaluator that can compare the existing catalog-backed baseline with lexical retrieval and, when already configured, semantic and hybrid retrieval.
-- Calculate ranking metrics such as nDCG@10, Recall@10, and MRR where the evaluation labels support them. Report catalog coverage and missing-evidence rates separately.
-- Assess personalization on time-ordered held-out events so future listening does not leak into earlier recommendations. Keep context-specific evaluation isolated.
-- Report playlist diagnostics such as repeated-track rate, observed energy trajectory, and transition-feature continuity. Treat these as measurable proxies, not substitutes for listener judgment.
+- Calculate ranking metrics nDCG@10, pooled Recall@10, and MRR@10 where the evaluation labels support them. **Require a completely judged frozen pool per query before a query contributes official metrics. Report catalog coverage, missing-evidence rates, and gate-failure reasons separately.**
 - Record the dataset version, query set, code revision, retrieval mode, candidate limits, weights, optional model/index configuration, metrics, and known limitations alongside each result.
 - Use fixtures and temporary databases; remain local-first, deterministic where practical, and independent of cloud APIs or paid services.
 
-Acceptance:
+Deferred from Phase 1 (retained as later work, not part of this milestone's scope):
+
+- **Personalization evaluation** on time-ordered held-out events, with context isolation and a leakage guard, moves to the later feedback-evaluation phase (M21) so that feedback-driven change is measured once this ranking baseline is stable.
+- **Playlist diagnostics** — repeated-track rate, observed energy trajectory, transition-feature continuity — stay deferred until they are separately specified and justified; they remain measurable proxies, not substitutes for listener judgment.
+
+Acceptance (Phase 1):
 
 1. A single documented local command reproduces the report for a fixed dataset and configuration.
-2. Metric implementations have unit tests and explicit behavior for empty or insufficiently labeled cases.
+2. Metric implementations have unit tests and explicit behavior for empty, insufficiently labeled, and incompletely pooled cases.
 3. The report includes a baseline for supported modes and clearly identifies unavailable optional modes rather than silently skipping them.
-4. The evaluation data and its limitations are versioned and reviewable.
+4. The evaluation data and its limitations are versioned and reviewable, and the **limitations block appears in every report.**
 5. No ranking weights are changed merely to make the first benchmark look better; algorithm improvements are separate, measured comparisons against this baseline.
 
 ### M20 — Intent-to-Catalog Evidence Alignment
