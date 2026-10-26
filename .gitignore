@@ -1,8 +1,1 @@
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.ruff_cache/
-.venv/
-data/database/
-data/index/
-data/models/
+data/eval/
