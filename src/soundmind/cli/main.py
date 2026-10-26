@@ -16,6 +16,10 @@ from soundmind.embeddings.learned_service import LearnedEmbeddingService
 from soundmind.flow import EndToEndRequest
 from soundmind.ingestion.scanner import scan_directory
 from soundmind.listening import list_listening_events, record_listening_event
+from soundmind.listening_summary import (
+    ListeningEventSummary,
+    summarize_listening_events,
+)
 from soundmind.playlist_audit import audit_playlist
 from soundmind.playlist_edit_parser import parse_playlist_edits
 from soundmind.playlist_edit_workflow import (
@@ -249,6 +253,18 @@ def build_parser():
     evl.add_argument("--limit", type=int, default=20)
     evl.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
 
+    evsum = evs.add_parser(
+        "summary",
+        help="summarize recent listening events by event type and context",
+    )
+    evsum.add_argument(
+        "--limit",
+        type=int,
+        default=1000,
+        help="maximum number of recent events to summarize",
+    )
+    evsum.add_argument("--db", type=Path, default=Path("data/database/soundmind.db"))
+
     rec = s.add_parser("recommend")
     rec.add_argument("text")
     rec.add_argument("--context", required=True)
@@ -401,6 +417,29 @@ def _format_listening_event(event) -> str:
     return "\t".join(fields)
 
 
+def _print_event_summary(summary: ListeningEventSummary, *, limit: int) -> None:
+    print(f"Listening summary (most recent {limit} events)")
+    print(f"Events: {summary.total_events}")
+    print(f"Distinct tracks: {summary.distinct_tracks}")
+    print("By event type:")
+    for event_type, count in summary.event_type_counts:
+        print(f"  {event_type.value}: {count}")
+
+    print("By context:")
+    if not summary.contexts:
+        print("  (none)")
+        return
+
+    for context_summary in summary.contexts:
+        context = context_summary.context or "(none)"
+        event_label = "event" if context_summary.event_count == 1 else "events"
+        track_label = "track" if context_summary.distinct_tracks == 1 else "tracks"
+        print(
+            f"  {context}: {context_summary.event_count} {event_label}, "
+            f"{context_summary.distinct_tracks} {track_label}"
+        )
+
+
 def _print_recommendation(
     result,
     *,
@@ -471,6 +510,12 @@ def main(argv=None):
                     seconds_played=a.seconds_played,
                 )
                 print(f"Recorded: {_format_listening_event(event)}")
+                return 0
+
+            if a.event_command == "summary":
+                events = list_listening_events(session, limit=a.limit)
+                summary = summarize_listening_events(events)
+                _print_event_summary(summary, limit=a.limit)
                 return 0
 
             events = list_listening_events(session, limit=a.limit)
