@@ -263,7 +263,7 @@ def validate_judgments(
         raise EvaluationError("catalog_fingerprint must be a non-empty string")
     stamp = doc.get("judged_at")
     try:
-        parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00")) if isinstance(stamp, str) else None
+        parsed = datetime.fromisoformat(stamp) if isinstance(stamp, str) else None
     except ValueError as exc:
         raise EvaluationError("judged_at must be timezone-aware ISO-8601") from exc
     if parsed is None or parsed.tzinfo is None or parsed.utcoffset() is None:
@@ -776,7 +776,7 @@ def compare_reports(
 ) -> int:
     """Print metric deltas for two local reports without writing files."""
     try:
-        root, baseline_file, candidate_file = enforce_privacy_gate(
+        _, baseline_file, candidate_file = enforce_privacy_gate(
             repo_root=repo_root,
             judgments_path=baseline_path,
             output_path=candidate_path,

@@ -91,11 +91,26 @@ def test_pool_with_fewer_than_three_judgments_is_not_evaluable() -> None:
     assert any("pool too small" in r for r in reasons)
 
 
-def test_zero_relevant_pool_and_zero_idcg_are_not_evaluable() -> None:
-    ok, reasons = check_evaluability(["a", "b", "c"], {"a": 0, "b": 1, "c": 0}, ["a"])
+def test_zero_relevant_pool_is_not_evaluable_even_when_idcg_is_positive() -> None:
+    grades = {"a": 0, "b": 1, "c": 0}
+    ok, reasons = check_evaluability(["a", "b", "c"], grades, ["a"])
+    assert not ok
+    assert "no judged-relevant tracks in frozen pool" in reasons
+    assert "IDCG@10 = 0: all judged grades are 0" not in reasons
+    result = evaluate_query(["a", "b", "c"], grades, ["a"])
+    assert result["status"] == "not_evaluable"
+    assert result["metrics"] == {"nDCG@10": None, "Recall@10": None, "MRR@10": None}
+
+
+def test_zero_idcg_all_zero_grades_is_not_evaluable() -> None:
+    grades = {"a": 0, "b": 0, "c": 0}
+    ok, reasons = check_evaluability(["a", "b", "c"], grades, ["a"])
     assert not ok
     assert "no judged-relevant tracks in frozen pool" in reasons
     assert "IDCG@10 = 0: all judged grades are 0" in reasons
+    result = evaluate_query(["a", "b", "c"], grades, ["a"])
+    assert result["status"] == "not_evaluable"
+    assert result["metrics"] == {"nDCG@10": None, "Recall@10": None, "MRR@10": None}
 
 
 def test_all_unjudged_pool_fails_and_does_not_become_grade_zero() -> None:
