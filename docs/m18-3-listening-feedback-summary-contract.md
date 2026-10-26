@@ -58,7 +58,7 @@ Run on the exact candidate SHA in an isolated worktree:
 
 ```bash
 uv sync --extra dev
-uv run pytest tests/unit/test_listening_summary.py tests/unit/cli/test_listening_cli.py tests/integration/test_listening_summary.py
+uv run pytest tests/unit/test_listening_summary.py tests/unit/cli/test_listening_cli.py tests/integration/test_listening_summary_integration.py
 uv run ruff check .
 uv run pytest
 git diff --check
