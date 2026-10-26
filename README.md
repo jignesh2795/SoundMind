@@ -6,7 +6,7 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M18.1 — Listening Feedback Capture (complete).
+M18.2 — Feedback-to-Recommendation End-to-End Proof (complete).
 
 The current pipeline now supports:
 
@@ -20,7 +20,7 @@ The current pipeline now supports:
 - ranking: existing M1 fusion with contextual preference, novelty, and learned signals
 - end-to-end context-aware composition across M3, M4, M8, M9, M10, M1, and M2
 - catalog-backed recommendation from persisted SQLite tracks and listening events
-- listening feedback: local CLI capture and inspection of play, complete, skip, like, dislike, and replay events
+- listening feedback: local CLI capture and inspection of play, complete, skip, like, dislike, and replay events, with end-to-end verification that persisted contextual feedback reaches recommendation ranking
 - CLI recommendations through the existing soundmind command
 - optional per-signal recommendation explanations
 - sequencing: Smooth, Contrast, Journey, and Discovery playlist modes
