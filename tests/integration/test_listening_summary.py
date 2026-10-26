@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 
+import pytest
+
 from soundmind.cli.main import main
 from soundmind.storage.database import create_session_factory
 from soundmind.storage.models import TrackRow
@@ -125,3 +127,9 @@ def test_cli_summary_empty_history_is_explicit(tmp_path, capsys) -> None:
         "By context:\n"
         "  (none)\n"
     )
+
+def test_cli_summary_rejects_non_positive_limit(tmp_path) -> None:
+    db = tmp_path / "events.db"
+
+    with pytest.raises(ValueError, match="limit must be positive"):
+        main(["event", "summary", "--limit", "0", "--db", str(db)])
