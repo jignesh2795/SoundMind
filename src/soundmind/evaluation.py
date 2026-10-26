@@ -427,11 +427,17 @@ def _cached_model_reason(root: Path) -> str | None:
             continue
         try:
             for item in [base, *base.iterdir()]:
-                if slug in item.as_posix().casefold():
-                    if item.is_file() and item.suffix.casefold() == ".onnx":
-                        return None
-                    if item.is_dir() and any(item.rglob("*.onnx")):
-                        return None
+                if slug not in item.as_posix().casefold() or not item.is_dir():
+                    continue
+                files = {path.name.casefold() for path in item.rglob("*") if path.is_file()}
+                has_onnx = any(name.endswith(".onnx") for name in files)
+                has_config = "config.json" in files
+                has_tokenizer = bool(
+                    {"tokenizer.json", "tokenizer_config.json", "vocab.txt", "spiece.model"}
+                    & files
+                )
+                if has_onnx and has_config and has_tokenizer:
+                    return None
         except OSError:
             continue
     return "local text model is not cached; M19 will not download model assets"
