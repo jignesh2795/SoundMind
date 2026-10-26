@@ -75,3 +75,21 @@ M18.3 is complete when:
 - a real temporary-SQLite test covers both populated and empty history;
 - the full local Ruff + pytest gate passes on the exact candidate SHA;
 - production scoring and persistence behavior remain unchanged.
+
+
+## Exact-SHA Validation Record — PASS
+
+- Base SHA: `cacfce600f1cfe363e12c36ec00d4fe1937e80ad`.
+- Candidate SHA: `f3d848075fd8aef51474c50683b3455d50e11ab2`.
+- Merged through PR #93; merge commit: `5b9ca7c3272ffb09a4f77fab3d58e1cafc52d36d`.
+- `uv sync --extra dev`: passed.
+- Focused command (with the renamed integration test module): **12 passed**.
+- `uv run ruff check .`: passed, all checks clean.
+- `uv run pytest`: **545 passed** across 55 test files; 4 pre-existing librosa/audioread deprecation warnings.
+- `git diff --check base..HEAD`: passed.
+- Changed files: exactly the nine M18.3 files listed in PR #93.
+- Candidate validation worktree: clean at the exact SHA.
+- Original checkout preservation: branch `feat/m12-5-recommendation-retrieval`, HEAD `8185080929b87f25c962639574abafbf887cb455`, same 75 pre-existing modified paths, and empty stash before/after.
+- The original validation worktree at the failing candidate was preserved; a separate sibling worktree validated the corrected candidate. No GitHub Actions/CI was used.
+
+The earlier candidate `371baecaa7349c0f53f8cc72a82b7d9173c93b02` failed collection because the unit and integration test modules shared a basename. Renaming the integration test to `tests/integration/test_listening_summary_integration.py` fixed collection without changing pytest configuration. The corrected combined focused command and full suite both passed.
