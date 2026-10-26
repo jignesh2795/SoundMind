@@ -186,7 +186,12 @@ Inspect recent history:
     uv run soundmind event list
     uv run soundmind event list --limit 50
 
-An event can be recorded for an existing inactive track to preserve historical listening, but the track must exist in the catalog. Timestamps are stored and displayed in UTC. The default database is `data/database/soundmind.db`; both commands accept `--db PATH`.
+Summarize feedback by event type and normalized context (default: the most recent 1,000 events):
+
+    uv run soundmind event summary
+    uv run soundmind event summary --limit 500
+
+The summary is read-only, reports distinct tracks for each context, and does not imply that events outside the selected recent-event window were counted. An event can be recorded for an existing inactive track to preserve historical listening, but the track must exist in the catalog. Timestamps are stored and displayed in UTC. The default database is `data/database/soundmind.db`; all three commands accept `--db PATH`.
 
 ## Data directories
 
