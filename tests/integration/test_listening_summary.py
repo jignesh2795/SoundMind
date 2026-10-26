@@ -90,6 +90,22 @@ def test_cli_summary_aggregates_persisted_events_by_type_and_context(
         "  workout: 1 event, 1 track\n"
     )
 
+    assert main(["event", "summary", "--limit", "1", "--db", str(db)]) == 0
+    assert capsys.readouterr().out == (
+        "Listening summary (most recent 1 event)\n"
+        "Events: 1\n"
+        "Distinct tracks: 1\n"
+        "By event type:\n"
+        "  play: 0\n"
+        "  complete: 0\n"
+        "  skip: 1\n"
+        "  like: 0\n"
+        "  dislike: 0\n"
+        "  replay: 0\n"
+        "By context:\n"
+        "  workout: 1 event, 1 track\n"
+    )
+
 
 def test_cli_summary_empty_history_is_explicit(tmp_path, capsys) -> None:
     db = tmp_path / "empty.db"
