@@ -53,6 +53,22 @@ git status --short
 
 Record the exact candidate/base SHAs, focused and full test counts, Ruff result, diff-check result, exact changed-file scope, and confirmation that the original checkout is unchanged. Do not update validation status until the local gate actually passes.
 
+## Validation record
+
+Exact-SHA local validation completed in a separate, detached Windows worktree:
+
+- Base SHA: `ff9a2c7e8c63aa8079407d68dcdbee4ffbd32a9d`
+- Candidate SHA: `2fc7b9ee2d59b58fa23b69dcdbee4ffbd32a9d`
+- `uv sync --extra dev`: passed.
+- Focused integration tests (`test_feedback_recommendation.py`, `test_listening_flow.py`, and `test_catalog_context_recommendation.py`): **29 passed**.
+- `uv run ruff check .`: passed.
+- `uv run pytest`: **539 passed**, with 4 existing audioread/librosa deprecation warnings.
+- `git diff --check base..HEAD`: passed.
+- Changed-file list exactly: `docs/index.md`, `docs/m18-2-feedback-to-recommendation-contract.md`, `tests/integration/test_feedback_recommendation.py`.
+- Validation worktree was clean at the candidate SHA. The original checkout remained at its original branch and HEAD, with the same 75 pre-existing modified paths before and after.
+
+Implementation merge commit: `1c63342f7cb209283003e322997a2418c8b79d51`.
+
 ## Acceptance
 
 M18.2 is complete when:
