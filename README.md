@@ -6,7 +6,9 @@ SoundMind organizes a personal music library using deterministic audio analysis,
 
 ## Current milestone
 
-M18.2 — Feedback-to-Recommendation End-to-End Proof (complete).
+M18.3 — Listening Feedback Summary CLI (complete).
+
+Next planned product milestone: M19 — Recommendation Quality Evaluation Baseline. See [the product roadmap](docs/product-roadmap.md) for audit findings, priorities, and acceptance criteria.
 
 The current pipeline now supports:
 
@@ -303,7 +305,10 @@ Validation uses Ruff and pytest.
 - M17.5: CLI coverage hardening for core local command surfaces
 - M17.6: historical validation branch hardening
 - M18.1: local listening feedback capture and inspection
-- later: multilingual catalog evidence, stems and advanced creation
+- M18.2: end-to-end feedback-to-recommendation proof
+- M18.3: read-only listening feedback summary CLI
+- M19: recommendation quality evaluation baseline (planned, outcome-based)
+- later: multilingual catalog evidence, richer music understanding, stems and advanced creation, prioritized by measured gaps
 
 See [docs/milestone-status.md](docs/milestone-status.md) for implementation status and the current validation baseline.
 
